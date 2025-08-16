@@ -1,25 +1,16 @@
 package engine
 
-type Signals = map[string]float64
+import "time"
 
-type Signaler = func() (float64, error)
-type Handler = func(signals Signals) error
+type Handler = func(now time.Time) error
 
 type Engine struct {
-	Signalers map[string]Signaler
-	Handlers  []Handler
+	Handlers []Handler
+	Values   map[string]float64
 }
 
 func New() *Engine {
-	return &Engine{
-		Signalers: map[string]Signaler{},
-		Handlers:  []Handler{},
-	}
-}
-
-func (e *Engine) Signal(key string, signaler Signaler) *Engine {
-	e.Signalers[key] = signaler
-	return e
+	return &Engine{Handlers: []Handler{}, Values: map[string]float64{}}
 }
 
 func (e *Engine) Handle(handler Handler) *Engine {
@@ -27,22 +18,17 @@ func (e *Engine) Handle(handler Handler) *Engine {
 	return e
 }
 
-func (e *Engine) Run() error {
-	signals := make(Signals, len(e.Signalers))
+func (e *Engine) Get(k string) float64 {
+	return e.Values[k]
+}
 
-	// evaluate signals
-	for key, signaler := range e.Signalers {
-		signal, err := signaler()
-		if err != nil {
-			return err
-		}
+func (e *Engine) Set(k string, v float64) {
+	e.Values[k] = v
+}
 
-		signals[key] = signal
-	}
-
-	// run handlers
+func (e *Engine) Run(now time.Time) error {
 	for _, handler := range e.Handlers {
-		if err := handler(signals); err != nil {
+		if err := handler(now); err != nil {
 			return err
 		}
 	}

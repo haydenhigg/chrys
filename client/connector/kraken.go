@@ -1,4 +1,4 @@
-package client
+package connector
 
 import (
 	"crypto/hmac"
@@ -138,45 +138,7 @@ func (c *Kraken) private(
 	return doRequest(request)
 }
 
-// interface functions
-func (c *Kraken) GetBalances() (map[string]float64, error) {
-	// make request
-	rawResponse, err := c.private("POST", "/Balance", nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// unmarshal raw response
-	var response struct {
-		Errors []string          `json:"error"`
-		Result map[string]string `json:"result"`
-	}
-	json.Unmarshal(rawResponse, &response)
-
-	if len(response.Errors) > 0 {
-		return nil, errors.New(response.Errors[0])
-	}
-
-	// process returned quantities
-	store := map[string]float64{}
-
-	for c, v := range response.Result {
-		balance, err := strconv.ParseFloat(v, 64)
-		if err != nil {
-			return nil, err
-		}
-
-		// don't include balances of 0
-		if balance == 0 {
-			continue
-		}
-
-		store[c] = balance
-	}
-
-	return store, nil
-}
-
+// connector functions
 func (c *Kraken) GetCandlesSince(
 	pair string,
 	interval time.Duration,
@@ -234,18 +196,52 @@ func (c *Kraken) GetCandlesSince(
 	return candles, nil
 }
 
-func (c *Kraken) PlaceOrder(
-	orderType string,
-	orderPair string,
-	orderQuantity float64,
-) error {
+func (c *Kraken) GetBalances() (map[string]float64, error) {
+	// make request
+	rawResponse, err := c.private("POST", "/Balance", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// unmarshal raw response
+	var response struct {
+		Errors []string          `json:"error"`
+		Result map[string]string `json:"result"`
+	}
+	json.Unmarshal(rawResponse, &response)
+
+	if len(response.Errors) > 0 {
+		return nil, errors.New(response.Errors[0])
+	}
+
+	// process returned quantities
+	store := map[string]float64{}
+
+	for c, v := range response.Result {
+		balance, err := strconv.ParseFloat(v, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		// don't include balances of 0
+		if balance == 0 {
+			continue
+		}
+
+		store[c] = balance
+	}
+
+	return store, nil
+}
+
+func (c *Kraken) OrderMarket(side, pair string, quantity float64) error {
 	// make request
 	rawResponse, err := c.private("POST", "/AddOrder", &Payload{
 		Body: url.Values{
 			"ordertype": {"market"},
-			"type":      {orderType},
-			"volume":    {strconv.FormatFloat(orderQuantity, 'f', 8, 64)},
-			"pair":      {orderPair},
+			"type":      {side},
+			"volume":    {strconv.FormatFloat(quantity, 'f', 8, 64)},
+			"pair":      {pair},
 		},
 	})
 	if err != nil {
