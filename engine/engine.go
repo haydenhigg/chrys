@@ -27,25 +27,25 @@ func (e *Engine) Handle(handler Handler) *Engine {
 	return e
 }
 
-func (e *Engine) Run() []error {
+func (e *Engine) Run() error {
 	signals := make(Signals, len(e.Signalers))
-	errors := []error{}
 
 	// evaluate signals
 	for key, signaler := range e.Signalers {
-		if signal, err := signaler(); err == nil {
-			signals[key] = signal
-		} else {
-			errors = append(errors, err)
+		signal, err := signaler()
+		if err != nil {
+			return err
 		}
+
+		signals[key] = signal
 	}
 
 	// run handlers
 	for _, handler := range e.Handlers {
 		if err := handler(signals); err != nil {
-			errors = append(errors, err)
+			return err
 		}
 	}
 
-	return errors
+	return nil
 }

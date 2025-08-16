@@ -1,13 +1,13 @@
 package client
 
 import (
-	"github.com/haydenhigg/clover/candle"
 	"crypto/hmac"
 	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"github.com/haydenhigg/clover/candle"
 	"io"
 	"net/http"
 	"net/url"

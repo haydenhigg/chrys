@@ -1,6 +1,18 @@
 # clover
 lightweight algorithmic trading framework
 
+## goals
+- small codebase and simple design
+- works for ML4T pipelines
+
+## to-do
+1. add `time` parameter to engine.Run
+2. pass `time` as parameter to signaler funcs
+3. fetch candles using `time`
+4. order placement from CachedClient
+5. state management
+6. expand MLP implementation
+
 ## usage
 ```go
 package main
@@ -9,41 +21,13 @@ import (
 	"github.com/haydenhigg/clover/algo"
 	"github.com/haydenhigg/clover/client"
 	"github.com/haydenhigg/clover/engine"
-	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 	"time"
 )
 
-func readConfig(fileName string) (map[string]string, error) {
-	file, err := os.Open(fileName)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	data, err := io.ReadAll(file)
-	if err != nil {
-		return nil, err
-	}
-
-	var config map[string]string
-	if err = json.Unmarshal(data, &config); err != nil {
-		return nil, err
-	}
-
-	return config, nil
-}
-
 func main() {
-	// set up client
-	config, err := readConfig("config.json")
-	if err != nil {
-		panic(err)
-	}
-
-	c, err := client.NewKraken(config["API_KEY"], config["API_SECRET"])
+	c, err := client.NewKraken(os.Getenv("API_KEY"), os.Getenv("API_SECRET"))
 	if err != nil {
 		panic(err)
 	}
@@ -58,7 +42,9 @@ func main() {
 		}
 
 		return algo.ZScore(algo.Closes(candles)), nil
-	}).Handle(func(signals engine.Signals) error {
+	})
+
+	e.Handle(func(signals engine.Signals) error {
 		if signals["zScore"] < -2 {
 			fmt.Println("buy!")
 		} else if signals["zScore"] > 2 {
@@ -67,8 +53,8 @@ func main() {
 	})
 
 	// run
-	if errs := e.Run(); len(errs) > 0 {
-		fmt.Println(errs)
+	if err := e.Run(); err != nil {
+		panic(err)
 	}
 }
 ````

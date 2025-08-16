@@ -1,8 +1,8 @@
 package client
 
 import (
-	"github.com/haydenhigg/clover/candle"
 	"encoding/base64"
+	"github.com/haydenhigg/clover/candle"
 	"time"
 )
 
@@ -35,7 +35,7 @@ func (c *CachedClient) Balances() (map[string]float64, error) {
 	return c.BalanceStore, nil
 }
 
-func (c *CachedClient) Fetch(
+func (c *CachedClient) Candles(
 	pair string,
 	interval time.Duration,
 	n int,
@@ -44,6 +44,11 @@ func (c *CachedClient) Fetch(
 	return c.Client.GetCandlesSince(pair, interval, since)
 }
 
+// func (c *CachedClient) Order(type, pair string, quantity float64) error {
+// 	return nil
+// }
+
+// client initialization
 func NewKraken(key, secret string) (*CachedClient, error) {
 	decodedSecret, err := base64.StdEncoding.DecodeString(secret)
 	if err != nil {
