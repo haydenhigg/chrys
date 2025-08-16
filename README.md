@@ -1,10 +1,6 @@
 # clover
 lightweight algorithmic trading framework
 
-## goals
-- small codebase and simple design
-- works for ML4T pipelines
-
 ## to-do
 1. add `time` parameter to engine.Run
 2. pass `time` as parameter to signaler funcs
@@ -27,6 +23,7 @@ import (
 )
 
 func main() {
+	// set up client
 	c, err := client.NewKraken(os.Getenv("API_KEY"), os.Getenv("API_SECRET"))
 	if err != nil {
 		panic(err)
