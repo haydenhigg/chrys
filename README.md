@@ -6,8 +6,10 @@ lightweight algorithmic trading framework
 2. pass `time` as parameter to signaler funcs
 3. fetch candles using `time`
 4. order placement from CachedClient
-5. state management
-6. expand MLP implementation
+5. state management for stateful algos
+6. backtesting
+7. add `precedence` to signalers so there can be arbitrarily many steps that depend on previous steps (right now, the only steps are Signalers -> Handlers)
+8. expand MLP implementation
 
 ## usage
 ```go
