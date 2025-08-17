@@ -54,7 +54,7 @@ func main() {
 }
 ```
 
-For more complex use cases, you'll likely want to split the signal and order logic into separate handlers. You can pass values through handlers like so:
+For more complex use cases, you'll likely want to split the signal and order logic into separate handlers. You can pass data down through the handler chain like so:
 
 ```go
 // ...
@@ -73,6 +73,8 @@ e.Handle(func(now time.Time) error {
 	return nil
 })
 e.Handle(func(now time.Time) error {
+	fmt.Println(e.Data) // map[bb:... bb-1/2:...]
+
 	if e.Get("bb") < -2 && e.Get("bb-1/2") < -2 {
 		fmt.Println("buy")
 	} else if e.Get("bb") > 2 && e.Get("bb-1/2") > 2 {

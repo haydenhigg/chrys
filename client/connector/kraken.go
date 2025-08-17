@@ -234,7 +234,7 @@ func (c *Kraken) GetBalances() (map[string]float64, error) {
 	return store, nil
 }
 
-func (c *Kraken) OrderMarket(side, pair string, quantity float64) error {
+func (c *Kraken) MarketOrder(side, pair string, quantity float64) error {
 	// make request
 	rawResponse, err := c.private("POST", "/AddOrder", &Payload{
 		Body: url.Values{

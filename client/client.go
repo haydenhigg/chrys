@@ -14,7 +14,7 @@ type Connector interface {
 		since time.Time,
 	) ([]*candle.Candle, error)
 	GetBalances() (map[string]float64, error)
-	OrderMarket(side, pair string, quantity float64) error
+	MarketOrder(side, pair string, quantity float64) error
 }
 
 type Client struct {
@@ -91,6 +91,6 @@ func (c *Client) GetBalances() (map[string]float64, error) {
 	return balances, nil
 }
 
-// func (c *Client) OrderMarket(side, pair string, quantity float64) error {
-
-// }
+func (c *Client) MarketOrder(side, pair string, quantity float64) error {
+	return c.Connector.MarketOrder(side, pair, quantity)
+}

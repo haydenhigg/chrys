@@ -6,11 +6,11 @@ type Handler = func(now time.Time) error
 
 type Engine struct {
 	Handlers []Handler
-	Values   map[string]float64
+	Data     map[string]float64
 }
 
 func New() *Engine {
-	return &Engine{Handlers: []Handler{}, Values: map[string]float64{}}
+	return &Engine{Handlers: []Handler{}, Data: map[string]float64{}}
 }
 
 func (e *Engine) Handle(handler Handler) *Engine {
@@ -19,11 +19,11 @@ func (e *Engine) Handle(handler Handler) *Engine {
 }
 
 func (e *Engine) Get(k string) float64 {
-	return e.Values[k]
+	return e.Data[k]
 }
 
 func (e *Engine) Set(k string, v float64) {
-	e.Values[k] = v
+	e.Data[k] = v
 }
 
 func (e *Engine) Run(now time.Time) error {
