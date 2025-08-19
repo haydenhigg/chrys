@@ -2,13 +2,12 @@
 lightweight algorithmic trading framework
 
 ## to-do
-1. order placement through Client
+1. backtesting
 2. state management through `algo` subpackage for stateful algos
-3. backtesting
-4. expand MLP implementation
+3. expand MLP implementation
 
 ## usage
-This generates **BOLL(20, 2)** signals for **1h BTC/USD**.
+This trades on **BOLL(20, 2)** signals for **1h BTC/USD** using a **10%** fractional trade amount.
 
 ```go
 package main
@@ -38,10 +37,21 @@ func main() {
 
 		zScore := algo.ZScore(algo.Closes(candles))
 
+		order := &client.OrderConfig{
+			Pair:      "BTC/USD",
+			BaseCode:  "XBT.F",
+			QuoteCode: "ZUSD",
+			Percent:   0.1,
+		}
+
 		if zScore < -2 {
-			fmt.Println("buy")
+			order.Side = "buy"
 		} else if zScore > 2 {
-			fmt.Println("sell")
+			order.Side = "sell"
+		}
+
+		if err := c.MarketOrder(order); err != nil {
+			return err
 		}
 
 		return nil
@@ -75,10 +85,21 @@ e.Handle(func(now time.Time) error {
 e.Handle(func(now time.Time) error {
 	fmt.Println(e.Data) // map[bb:... bb-1/2:...]
 
+	order := &client.OrderConfig{
+		Pair:      "BTC/USD",
+		BaseCode:  "XBT.F",
+		QuoteCode: "ZUSD",
+		Percent:   0.1,
+	}
+
 	if e.Get("bb") < -2 && e.Get("bb-1/2") < -2 {
-		fmt.Println("buy")
+		order.Side = "buy"
 	} else if e.Get("bb") > 2 && e.Get("bb-1/2") > 2 {
-		fmt.Println("sell")
+		order.Side = "sell"
+	}
+
+	if err := c.MarketOrder(order); err != nil {
+		return err
 	}
 
 	return nil

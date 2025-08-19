@@ -3,10 +3,10 @@ package candle
 import "time"
 
 type Candle struct {
-	Time time.Time
-	Open,
-	High,
-	Low,
-	Close,
+	Time   time.Time
+	Open   float64
+	High   float64
+	Low    float64
+	Close  float64
 	Volume float64
 }
