@@ -65,7 +65,7 @@ func (mlp *MLP) forward(input []float64) ([]float64, []float64) {
 	// Hidden layer
 	hidden := make([]float64, mlp.hiddenSize)
 	for i := 0; i < mlp.hiddenSize; i++ {
-		sum := 0.0
+		sum := 0.
 		for j := 0; j < mlp.inputSize; j++ {
 			sum += input[j] * mlp.weightsInputHidden[j][i]
 		}
@@ -75,7 +75,7 @@ func (mlp *MLP) forward(input []float64) ([]float64, []float64) {
 	// Output layer
 	output := make([]float64, mlp.outputSize)
 	for i := 0; i < mlp.outputSize; i++ {
-		sum := 0.0
+		sum := 0.
 		for j := 0; j < mlp.hiddenSize; j++ {
 			sum += hidden[j] * mlp.weightsHiddenOutput[j][i]
 		}
@@ -98,7 +98,7 @@ func (mlp *MLP) Train(input []float64, target []float64) {
 	// Calculate hidden errors
 	hiddenErrors := make([]float64, mlp.hiddenSize)
 	for i := range hiddenErrors {
-		sum := 0.0
+		sum := 0.
 		for j := 0; j < mlp.outputSize; j++ {
 			sum += outputErrors[j] * mlp.weightsHiddenOutput[i][j]
 		}
@@ -128,7 +128,7 @@ func (mlp *MLP) Predict(input []float64) []float64 {
 
 // MSE loss
 func mse(predicted, target []float64) float64 {
-	sum := 0.0
+	sum := 0.
 	for i := range predicted {
 		diff := predicted[i] - target[i]
 		sum += diff * diff
@@ -157,7 +157,7 @@ func mse(predicted, target []float64) float64 {
 // 	// Training loop
 // 	epochs := 10000
 // 	for epoch := 1; epoch <= epochs; epoch++ {
-// 		totalLoss := 0.0
+// 		totalLoss := 0.
 // 		for i := range inputs {
 // 			mlp.Train(inputs[i], targets[i])
 // 			pred := mlp.Predict(inputs[i])

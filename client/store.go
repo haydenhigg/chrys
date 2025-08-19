@@ -27,7 +27,7 @@ func (s *Store) TryGetCandlesSince(
 	}
 
 	for i, candle := range candles {
-		if since.Before(candle.Time) {
+		if !candle.Time.Before(since) {
 			return candles[i:], true
 		}
 	}

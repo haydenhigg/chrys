@@ -23,13 +23,14 @@ type Client struct {
 	Fee       float64
 }
 
-func New(connector Connector) *Client {
+func New(connector Connector, fee float64) *Client {
 	return &Client{
 		Connector: connector,
 		Store: &Store{
 			Candles:  map[string]map[time.Duration][]*candle.Candle{},
 			Balances: map[string]float64{},
 		},
+		Fee: fee,
 	}
 }
 
@@ -39,8 +40,11 @@ func NewKraken(key, secret string) (*Client, error) {
 		return nil, err
 	}
 
-	client := New(&connector.Kraken{Key: []byte(key), Secret: decodedSecret})
-	client.Fee = 0.004
+	connector := &connector.Kraken{Key: []byte(key), Secret: decodedSecret}
 
-	return client, nil
+	return New(connector, 0.004), nil
+}
+
+func NewHistorical(dataRoot string, fee float64) *Client {
+	return New(&connector.Historical{DataRoot: dataRoot}, fee)
 }
