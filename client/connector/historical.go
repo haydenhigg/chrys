@@ -57,7 +57,7 @@ func (c *Historical) FetchCandlesSince(
 			high, _ := strconv.ParseFloat(record[2], 64)
 			low, _ := strconv.ParseFloat(record[3], 64)
 			close, _ := strconv.ParseFloat(record[4], 64)
-			volume, _ := strconv.ParseFloat(record[6], 64)
+			volume, _ := strconv.ParseFloat(record[5], 64)
 
 			candles = append(candles, &candle.Candle{
 				Time:   time,

@@ -40,10 +40,10 @@ func main() {
 		zScore := algo.ZScore(algo.Closes(candles))
 
 		order := &client.OrderConfig{
-			Pair:      "BTC/USD",
+			Pair:            "BTC/USD",
 			BaseBalanceKey:  "XBT.F",
 			QuoteBalanceKey: "ZUSD",
-			Percent:   0.1,
+			Percent:         0.1,
 		}
 
 		if zScore < -2 {

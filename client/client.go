@@ -81,7 +81,12 @@ func (c *Client) GetCandles(
 	n int,
 ) ([]*candle.Candle, error) {
 	since := now.Add(time.Duration(-n) * interval)
-	return c.GetCandlesSince(pair, interval, since)
+	candles, err := c.GetCandlesSince(pair, interval, since)
+	if err != nil {
+		return nil, err
+	}
+
+	return candles[:n], nil
 }
 
 // balances
