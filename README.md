@@ -3,9 +3,9 @@ lightweight algorithmic trading framework
 
 ## to-do
 1. change GetCandles to use config like Order
-2. move OrderConfig validation/normalization in another function
-3. backtesting
-4. state management through `algo` subpackage for stateful algos
+2. backtesting
+3. state management through `algo` subpackage for stateful algos
+4. add built-in logging to client
 5. expand MLP implementation
 
 ## usage
@@ -41,18 +41,20 @@ func main() {
 
 		order := &client.OrderConfig{
 			Pair:      "BTC/USD",
-			BaseCode:  "XBT.F",
-			QuoteCode: "ZUSD",
+			BaseBalanceKey:  "XBT.F",
+			QuoteBalanceKey: "ZUSD",
 			Percent:   0.1,
 		}
 
 		if zScore < -2 {
-			order.Side = "buy"
+			order.Side = client.MARKET_BUY
 		} else if zScore > 2 {
-			order.Side = "sell"
+			order.Side = client.MARKET_SELL
+		} else {
+			return nil
 		}
 
-		if err := c.MarketOrder(order); err != nil {
+		if err := c.PlaceOrder(order, now); err != nil {
 			return err
 		}
 
