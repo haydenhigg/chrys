@@ -35,7 +35,7 @@ func (s *Store) TryGetCandlesSince(
 	return nil, false
 }
 
-func (s *Store) TryGetPrice(pair string, now time.Time) (float64, bool) {
+func (s *Store) TryGetPriceAt(pair string, now time.Time) (float64, bool) {
 	price := 0.
 	ok := false
 

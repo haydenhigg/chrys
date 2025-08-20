@@ -6,18 +6,19 @@ import (
 )
 
 type OrderSide string
+
 const (
-	MARKET_BUY OrderSide = "buy"
-	MARKET_SELL = "sell"
+	MARKET_BUY  OrderSide = "buy"
+	MARKET_SELL           = "sell"
 )
 
 type OrderConfig struct {
-	Side     OrderSide
-	Pair     string
+	Side            OrderSide
+	Pair            string
 	BaseBalanceKey  string // for balances
 	QuoteBalanceKey string // for balances
-	Percent  float64
-	IsDryRun bool
+	Percent         float64
+	IsDryRun        bool
 }
 
 func (config *OrderConfig) validatePair() ([2]string, error) {

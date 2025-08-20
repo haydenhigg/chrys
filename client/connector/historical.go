@@ -3,23 +3,23 @@ package connector
 import (
 	"encoding/csv"
 	"fmt"
+	"github.com/haydenhigg/clover/candle"
 	"io"
 	"os"
 	"path/filepath"
-	"github.com/haydenhigg/clover/candle"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
-	"strconv"
 )
 
 const HISTORICAL_FILE_NAME_FORMAT = "%s%s_%d.csv"
 
 type Historical struct {
-	DataRoot  string
+	DataRoot string
 }
 
-func (c *Historical) GetCandlesSince(
+func (c *Historical) FetchCandlesSince(
 	pair string,
 	interval time.Duration,
 	since time.Time,
@@ -77,10 +77,10 @@ func (c *Historical) GetCandlesSince(
 	return candles, nil
 }
 
-func (c *Historical) GetBalances() (map[string]float64, error) {
+func (c *Historical) FetchBalances() (map[string]float64, error) {
 	return map[string]float64{}, nil
 }
 
-func (c *Historical) MarketOrder(side, pair string, quantity float64) error {
+func (c *Historical) PlaceMarketOrder(side, pair string, quantity float64) error {
 	return nil
 }

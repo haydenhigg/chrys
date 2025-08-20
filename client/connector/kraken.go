@@ -139,7 +139,7 @@ func (c *Kraken) private(
 }
 
 // connector functions
-func (c *Kraken) GetCandlesSince(
+func (c *Kraken) FetchCandlesSince(
 	pair string,
 	interval time.Duration,
 	since time.Time,
@@ -196,7 +196,7 @@ func (c *Kraken) GetCandlesSince(
 	return candles, nil
 }
 
-func (c *Kraken) GetBalances() (map[string]float64, error) {
+func (c *Kraken) FetchBalances() (map[string]float64, error) {
 	// make request
 	rawResponse, err := c.private("POST", "/Balance", nil)
 	if err != nil {
@@ -234,7 +234,7 @@ func (c *Kraken) GetBalances() (map[string]float64, error) {
 	return store, nil
 }
 
-func (c *Kraken) MarketOrder(side, pair string, quantity float64) error {
+func (c *Kraken) PlaceMarketOrder(side, pair string, quantity float64) error {
 	// make request
 	rawResponse, err := c.private("POST", "/AddOrder", &Payload{
 		Body: url.Values{
