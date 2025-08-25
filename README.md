@@ -1,7 +1,8 @@
-# clover
+# chrys
 lightweight algorithmic trading framework
 
 ## to-do
+0.5 rename to `chrys` and `Candle` to `Frame` and restructure, move non-caching client logic out and make as many things as possible top-level
 1. change GetCandles to use config like Order
 2. backtesting
 3. state management through `algo` subpackage for stateful algos
@@ -15,9 +16,9 @@ This trades on **BOLL(20, 2)** signals for **1h BTC/USD** using a **10%** fracti
 package main
 
 import (
-	"github.com/haydenhigg/clover/algo"
-	"github.com/haydenhigg/clover/client"
-	"github.com/haydenhigg/clover/pipeline"
+	"github.com/haydenhigg/chrys/algo"
+	"github.com/haydenhigg/chrys/client"
+	"github.com/haydenhigg/chrys/pipeline"
 	"fmt"
 	"os"
 	"time"

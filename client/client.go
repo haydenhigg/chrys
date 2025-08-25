@@ -2,8 +2,8 @@ package client
 
 import (
 	"encoding/base64"
-	"github.com/haydenhigg/clover/candle"
-	"github.com/haydenhigg/clover/client/connector"
+	"github.com/haydenhigg/chrys/candle"
+	"github.com/haydenhigg/chrys/client/connector"
 	"time"
 )
 

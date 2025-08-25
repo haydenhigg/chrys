@@ -1,6 +1,6 @@
 package algo
 
-import "github.com/haydenhigg/clover/candle"
+import "github.com/haydenhigg/chrys/candle"
 
 func Closes(candles []*candle.Candle) []float64 {
 	closes := make([]float64, len(candles))
