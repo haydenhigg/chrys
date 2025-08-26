@@ -1,7 +1,7 @@
 package client
 
 import (
-	"github.com/haydenhigg/chrys/v2"
+	"github.com/haydenhigg/chrys"
 	"time"
 )
 

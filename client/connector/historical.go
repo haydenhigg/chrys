@@ -3,7 +3,7 @@ package connector
 import (
 	"encoding/csv"
 	"fmt"
-	"github.com/haydenhigg/chrys/v2"
+	"github.com/haydenhigg/chrys"
 	"io"
 	"os"
 	"path/filepath"

@@ -2,7 +2,7 @@
 lightweight algorithmic trading framework
 
 ## to-do
-0.5 rename to `chrys` and `Frame` to `Frame` and restructure, move non-caching client logic out and make as many things as possible top-level
+0.5 move non-caching client logic out and make as many things as possible top-level
 1. change GetFrames to use config like Order
 2. backtesting
 3. state management through `algo` subpackage for stateful algos
@@ -16,8 +16,8 @@ This trades on **BOLL(20, 2)** signals for **1h BTC/USD** using a **10%** fracti
 package main
 
 import (
-	"github.com/haydenhigg/chrys/v2/algo"
-	"github.com/haydenhigg/chrys/v2/client"
+	"github.com/haydenhigg/chrys/algo"
+	"github.com/haydenhigg/chrys/client"
 	"fmt"
 	"os"
 	"time"

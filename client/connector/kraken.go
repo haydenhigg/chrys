@@ -7,7 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"github.com/haydenhigg/chrys/v2"
+	"github.com/haydenhigg/chrys"
 	"io"
 	"net/http"
 	"net/url"
