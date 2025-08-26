@@ -57,17 +57,17 @@ func (c *Client) SetFee(fee float64) *Client {
 // frames
 func (c *Client) GetFramesSince(
 	series *chrys.Series,
-	since time.Time,
+	t time.Time,
 ) ([]*chrys.Frame, error) {
-	since = since.Truncate(series.Interval)
+	t = t.Truncate(series.Interval)
 
 	// check store
-	if frames, ok := c.Store.TryGetFramesSince(series, since); ok {
+	if frames, ok := c.Store.TryGetFramesSince(series, t); ok {
 		return frames, nil
 	}
 
 	// retrieve from data source
-	frames, err := c.Connector.FetchFramesSince(series, since)
+	frames, err := c.Connector.FetchFramesSince(series, t)
 	if err != nil {
 		return nil, err
 	}
@@ -79,11 +79,12 @@ func (c *Client) GetFramesSince(
 
 func (c *Client) GetFrames(
 	series *chrys.Series,
-	now time.Time,
+	t time.Time,
 	n int,
 ) ([]*chrys.Frame, error) {
-	since := now.Add(time.Duration(-n) * series.Interval)
-	frames, err := c.GetFramesSince(series, since)
+	t = t.Add(time.Duration(-n) * series.Interval)
+
+	frames, err := c.GetFramesSince(series, t)
 	if err != nil {
 		return nil, err
 	}
@@ -110,17 +111,17 @@ func (c *Client) GetBalances() (map[string]float64, error) {
 }
 
 // ordering
-func (c *Client) PlaceOrder(config *OrderConfig, now time.Time) error {
+func (c *Client) PlaceOrder(config *OrderConfig, t time.Time) error {
 	// normalize config
 	if err := config.normalize(); err != nil {
 		return err
 	}
 
 	// get latest price
-	price, ok := c.Store.TryGetPriceAt(config.Pair.String(), now)
+	price, ok := c.Store.TryGetPriceAt(config.Pair, t)
 	if !ok {
 		series := chrys.NewSeries(config.Pair, time.Minute)
-		frames, err := c.GetFrames(series, now, 1)
+		frames, err := c.GetFrames(series, t, 1)
 		if err != nil {
 			return err
 		}
