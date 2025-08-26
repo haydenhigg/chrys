@@ -7,7 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"github.com/haydenhigg/chrys/candle"
+	"github.com/haydenhigg/chrys"
 	"io"
 	"net/http"
 	"net/url"
@@ -139,11 +139,11 @@ func (c *Kraken) private(
 }
 
 // connector functions
-func (c *Kraken) FetchCandlesSince(
+func (c *Kraken) FetchFramesSince(
 	pair string,
 	interval time.Duration,
 	since time.Time,
-) ([]*candle.Candle, error) {
+) ([]*chrys.Frame, error) {
 	// make request
 	sinceTimestamp := since.Truncate(interval).Unix() - 1
 	rawResponse, err := c.public("GET", "/OHLC", &Payload{
@@ -168,23 +168,23 @@ func (c *Kraken) FetchCandlesSince(
 		return nil, errors.New(response.Errors[0])
 	}
 
-	rawCandles, ok := response.Result[pair]
+	rawFrames, ok := response.Result[pair]
 	if !ok {
-		return nil, errors.New("no candles retrieved for pair")
+		return nil, errors.New("no frames retrieved for pair")
 	}
 
-	// process returned candles
-	candles := []*candle.Candle{}
+	// process returned frames
+	frames := []*chrys.Frame{}
 
-	for _, rawCandle := range rawCandles[:len(rawCandles)-1] {
-		open, _ := strconv.ParseFloat(rawCandle[1].(string), 64)
-		high, _ := strconv.ParseFloat(rawCandle[2].(string), 64)
-		low, _ := strconv.ParseFloat(rawCandle[3].(string), 64)
-		close, _ := strconv.ParseFloat(rawCandle[4].(string), 64)
-		volume, _ := strconv.ParseFloat(rawCandle[6].(string), 64)
+	for _, rawFrame := range rawFrames[:len(rawFrames)-1] {
+		open, _ := strconv.ParseFloat(rawFrame[1].(string), 64)
+		high, _ := strconv.ParseFloat(rawFrame[2].(string), 64)
+		low, _ := strconv.ParseFloat(rawFrame[3].(string), 64)
+		close, _ := strconv.ParseFloat(rawFrame[4].(string), 64)
+		volume, _ := strconv.ParseFloat(rawFrame[6].(string), 64)
 
-		candles = append(candles, &candle.Candle{
-			Time:   time.Unix(int64(rawCandle[0].(float64)), 0),
+		frames = append(frames, &chrys.Frame{
+			Time:   time.Unix(int64(rawFrame[0].(float64)), 0),
 			Open:   open,
 			High:   high,
 			Low:    low,
@@ -193,7 +193,7 @@ func (c *Kraken) FetchCandlesSince(
 		})
 	}
 
-	return candles, nil
+	return frames, nil
 }
 
 func (c *Kraken) FetchBalances() (map[string]float64, error) {

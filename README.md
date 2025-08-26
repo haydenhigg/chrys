@@ -2,8 +2,8 @@
 lightweight algorithmic trading framework
 
 ## to-do
-0.5 rename to `chrys` and `Candle` to `Frame` and restructure, move non-caching client logic out and make as many things as possible top-level
-1. change GetCandles to use config like Order
+0.5 rename to `chrys` and `Frame` to `Frame` and restructure, move non-caching client logic out and make as many things as possible top-level
+1. change GetFrames to use config like Order
 2. backtesting
 3. state management through `algo` subpackage for stateful algos
 4. add built-in logging to client
@@ -33,12 +33,12 @@ func main() {
 
 	// set up pipeline
 	p := pipeline.New().AddStage(func(now time.Time) error {
-		candles, err := c.GetCandles("BTC/USD", time.Hour, now, 20)
+		frames, err := c.GetFrames("BTC/USD", time.Hour, now, 20)
 		if err != nil {
 			return err
 		}
 
-		zScore := algo.ZScore(algo.Closes(candles))
+		zScore := algo.ZScore(algo.Closes(frames))
 
 		order := &client.OrderConfig{
 			Pair:            "BTC/USD",
@@ -74,12 +74,12 @@ For more complex use cases, you'll potentially want to split the signal and orde
 ```go
 p := pipeline.New()
 p.AddStage(func(now time.Time) error {
-	candles, err := c.GetCandles("BTC/USD", time.Hour, now, 20)
+	frames, err := c.GetFrames("BTC/USD", time.Hour, now, 20)
 	if err != nil {
 		return err
 	}
 
-	closes := algo.Closes(candles)
+	closes := algo.Closes(frames)
 
 	p.Set("bb", algo.ZScore(closes))
 	p.Set("bb-1/2", algo.ZScore(closes[10:]))

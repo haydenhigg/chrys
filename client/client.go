@@ -2,17 +2,17 @@ package client
 
 import (
 	"encoding/base64"
-	"github.com/haydenhigg/chrys/candle"
+	"github.com/haydenhigg/chrys"
 	"github.com/haydenhigg/chrys/client/connector"
 	"time"
 )
 
 type Connector interface {
-	FetchCandlesSince(
+	FetchFramesSince(
 		pair string,
 		interval time.Duration,
 		since time.Time,
-	) ([]*candle.Candle, error)
+	) ([]*chrys.Frame, error)
 	FetchBalances() (map[string]float64, error)
 	PlaceMarketOrder(side, pair string, quantity float64) error
 }
@@ -28,7 +28,7 @@ func New(connector Connector, fee float64) *Client {
 	return &Client{
 		Connector: connector,
 		Store: &Store{
-			Candles:  map[string]map[time.Duration][]*candle.Candle{},
+			Frames:  map[string]map[time.Duration][]*chrys.Frame{},
 			Balances: map[string]float64{},
 		},
 		Fee: fee,
@@ -50,43 +50,43 @@ func NewHistorical(dataRoot string, fee float64) *Client {
 	return New(&connector.Historical{DataRoot: dataRoot}, fee)
 }
 
-// candles
-func (c *Client) GetCandlesSince(
+// frames
+func (c *Client) GetFramesSince(
 	pair string,
 	interval time.Duration,
 	since time.Time,
-) ([]*candle.Candle, error) {
+) ([]*chrys.Frame, error) {
 	since = since.Truncate(interval)
 
 	// check store
-	if candles, ok := c.Store.TryGetCandlesSince(pair, interval, since); ok {
-		return candles, nil
+	if frames, ok := c.Store.TryGetFramesSince(pair, interval, since); ok {
+		return frames, nil
 	}
 
 	// retrieve from data source
-	candles, err := c.Connector.FetchCandlesSince(pair, interval, since)
+	frames, err := c.Connector.FetchFramesSince(pair, interval, since)
 	if err != nil {
 		return nil, err
 	}
 
-	c.Store.Candles[pair][interval] = candles
+	c.Store.Frames[pair][interval] = frames
 
-	return candles, nil
+	return frames, nil
 }
 
-func (c *Client) GetCandles(
+func (c *Client) GetFrames(
 	pair string,
 	interval time.Duration,
 	now time.Time,
 	n int,
-) ([]*candle.Candle, error) {
+) ([]*chrys.Frame, error) {
 	since := now.Add(time.Duration(-n) * interval)
-	candles, err := c.GetCandlesSince(pair, interval, since)
+	frames, err := c.GetFramesSince(pair, interval, since)
 	if err != nil {
 		return nil, err
 	}
 
-	return candles[:n], nil
+	return frames[:n], nil
 }
 
 // balances
@@ -117,12 +117,12 @@ func (c *Client) PlaceOrder(config *OrderConfig, now time.Time) error {
 	// get latest price
 	price, ok := c.Store.TryGetPriceAt(config.Pair, now)
 	if !ok {
-		candles, err := c.GetCandles(config.Pair, time.Minute, now, 1)
+		frames, err := c.GetFrames(config.Pair, time.Minute, now, 1)
 		if err != nil {
 			return err
 		}
 
-		price = candles[len(candles)-1].Close
+		price = frames[len(frames)-1].Close
 	}
 
 	// determine quantities

@@ -1,11 +1,11 @@
 package algo
 
-import "github.com/haydenhigg/chrys/candle"
+import "github.com/haydenhigg/chrys"
 
-func Closes(candles []*candle.Candle) []float64 {
-	closes := make([]float64, len(candles))
-	for i, candle := range candles {
-		closes[i] = candle.Close
+func Closes(frames []*chrys.Frame) []float64 {
+	closes := make([]float64, len(frames))
+	for i, frame := range frames {
+		closes[i] = frame.Close
 	}
 
 	return closes

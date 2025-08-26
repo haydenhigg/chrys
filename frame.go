@@ -1,8 +1,8 @@
-package candle
+package chrys
 
 import "time"
 
-type Candle struct {
+type Frame struct {
 	Time   time.Time
 	Open   float64
 	High   float64

@@ -3,7 +3,7 @@ package connector
 import (
 	"encoding/csv"
 	"fmt"
-	"github.com/haydenhigg/chrys/candle"
+	"github.com/haydenhigg/chrys"
 	"io"
 	"os"
 	"path/filepath"
@@ -19,11 +19,11 @@ type Historical struct {
 	DataRoot string
 }
 
-func (c *Historical) FetchCandlesSince(
+func (c *Historical) FetchFramesSince(
 	pair string,
 	interval time.Duration,
 	since time.Time,
-) ([]*candle.Candle, error) {
+) ([]*chrys.Frame, error) {
 	symbols := strings.SplitN(pair, "/", 2)
 	filePath := filepath.Join(c.DataRoot, fmt.Sprintf(
 		HISTORICAL_FILE_NAME_FORMAT,
@@ -38,7 +38,7 @@ func (c *Historical) FetchCandlesSince(
 	}
 	defer file.Close()
 
-	candles := []*candle.Candle{}
+	frames := []*chrys.Frame{}
 
 	reader := csv.NewReader(file)
 	for {
@@ -46,7 +46,7 @@ func (c *Historical) FetchCandlesSince(
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return candles, err
+			return frames, err
 		}
 
 		timeEpoch, _ := strconv.ParseInt(record[0], 10, 64)
@@ -59,7 +59,7 @@ func (c *Historical) FetchCandlesSince(
 			close, _ := strconv.ParseFloat(record[4], 64)
 			volume, _ := strconv.ParseFloat(record[5], 64)
 
-			candles = append(candles, &candle.Candle{
+			frames = append(frames, &chrys.Frame{
 				Time:   time,
 				Open:   open,
 				High:   high,
@@ -70,11 +70,11 @@ func (c *Historical) FetchCandlesSince(
 		}
 	}
 
-	slices.SortFunc(candles, func(a, b *candle.Candle) int {
+	slices.SortFunc(frames, func(a, b *chrys.Frame) int {
 		return a.Time.Compare(b.Time)
 	})
 
-	return candles, nil
+	return frames, nil
 }
 
 func (c *Historical) FetchBalances() (map[string]float64, error) {

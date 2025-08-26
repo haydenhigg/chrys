@@ -1,34 +1,36 @@
 package client
 
 import (
-	"github.com/haydenhigg/chrys/candle"
+	"github.com/haydenhigg/chrys"
 	"time"
 )
 
+type Pair = string
+
 type Store struct {
-	Candles  map[string]map[time.Duration][]*candle.Candle
+	Frames  map[Pair]map[time.Duration][]*chrys.Frame
 	Balances map[string]float64
 }
 
-func (s *Store) TryGetCandlesSince(
+func (s *Store) TryGetFramesSince(
 	pair string,
 	interval time.Duration,
 	since time.Time,
-) ([]*candle.Candle, bool) {
+) ([]*chrys.Frame, bool) {
 	since = since.Truncate(interval)
 
-	if _, ok := s.Candles[pair]; !ok {
-		s.Candles[pair] = map[time.Duration][]*candle.Candle{}
+	if _, ok := s.Frames[pair]; !ok {
+		s.Frames[pair] = map[time.Duration][]*chrys.Frame{}
 	}
 
-	candles, ok := s.Candles[pair][interval]
-	if !ok || !candles[0].Time.Before(since.Add(interval)) {
+	frames, ok := s.Frames[pair][interval]
+	if !ok || !frames[0].Time.Before(since.Add(interval)) {
 		return nil, false
 	}
 
-	for i, candle := range candles {
-		if !candle.Time.Before(since) {
-			return candles[i:], true
+	for i, frame := range frames {
+		if !frame.Time.Before(since) {
+			return frames[i:], true
 		}
 	}
 
@@ -39,13 +41,13 @@ func (s *Store) TryGetPriceAt(pair string, now time.Time) (float64, bool) {
 	price := 0.
 	ok := false
 
-	if intervalCandles, ok := s.Candles[pair]; ok {
-		for interval, candles := range intervalCandles {
-			latestCandleTime := now.Truncate(interval).Add(-interval)
+	if intervalFrames, ok := s.Frames[pair]; ok {
+		for interval, frames := range intervalFrames {
+			latestFrameTime := now.Truncate(interval).Add(-interval)
 
-			for _, candle := range candles {
-				if candle.Time.Equal(latestCandleTime) {
-					price = candle.Close
+			for _, frame := range frames {
+				if frame.Time.Equal(latestFrameTime) {
+					price = frame.Close
 					ok = true
 
 					break
