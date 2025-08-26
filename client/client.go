@@ -119,7 +119,7 @@ func (c *Client) PlaceOrder(config *OrderConfig, now time.Time) error {
 	// get latest price
 	price, ok := c.Store.TryGetPriceAt(config.Pair.String(), now)
 	if !ok {
-		series := chrys.NewSeries(config.Pair.String(), time.Minute)
+		series := chrys.NewSeries(config.Pair, time.Minute)
 		frames, err := c.GetFrames(series, now, 1)
 		if err != nil {
 			return err
