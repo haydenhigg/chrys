@@ -8,10 +8,17 @@ lightweight algorithmic trading framework
 - *chrys.Pipeline*: a stateful function pipeline
 
 ## to-do
-0.5 continue tidying
-1. change GetFrames to use config like Order
-2. backtesting
-3. state management through `algo` subpackage for stateful algos
+- move balance pair properties out of `chrys.Pair` and into `client.OrderConfig` as `BalancePair *chrys.Pair`
+- make `chrys.Feed` use full `chrys.Pair` instead of just `chrys.Pair.String()`
+- use `chrys.Feed`s as the key for `client.Store.Frames`
+- pass `chrys.Feed`s all the way down into Connector functions too
+- use `IsLive` instead of `isDryRun` in `client.OrderConfig`
+- encapsulate client GetFrames/GetFramesSince calls inside Pipeline?
+
+## upcoming
+1. tidying and API improvements
+2. backtesting components
+3. algo state management components
 4. add built-in logging to client
 5. expand MLP implementation
 
@@ -39,11 +46,15 @@ func main() {
 
 	pair := chrys.NewPair("BTC", "USD").SetBalancePair("XBT.F", "ZUSD")
 	feed := chrys.NewFeed(pair.String(), time.Hour)
-
 	orderConfig := &client.OrderConfig{
 		Pair:    pair,
 		Percent: 0.1,
 	}
+
+	// order := chrys.NewOrder(&client.OrderConfig{
+	// 	Pair: pair,
+	// 	BalancePair: chrys.NewPair("XBT.F", "ZUSD"),
+	// })
 
 	// set up pipeline
 	pipeline := chrys.NewPipeline().AddStage(func(now time.Time) error {

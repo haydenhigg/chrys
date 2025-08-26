@@ -10,7 +10,10 @@ type Pipeline struct {
 }
 
 func NewPipeline() *Pipeline {
-	return &Pipeline{Stages: []Stage{}, Data: map[string]float64{}}
+	return &Pipeline{
+		Stages: []Stage{},
+		Data: map[string]float64{},
+	}
 }
 
 func (p *Pipeline) AddStage(handler Stage) *Pipeline {
@@ -18,12 +21,12 @@ func (p *Pipeline) AddStage(handler Stage) *Pipeline {
 	return p
 }
 
-func (p *Pipeline) Get(k string) float64 {
-	return p.Data[k]
-}
-
 func (p *Pipeline) Set(k string, v float64) {
 	p.Data[k] = v
+}
+
+func (p *Pipeline) Get(k string) float64 {
+	return p.Data[k]
 }
 
 func (p *Pipeline) Run(now time.Time) error {
