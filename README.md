@@ -8,10 +8,7 @@ lightweight algorithmic trading framework
 - **chrys.Engine**: a stateful function pipeline
 
 ## to-do
-- make `chrys.Series` use full `chrys.Pair` instead of just `chrys.Pair.String()`
-- pass `chrys.Series`s all the way down into Connector functions too
 - use `IsLive` instead of `isDryRun` in `client.OrderConfig`
-- encapsulate client GetFrames/GetFramesSince calls inside Pipeline?
 
 ## upcoming
 1. tidying and API improvements

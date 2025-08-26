@@ -140,16 +140,15 @@ func (c *Kraken) private(
 
 // connector functions
 func (c *Kraken) FetchFramesSince(
-	pair string,
-	interval time.Duration,
+	series *chrys.Series,
 	since time.Time,
 ) ([]*chrys.Frame, error) {
 	// make request
-	sinceTimestamp := since.Truncate(interval).Unix() - 1
+	sinceTimestamp := since.Truncate(series.Interval).Unix() - 1
 	rawResponse, err := c.public("GET", "/OHLC", &Payload{
 		Query: url.Values{
-			"pair":     {pair},
-			"interval": {strconv.Itoa(int(interval.Minutes()))},
+			"pair":     {series.Pair.String()},
+			"interval": {strconv.Itoa(int(series.Interval.Minutes()))},
 			"since":    {strconv.FormatInt(sinceTimestamp, 10)},
 		},
 	})
@@ -168,7 +167,7 @@ func (c *Kraken) FetchFramesSince(
 		return nil, errors.New(response.Errors[0])
 	}
 
-	rawFrames, ok := response.Result[pair]
+	rawFrames, ok := response.Result[series.Pair.String()]
 	if !ok {
 		return nil, errors.New("no frames retrieved for pair")
 	}

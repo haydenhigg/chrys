@@ -20,16 +20,14 @@ type Historical struct {
 }
 
 func (c *Historical) FetchFramesSince(
-	pair string,
-	interval time.Duration,
+	series *chrys.Series,
 	since time.Time,
 ) ([]*chrys.Frame, error) {
-	symbols := strings.SplitN(pair, "/", 2)
 	filePath := filepath.Join(c.DataRoot, fmt.Sprintf(
 		HISTORICAL_FILE_NAME_FORMAT,
-		symbols[0],
-		symbols[1],
-		int(interval.Minutes()),
+		series.Pair.Base,
+		series.Pair.Quote,
+		int(series.Interval.Minutes()),
 	))
 
 	file, err := os.Open(filePath)

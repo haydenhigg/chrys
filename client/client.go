@@ -9,8 +9,7 @@ import (
 
 type Connector interface {
 	FetchFramesSince(
-		pair string,
-		interval time.Duration,
+		series *chrys.Series,
 		since time.Time,
 	) ([]*chrys.Frame, error)
 	FetchBalances() (map[string]float64, error)
@@ -24,14 +23,13 @@ type Client struct {
 }
 
 // initializers
-func New(connector Connector, fee float64) *Client {
+func New(connector Connector) *Client {
 	return &Client{
 		Connector: connector,
 		Store: &Store{
 			Frames:   map[string]map[time.Duration][]*chrys.Frame{},
 			Balances: map[string]float64{},
 		},
-		Fee: fee,
 	}
 }
 
@@ -43,11 +41,17 @@ func NewKraken(key, secret string) (*Client, error) {
 
 	connector := &connector.Kraken{Key: []byte(key), Secret: decodedSecret}
 
-	return New(connector, 0.004), nil
+	return New(connector).SetFee(0.004), nil
 }
 
 func NewHistorical(dataRoot string, fee float64) *Client {
-	return New(&connector.Historical{DataRoot: dataRoot}, fee)
+	return New(&connector.Historical{DataRoot: dataRoot}).SetFee(fee)
+}
+
+// generic setters
+func (c *Client) SetFee(fee float64) *Client {
+	c.Fee = fee
+	return c
 }
 
 // frames
@@ -63,11 +67,7 @@ func (c *Client) GetFramesSince(
 	}
 
 	// retrieve from data source
-	frames, err := c.Connector.FetchFramesSince(
-		series.Pair.String(),
-		series.Interval,
-		since,
-	)
+	frames, err := c.Connector.FetchFramesSince(series, since)
 	if err != nil {
 		return nil, err
 	}
