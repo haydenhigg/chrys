@@ -3,16 +3,17 @@ package client
 import "github.com/haydenhigg/chrys"
 
 type OrderSide string
+
 const (
 	MARKET_BUY  OrderSide = "buy"
 	MARKET_SELL           = "sell"
 )
 
 type OrderConfig struct {
-	Side        OrderSide
-	Pair        *chrys.Pair
-	Percent     float64
-	IsDryRun    bool
+	Side     OrderSide
+	Pair     *chrys.Pair
+	Percent  float64
+	IsDryRun bool
 }
 
 func (config *OrderConfig) validatePercent() error {

@@ -9,7 +9,7 @@ type Feed struct {
 
 func NewFeed(symbol string, interval time.Duration) Feed {
 	return Feed{
-		Symbol: symbol,
+		Symbol:   symbol,
 		Interval: interval,
 	}
 }

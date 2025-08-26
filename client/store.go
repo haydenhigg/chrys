@@ -12,7 +12,7 @@ type Store struct {
 }
 
 func (store *Store) TryGetFramesSince(
-	feed  chrys.Feed,
+	feed chrys.Feed,
 	since time.Time,
 ) ([]*chrys.Frame, bool) {
 	since = since.Truncate(feed.Interval)

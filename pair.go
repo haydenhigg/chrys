@@ -11,9 +11,9 @@ type Pair struct {
 
 func NewPair(base, quote string) *Pair {
 	return &Pair{
-		Base: base,
-		Quote: quote,
-		BalanceBase: base,
+		Base:         base,
+		Quote:        quote,
+		BalanceBase:  base,
 		BalanceQuote: quote,
 	}
 }
