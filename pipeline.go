@@ -12,7 +12,7 @@ type Pipeline struct {
 func NewPipeline() *Pipeline {
 	return &Pipeline{
 		Stages: []Stage{},
-		Data: map[string]float64{},
+		Data:   map[string]float64{},
 	}
 }
 

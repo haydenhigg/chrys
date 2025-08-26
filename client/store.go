@@ -6,23 +6,22 @@ import (
 )
 
 type Store struct {
-	// TODO: use chrys.Feed as the key for Frames
 	Frames   map[string]map[time.Duration][]*chrys.Frame
 	Balances map[string]float64
 }
 
 func (store *Store) TryGetFramesSince(
-	feed chrys.Feed,
+	series *chrys.Series,
 	since time.Time,
 ) ([]*chrys.Frame, bool) {
-	since = since.Truncate(feed.Interval)
+	since = since.Truncate(series.Interval)
 
-	if _, ok := store.Frames[feed.Symbol]; !ok {
-		store.Frames[feed.Symbol] = map[time.Duration][]*chrys.Frame{}
+	if _, ok := store.Frames[series.Symbol]; !ok {
+		store.Frames[series.Symbol] = map[time.Duration][]*chrys.Frame{}
 	}
 
-	frames, ok := store.Frames[feed.Symbol][feed.Interval]
-	if !ok || !frames[0].Time.Before(since.Add(feed.Interval)) {
+	frames, ok := store.Frames[series.Pair.String()][series.Interval]
+	if !ok || !frames[0].Time.Before(since.Add(series.Interval)) {
 		return nil, false
 	}
 

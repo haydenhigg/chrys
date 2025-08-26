@@ -52,38 +52,38 @@ func NewHistorical(dataRoot string, fee float64) *Client {
 
 // frames
 func (c *Client) GetFramesSince(
-	feed chrys.Feed,
+	series *chrys.Series,
 	since time.Time,
 ) ([]*chrys.Frame, error) {
-	since = since.Truncate(feed.Interval)
+	since = since.Truncate(series.Interval)
 
 	// check store
-	if frames, ok := c.Store.TryGetFramesSince(feed, since); ok {
+	if frames, ok := c.Store.TryGetFramesSince(series, since); ok {
 		return frames, nil
 	}
 
 	// retrieve from data source
 	frames, err := c.Connector.FetchFramesSince(
-		feed.Symbol,
-		feed.Interval,
+		series.Pair.String(),
+		series.Interval,
 		since,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	c.Store.Frames[feed.Symbol][feed.Interval] = frames
+	c.Store.Frames[series.Pair.String()][series.Interval] = frames
 
 	return frames, nil
 }
 
 func (c *Client) GetFrames(
-	feed chrys.Feed,
+	series *chrys.Series,
 	now time.Time,
 	n int,
 ) ([]*chrys.Frame, error) {
-	since := now.Add(time.Duration(-n) * feed.Interval)
-	frames, err := c.GetFramesSince(feed, since)
+	since := now.Add(time.Duration(-n) * series.Interval)
+	frames, err := c.GetFramesSince(series, since)
 	if err != nil {
 		return nil, err
 	}
@@ -119,8 +119,8 @@ func (c *Client) PlaceOrder(config *OrderConfig, now time.Time) error {
 	// get latest price
 	price, ok := c.Store.TryGetPriceAt(config.Pair.String(), now)
 	if !ok {
-		feed := chrys.NewFeed(config.Pair.String(), time.Minute)
-		frames, err := c.GetFrames(feed, now, 1)
+		series := chrys.NewSeries(config.Pair.String(), time.Minute)
+		frames, err := c.GetFrames(series, now, 1)
 		if err != nil {
 			return err
 		}
@@ -138,10 +138,10 @@ func (c *Client) PlaceOrder(config *OrderConfig, now time.Time) error {
 
 	switch config.Side {
 	case MARKET_BUY:
-		quoteQuantity = config.Percent * balances[config.Pair.BalanceQuote]
+		quoteQuantity = config.Percent * balances[config.Pair.QuoteCode]
 		baseQuantity = quoteQuantity / price
 	case MARKET_SELL:
-		baseQuantity = config.Percent * balances[config.Pair.BalanceBase]
+		baseQuantity = config.Percent * balances[config.Pair.BaseCode]
 		quoteQuantity = baseQuantity * price
 	}
 
@@ -158,11 +158,11 @@ func (c *Client) PlaceOrder(config *OrderConfig, now time.Time) error {
 
 	switch config.Side {
 	case MARKET_BUY:
-		c.Store.Balances[config.Pair.BalanceQuote] -= quoteQuantity
-		c.Store.Balances[config.Pair.BalanceBase] += baseQuantity * invFee
+		c.Store.Balances[config.Pair.QuoteCode] -= quoteQuantity
+		c.Store.Balances[config.Pair.BaseCode] += baseQuantity * invFee
 	case MARKET_SELL:
-		c.Store.Balances[config.Pair.BalanceBase] -= baseQuantity
-		c.Store.Balances[config.Pair.BalanceQuote] += quoteQuantity * invFee
+		c.Store.Balances[config.Pair.BaseCode] -= baseQuantity
+		c.Store.Balances[config.Pair.QuoteCode] += quoteQuantity * invFee
 	}
 
 	return nil

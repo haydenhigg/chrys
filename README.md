@@ -2,16 +2,14 @@
 lightweight algorithmic trading framework
 
 ## concepts
-- *chrys.Frame*: a frame of TOHLCV data
-- *chrys.Pair*: a tradeable pair
-- *chrys.Feed*: a symbol and an interval
-- *chrys.Pipeline*: a stateful function pipeline
+- **chrys.Frame**: a frame of TOHLCV data
+- **chrys.Pair**: a tradeable pair
+- **chrys.Series**: a `chrys.Pair` and an interval
+- **chrys.Engine**: a stateful function pipeline
 
 ## to-do
-- move balance pair properties out of `chrys.Pair` and into `client.OrderConfig` as `BalancePair *chrys.Pair`
-- make `chrys.Feed` use full `chrys.Pair` instead of just `chrys.Pair.String()`
-- use `chrys.Feed`s as the key for `client.Store.Frames`
-- pass `chrys.Feed`s all the way down into Connector functions too
+- make `chrys.Series` use full `chrys.Pair` instead of just `chrys.Pair.String()`
+- pass `chrys.Series`s all the way down into Connector functions too
 - use `IsLive` instead of `isDryRun` in `client.OrderConfig`
 - encapsulate client GetFrames/GetFramesSince calls inside Pipeline?
 
@@ -44,8 +42,8 @@ func main() {
 		panic(err)
 	}
 
-	pair := chrys.NewPair("BTC", "USD").SetBalancePair("XBT.F", "ZUSD")
-	feed := chrys.NewFeed(pair.String(), time.Hour)
+	pair := chrys.NewPair("BTC", "USD").SetCodes("XBT.F", "ZUSD")
+	series := chrys.NewSeries(pair.String(), time.Hour)
 	orderConfig := &client.OrderConfig{
 		Pair:    pair,
 		Percent: 0.1,
@@ -58,7 +56,7 @@ func main() {
 
 	// set up pipeline
 	pipeline := chrys.NewPipeline().AddStage(func(now time.Time) error {
-		frames, err := c.GetFrames(feed, now, 20)
+		frames, err := c.GetFrames(series, now, 20)
 		if err != nil {
 			return err
 		}
@@ -92,7 +90,7 @@ For more complex use cases, you'll potentially want to split the signal and orde
 ```go
 pipeline := chrys.NewPipeline()
 pipeline.AddStage(func(now time.Time) error {
-	frames, err := c.GetFrames(feed, now, 20)
+	frames, err := c.GetFrames(series, now, 20)
 	if err != nil {
 		return err
 	}

@@ -3,31 +3,47 @@ package chrys
 import "fmt"
 
 type Pair struct {
-	Base         string
-	Quote        string
-	BalanceBase  string
-	BalanceQuote string
+	Base      string
+	Quote     string
+	BaseCode  string
+	QuoteCode string
 }
 
 func NewPair(base, quote string) *Pair {
 	return &Pair{
-		Base:         base,
-		Quote:        quote,
-		BalanceBase:  base,
-		BalanceQuote: quote,
+		Base:      base,
+		Quote:     quote,
+		BaseCode:  base,
+		QuoteCode: quote,
 	}
 }
 
-func (pair *Pair) SetPair(base, quote string) *Pair {
+func (pair *Pair) SetBase(base string) *Pair {
 	pair.Base = base
+	return pair
+}
+
+func (pair *Pair) SetQuote(quote string) *Pair {
 	pair.Quote = quote
 	return pair
 }
 
-func (pair *Pair) SetBalancePair(base, quote string) *Pair {
-	pair.BalanceBase = base
-	pair.BalanceQuote = quote
+func (pair *Pair) Set(base, quote string) *Pair {
+	return pair.SetBase(base).SetQuote(quote)
+}
+
+func (pair *Pair) SetBaseCode(baseCode string) *Pair {
+	pair.BaseCode = baseCode
 	return pair
+}
+
+func (pair *Pair) SetQuoteCode(quoteCode string) *Pair {
+	pair.QuoteCode = quoteCode
+	return pair
+}
+
+func (pair *Pair) SetCodes(baseCode, quoteCode string) *Pair {
+	return pair.SetBaseCode(baseCode).SetQuoteCode(quoteCode)
 }
 
 func (pair *Pair) String() string {
