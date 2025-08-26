@@ -78,11 +78,11 @@ func (c *Client) GetFramesSince(
 }
 
 func (c *Client) GetFrames(
-	feed *chrys.feed,
+	feed chrys.Feed,
 	now time.Time,
 	n int,
 ) ([]*chrys.Frame, error) {
-	since := now.Add(time.Duration(-n) * interval)
+	since := now.Add(time.Duration(-n) * feed.Interval)
 	frames, err := c.GetFramesSince(feed, since)
 	if err != nil {
 		return nil, err
