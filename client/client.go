@@ -2,8 +2,8 @@ package client
 
 import (
 	"encoding/base64"
-	"github.com/haydenhigg/chrys"
-	"github.com/haydenhigg/chrys/client/connector"
+	"chrys"
+	"chrys/client/connector"
 	"time"
 )
 

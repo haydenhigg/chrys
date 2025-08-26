@@ -9,7 +9,7 @@ type Pipeline struct {
 	Data   map[string]float64
 }
 
-func New() *Pipeline {
+func NewPipeline() *Pipeline {
 	return &Pipeline{Stages: []Stage{}, Data: map[string]float64{}}
 }
 

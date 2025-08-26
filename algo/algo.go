@@ -1,6 +1,6 @@
 package algo
 
-import "github.com/haydenhigg/chrys"
+import "chrys"
 
 func Closes(frames []*chrys.Frame) []float64 {
 	closes := make([]float64, len(frames))

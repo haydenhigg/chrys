@@ -16,9 +16,8 @@ This trades on **BOLL(20, 2)** signals for **1h BTC/USD** using a **10%** fracti
 package main
 
 import (
-	"github.com/haydenhigg/chrys/algo"
-	"github.com/haydenhigg/chrys/client"
-	"github.com/haydenhigg/chrys/pipeline"
+	"chrys/algo"
+	"chrys/client"
 	"fmt"
 	"os"
 	"time"
@@ -31,14 +30,28 @@ func main() {
 		panic(err)
 	}
 
+	// future API?
+	// -----------
+	// strategy := &chrys.Config{
+	// 	Pair: "BTC/USD",
+	// 	Interval: time.Hour,
+	// 	BaseBalanceKey: "XBT.F",
+	// 	QuoteBalanceKey: "ZUSD",
+	// 	OrderPercent: 0.1,
+	// }
+
 	// set up pipeline
-	p := pipeline.New().AddStage(func(now time.Time) error {
+	pipeline := chrys.NewPipeline().AddStage(func(now time.Time) error {
 		frames, err := c.GetFrames("BTC/USD", time.Hour, now, 20)
 		if err != nil {
 			return err
 		}
 
+		frames, err := frames
+
 		zScore := algo.ZScore(algo.Closes(frames))
+
+		client.MarketBuy("BTC/USD", 0.1)
 
 		order := &client.OrderConfig{
 			Pair:            "BTC/USD",
@@ -63,7 +76,7 @@ func main() {
 	})
 
 	// run
-	if err := p.Run(time.Now()); err != nil {
+	if err := pipeline.Run(time.Now()); err != nil {
 		panic(err)
 	}
 }
@@ -72,8 +85,8 @@ func main() {
 For more complex use cases, you'll potentially want to split the signal and order logic into separate stages. You can pass data down through the stages chain like so:
 
 ```go
-p := pipeline.New()
-p.AddStage(func(now time.Time) error {
+pipeline := chrys.NewPipeline()
+pipeline.AddStage(func(now time.Time) error {
 	frames, err := c.GetFrames("BTC/USD", time.Hour, now, 20)
 	if err != nil {
 		return err
@@ -81,19 +94,19 @@ p.AddStage(func(now time.Time) error {
 
 	closes := algo.Closes(frames)
 
-	p.Set("bb", algo.ZScore(closes))
-	p.Set("bb-1/2", algo.ZScore(closes[10:]))
+	pipeline.Set("bb", algo.ZScore(closes))
+	pipeline.Set("bb-1/2", algo.ZScore(closes[10:]))
 
 	return nil
 })
-p.AddStage(func(now time.Time) error {
-	fmt.Println(p.Data) // map[bb:... bb-1/2:...]
+pipeline.AddStage(func(now time.Time) error {
+	fmt.Println(pipeline.Data) // map[bb:... bb-1/2:...]
 
 	// ...
 
-	if p.Get("bb") < -2 && p.Get("bb-1/2") < -2 {
+	if pipeline.Get("bb") < -2 && pipeline.Get("bb-1/2") < -2 {
 		order.Side = "buy"
-	} else if p.Get("bb") > 2 && p.Get("bb-1/2") > 2 {
+	} else if pipeline.Get("bb") > 2 && pipeline.Get("bb-1/2") > 2 {
 		order.Side = "sell"
 	}
 
