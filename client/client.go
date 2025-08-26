@@ -28,7 +28,7 @@ func New(connector Connector, fee float64) *Client {
 	return &Client{
 		Connector: connector,
 		Store: &Store{
-			Frames:  map[string]map[time.Duration][]*chrys.Frame{},
+			Frames:   map[string]map[time.Duration][]*chrys.Frame{},
 			Balances: map[string]float64{},
 		},
 		Fee: fee,
@@ -52,19 +52,18 @@ func NewHistorical(dataRoot string, fee float64) *Client {
 
 // frames
 func (c *Client) GetFramesSince(
-	pair string,
-	interval time.Duration,
+	feed chrys.Feed,
 	since time.Time,
 ) ([]*chrys.Frame, error) {
-	since = since.Truncate(interval)
+	since = since.Truncate(feed.Interval)
 
 	// check store
-	if frames, ok := c.Store.TryGetFramesSince(pair, interval, since); ok {
+	if frames, ok := c.Store.TryGetFramesSince(feed, since); ok {
 		return frames, nil
 	}
 
 	// retrieve from data source
-	frames, err := c.Connector.FetchFramesSince(pair, interval, since)
+	frames, err := c.Connector.FetchFramesSince(feed.Pair, feed.Interval, since)
 	if err != nil {
 		return nil, err
 	}
@@ -75,13 +74,12 @@ func (c *Client) GetFramesSince(
 }
 
 func (c *Client) GetFrames(
-	pair string,
-	interval time.Duration,
+	feed *chrys.feed,
 	now time.Time,
 	n int,
 ) ([]*chrys.Frame, error) {
 	since := now.Add(time.Duration(-n) * interval)
-	frames, err := c.GetFramesSince(pair, interval, since)
+	frames, err := c.GetFramesSince(feed, since)
 	if err != nil {
 		return nil, err
 	}
@@ -115,9 +113,10 @@ func (c *Client) PlaceOrder(config *OrderConfig, now time.Time) error {
 	}
 
 	// get latest price
-	price, ok := c.Store.TryGetPriceAt(config.Pair, now)
+	price, ok := c.Store.TryGetPriceAt(config.Pair.String(), now)
 	if !ok {
-		frames, err := c.GetFrames(config.Pair, time.Minute, now, 1)
+		feed := chrys.NewFeed(config.Pair.String(), time.Minute)
+		frames, err := c.GetFrames(feed, now, 1)
 		if err != nil {
 			return err
 		}
@@ -144,7 +143,7 @@ func (c *Client) PlaceOrder(config *OrderConfig, now time.Time) error {
 
 	// place order
 	if !config.IsDryRun {
-		err = c.Connector.PlaceMarketOrder(string(config.Side), config.Pair, baseQuantity)
+		err = c.Connector.PlaceMarketOrder(string(config.Side), config.Pair.String(), baseQuantity)
 		if err != nil {
 			return err
 		}
