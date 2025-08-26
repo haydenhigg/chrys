@@ -16,8 +16,8 @@ func (store *Store) TryGetFramesSince(
 ) ([]*chrys.Frame, bool) {
 	since = since.Truncate(series.Interval)
 
-	if _, ok := store.Frames[series.Symbol]; !ok {
-		store.Frames[series.Symbol] = map[time.Duration][]*chrys.Frame{}
+	if _, ok := store.Frames[series.Pair.String()]; !ok {
+		store.Frames[series.Pair.String()] = map[time.Duration][]*chrys.Frame{}
 	}
 
 	frames, ok := store.Frames[series.Pair.String()][series.Interval]
