@@ -4,7 +4,7 @@ lightweight algorithmic trading framework
 ## concepts
 - *chrys.Frame*: a frame of TOHLCV data
 - *chrys.Pair*: a tradeable pair
-- *chrys.Feed*: a tradeable pair and an interval
+- *chrys.Feed*: a symbol and an interval
 - *chrys.Pipeline*: a stateful function pipeline
 
 ## to-do
@@ -40,7 +40,10 @@ func main() {
 	pair := chrys.NewPair("BTC", "USD").SetBalancePair("XBT.F", "ZUSD")
 	feed := chrys.NewFeed(pair.String(), time.Hour)
 
-	var orderConfig *client.OrderConfig
+	orderConfig := &client.OrderConfig{
+		Pair:    pair,
+		Percent: 0.1,
+	}
 
 	// set up pipeline
 	pipeline := chrys.NewPipeline().AddStage(func(now time.Time) error {
@@ -50,11 +53,6 @@ func main() {
 		}
 
 		zScore := algo.ZScore(algo.Closes(frames))
-
-		orderConfig = &client.OrderConfig{
-			Pair:    pair,
-			Percent: 0.1,
-		}
 
 		if zScore < -2 {
 			orderConfig.Side = client.MARKET_BUY
