@@ -16,8 +16,8 @@ This trades on **BOLL(20, 2)** signals for **1h BTC/USD** using a **10%** fracti
 package main
 
 import (
-	"chrys/algo"
-	"chrys/client"
+	"github.com/haydenhigg/chrys/v2/algo"
+	"github.com/haydenhigg/chrys/v2/client"
 	"fmt"
 	"os"
 	"time"
