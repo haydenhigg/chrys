@@ -5,10 +5,11 @@ lightweight algorithmic trading framework
 - **chrys.Frame**: a frame of TOHLCV data
 - **chrys.Pair**: a tradeable pair
 - **chrys.Series**: a `chrys.Pair` and an interval
-- **chrys.Engine**: a stateful function pipeline
+- **chrys.Pipeline**: a stateful function pipeline
 
 ## to-do
 - use `IsLive` instead of `isDryRun` in `client.OrderConfig`
+- polish up the `OrderConfig` (tbka `Order`) component
 
 ## upcoming
 1. tidying and API improvements
@@ -24,10 +25,10 @@ This trades on **BOLL(20, 2)** signals for **1h BTC/USD** using a **10%** fracti
 package main
 
 import (
+	"fmt"
 	"github.com/haydenhigg/chrys"
 	"github.com/haydenhigg/chrys/algo"
 	"github.com/haydenhigg/chrys/client"
-	"fmt"
 	"os"
 	"time"
 )
@@ -40,16 +41,11 @@ func main() {
 	}
 
 	pair := chrys.NewPair("BTC", "USD").SetCodes("XBT.F", "ZUSD")
-	series := chrys.NewSeries(pair.String(), time.Hour)
+	series := chrys.NewSeries(pair, time.Hour)
 	orderConfig := &client.OrderConfig{
 		Pair:    pair,
 		Percent: 0.1,
 	}
-
-	// order := chrys.NewOrder(&client.OrderConfig{
-	// 	Pair: pair,
-	// 	BalancePair: chrys.NewPair("XBT.F", "ZUSD"),
-	// })
 
 	// set up pipeline
 	pipeline := chrys.NewPipeline().AddStage(func(now time.Time) error {
@@ -60,6 +56,8 @@ func main() {
 
 		zScore := algo.ZScore(algo.Closes(frames))
 
+		fmt.Println("BB =", zScore)
+
 		if zScore < -2 {
 			orderConfig.Side = client.MARKET_BUY
 		} else if zScore > 2 {
@@ -67,6 +65,8 @@ func main() {
 		} else {
 			return nil
 		}
+
+		fmt.Println(orderConfig.Side)
 
 		if err := c.PlaceOrder(orderConfig, now); err != nil {
 			return err
@@ -105,9 +105,9 @@ pipeline.AddStage(func(now time.Time) error {
 	// ...
 
 	if pipeline.Get("bb") < -2 && pipeline.Get("bb-1/2") < -2 {
-		order.Side = "buy"
+		orderConfig.Side = "buy"
 	} else if pipeline.Get("bb") > 2 && pipeline.Get("bb-1/2") > 2 {
-		order.Side = "sell"
+		orderConfig.Side = "sell"
 	}
 
 	// ...

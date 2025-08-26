@@ -54,11 +54,6 @@ func (c *Kraken) buildSignature(path string, body url.Values) string {
 }
 
 // basic requests
-type Payload struct {
-	Query url.Values
-	Body  url.Values
-}
-
 func doRequest(request *http.Request) ([]byte, error) {
 	client := &http.Client{Timeout: 5 * time.Second}
 
