@@ -2,15 +2,10 @@
 lightweight algorithmic trading framework
 
 ## concepts
-1. *chrys.Frame*: a frame of TOHLCV data
-2. *chrys.Pair*: an asset pair
-2. *chrys.Pipeline*: a stateful function pipeline
-
-## /client
-Provides *client.Client*, a stateful cache layer over third-party APIs.
-
-## /algo
-Provides a collection of frame manipulation and mathematical utilities.
+- *chrys.Frame*: a frame of TOHLCV data
+- *chrys.Pair*: a tradeable pair
+- *chrys.Feed*: a tradeable pair and an interval
+- *chrys.Pipeline*: a stateful function pipeline
 
 ## to-do
 0.5 continue tidying

@@ -68,7 +68,7 @@ func (c *Client) GetFramesSince(
 		return nil, err
 	}
 
-	c.Store.Frames[pair][interval] = frames
+	c.Store.Frames[feed.Pair][feed.Interval] = frames
 
 	return frames, nil
 }
@@ -134,10 +134,10 @@ func (c *Client) PlaceOrder(config *OrderConfig, now time.Time) error {
 
 	switch config.Side {
 	case MARKET_BUY:
-		quoteQuantity = config.Percent * balances[config.QuoteBalanceKey]
+		quoteQuantity = config.Percent * balances[config.Pair.BalanceQuote]
 		baseQuantity = quoteQuantity / price
 	case MARKET_SELL:
-		baseQuantity = config.Percent * balances[config.BaseBalanceKey]
+		baseQuantity = config.Percent * balances[config.BalanceBase]
 		quoteQuantity = baseQuantity * price
 	}
 
@@ -152,11 +152,11 @@ func (c *Client) PlaceOrder(config *OrderConfig, now time.Time) error {
 	// update balances
 	switch config.Side {
 	case MARKET_BUY:
-		c.Store.Balances[config.QuoteBalanceKey] -= quoteQuantity
-		c.Store.Balances[config.BaseBalanceKey] += baseQuantity * (1 - c.Fee)
+		c.Store.Balances[config.BalanceQuote] -= quoteQuantity
+		c.Store.Balances[config.BalanceBase] += baseQuantity * (1 - c.Fee)
 	case MARKET_SELL:
-		c.Store.Balances[config.BaseBalanceKey] -= baseQuantity
-		c.Store.Balances[config.QuoteBalanceKey] += quoteQuantity * (1 - c.Fee)
+		c.Store.Balances[config.BalanceBase] -= baseQuantity
+		c.Store.Balances[config.BalanceQuote] += quoteQuantity * (1 - c.Fee)
 	}
 
 	return nil

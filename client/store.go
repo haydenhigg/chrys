@@ -7,7 +7,7 @@ import (
 
 type Store struct {
 	// TODO: use chrys.Feed as the key for Frames
-	Frames   map[string]map[time.Duration]*chrys.Frame
+	Frames   map[string]map[time.Duration][]*chrys.Frame
 	Balances map[string]float64
 }
 
