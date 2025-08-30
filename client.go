@@ -18,7 +18,7 @@ type Client struct {
 	Fee        float64
 }
 
-func New(connector Connector) *Client {
+func NewClient(connector Connector) *Client {
 	return &Client{
 		Connector:  connector,
 		Balances:   map[string]float64{},
