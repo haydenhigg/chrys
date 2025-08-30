@@ -59,30 +59,6 @@ func (client *Client) getCachedFramesSince(
 	return nil, false
 }
 
-func (client *Client) getCachedPriceAt(
-	pair *Pair,
-	t time.Time,
-) (float64, bool) {
-	if intervalFrames, ok := client.FrameCache[pair.Symbol]; ok {
-		// scan all intervals for pair
-		for interval, frames := range intervalFrames {
-			// look for the frame before (because using the Close)
-			lastFrameTime := t.Truncate(interval).Add(-interval)
-
-			for _, frame := range frames {
-				if frame.Time.Equal(lastFrameTime) {
-					return frame.Close, true
-				}
-			}
-		}
-	} else {
-		// ensure FrameCache[pair] exists
-		client.FrameCache[pair.Symbol] = map[time.Duration][]*Frame{}
-	}
-
-	return 0, false
-}
-
 func (client *Client) GetFramesSince(
 	series *Series,
 	t time.Time,
@@ -147,6 +123,30 @@ func (client *Client) GetBalances() (map[string]float64, error) {
 }
 
 // ordering
+func (client *Client) getCachedPriceAt(
+	pair *Pair,
+	t time.Time,
+) (float64, bool) {
+	if intervalFrames, ok := client.FrameCache[pair.Symbol]; ok {
+		// scan all intervals for pair
+		for interval, frames := range intervalFrames {
+			// look for the frame before (because using the Close)
+			lastFrameTime := t.Truncate(interval).Add(-interval)
+
+			for _, frame := range frames {
+				if frame.Time.Equal(lastFrameTime) {
+					return frame.Close, true
+				}
+			}
+		}
+	} else {
+		// ensure FrameCache[pair] exists
+		client.FrameCache[pair.Symbol] = map[time.Duration][]*Frame{}
+	}
+
+	return 0, false
+}
+
 func (client *Client) PlaceOrder(order *Order, t time.Time) error {
 	order.normalize()
 
