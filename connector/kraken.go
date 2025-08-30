@@ -26,6 +26,15 @@ type Kraken struct {
 	Secret []byte
 }
 
+func NewKraken(key, secret string) (*Kraken, error) {
+	decodedSecret, err := base64.StdEncoding.DecodeString(secret)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Kraken{Key: []byte(key), Secret: decodedSecret}, nil
+}
+
 // request helpers
 func (c *Kraken) buildURL(path string, query url.Values) string {
 	u := url.URL{
@@ -142,7 +151,7 @@ func (c *Kraken) FetchFramesSince(
 	sinceTimestamp := since.Truncate(series.Interval).Unix() - 1
 	rawResponse, err := c.public("GET", "/OHLC", &Payload{
 		Query: url.Values{
-			"pair":     {series.Pair.String()},
+			"pair":     {series.Pair.Symbol},
 			"interval": {strconv.Itoa(int(series.Interval.Minutes()))},
 			"since":    {strconv.FormatInt(sinceTimestamp, 10)},
 		},
@@ -162,7 +171,7 @@ func (c *Kraken) FetchFramesSince(
 		return nil, errors.New(response.Errors[0])
 	}
 
-	rawFrames, ok := response.Result[series.Pair.String()]
+	rawFrames, ok := response.Result[series.Pair.Symbol]
 	if !ok {
 		return nil, errors.New("no frames retrieved for pair")
 	}

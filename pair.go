@@ -3,33 +3,29 @@ package chrys
 import "fmt"
 
 type Pair struct {
-	Base      string
-	Quote     string
+	base      string
+	quote     string
+	Symbol    string
 	BaseCode  string
 	QuoteCode string
 }
 
 func NewPair(base, quote string) *Pair {
 	return &Pair{
-		Base:      base,
-		Quote:     quote,
+		base:      base,
+		quote:     quote,
+		Symbol:    fmt.Sprintf("%s/%s", base, quote),
 		BaseCode:  base,
 		QuoteCode: quote,
 	}
 }
 
-func (pair *Pair) SetBase(base string) *Pair {
-	pair.Base = base
-	return pair
+func (pair *Pair) Base() string {
+	return pair.base
 }
 
-func (pair *Pair) SetQuote(quote string) *Pair {
-	pair.Quote = quote
-	return pair
-}
-
-func (pair *Pair) Set(base, quote string) *Pair {
-	return pair.SetBase(base).SetQuote(quote)
+func (pair *Pair) Quote() string {
+	return pair.base
 }
 
 func (pair *Pair) SetBaseCode(baseCode string) *Pair {
@@ -44,8 +40,4 @@ func (pair *Pair) SetQuoteCode(quoteCode string) *Pair {
 
 func (pair *Pair) SetCodes(baseCode, quoteCode string) *Pair {
 	return pair.SetBaseCode(baseCode).SetQuoteCode(quoteCode)
-}
-
-func (pair *Pair) String() string {
-	return fmt.Sprintf("%s/%s", pair.Base, pair.Quote)
 }

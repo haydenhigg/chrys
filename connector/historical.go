@@ -12,10 +12,13 @@ import (
 	"time"
 )
 
-const HISTORICAL_FILE_NAME_FORMAT = "%s%s_%d.csv"
-
 type Historical struct {
 	DataRoot string
+	NameFmt  string // the fmt string for the CSV files with the frames
+}
+
+func NewHistorical(dataRoot, nameFmt string) *Historical {
+	return &Historical{DataRoot: dataRoot, NameFmt: nameFmt}
 }
 
 func (c *Historical) FetchFramesSince(
@@ -23,9 +26,9 @@ func (c *Historical) FetchFramesSince(
 	since time.Time,
 ) ([]*chrys.Frame, error) {
 	filePath := filepath.Join(c.DataRoot, fmt.Sprintf(
-		HISTORICAL_FILE_NAME_FORMAT,
-		series.Pair.Base,
-		series.Pair.Quote,
+		c.NameFmt,
+		series.Pair.Base(),
+		series.Pair.Quote(),
 		int(series.Interval.Minutes()),
 	))
 

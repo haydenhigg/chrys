@@ -1,6 +1,4 @@
-package client
-
-import "github.com/haydenhigg/chrys"
+package chrys
 
 type OrderSide string
 
@@ -10,10 +8,10 @@ const (
 )
 
 type OrderConfig struct {
-	Side     OrderSide
-	Pair     *chrys.Pair
-	Percent  float64
-	IsDryRun bool
+	Side    OrderSide
+	Pair    *Pair
+	Percent float64
+	IsLive  bool
 }
 
 func (config *OrderConfig) validatePercent() error {

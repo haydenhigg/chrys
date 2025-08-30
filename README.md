@@ -8,6 +8,7 @@ lightweight algorithmic trading framework
 - **chrys.Pipeline**: a stateful function pipeline
 
 ## to-do
+- make `Pair` essentially immutable (don't export the fields) and define a string field instead of using `.String()` everywhere
 - use `IsLive` instead of `isDryRun` in `client.OrderConfig`
 - polish up the `OrderConfig` (tbka `Order`) component
 
@@ -28,28 +29,32 @@ import (
 	"fmt"
 	"github.com/haydenhigg/chrys"
 	"github.com/haydenhigg/chrys/algo"
-	"github.com/haydenhigg/chrys/client"
+	"github.com/haydenhigg/chrys/connector"
 	"os"
 	"time"
 )
 
 func main() {
 	// set up client
-	c, err := client.NewKraken(os.Getenv("API_KEY"), os.Getenv("API_SECRET"))
+	c, err := connector.NewKraken(os.Getenv("API_KEY"), os.Getenv("API_SECRET"))
 	if err != nil {
 		panic(err)
 	}
 
+	client := chrys.NewClient(c).SetFee(0.004)
+
 	pair := chrys.NewPair("BTC", "USD").SetCodes("XBT.F", "ZUSD")
 	series := chrys.NewSeries(pair, time.Hour)
+
 	orderConfig := &client.OrderConfig{
 		Pair:    pair,
 		Percent: 0.1,
+		IsLive: true,
 	}
 
 	// set up pipeline
 	pipeline := chrys.NewPipeline().AddStage(func(now time.Time) error {
-		frames, err := c.GetFrames(series, now, 20)
+		frames, err := client.SetTime(now).FramesBefore(series, 20)
 		if err != nil {
 			return err
 		}
@@ -68,7 +73,7 @@ func main() {
 
 		fmt.Println(orderConfig.Side)
 
-		if err := c.PlaceOrder(orderConfig, now); err != nil {
+		if err := client.Order(orderConfig, now); err != nil {
 			return err
 		}
 
@@ -87,7 +92,7 @@ For more complex use cases, you'll potentially want to split the signal and orde
 ```go
 pipeline := chrys.NewPipeline()
 pipeline.AddStage(func(now time.Time) error {
-	frames, err := c.GetFrames(series, now, 20)
+	frames, err := client.GetFrames(series, now, 20)
 	if err != nil {
 		return err
 	}
