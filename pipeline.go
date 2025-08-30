@@ -16,22 +16,22 @@ func NewPipeline() *Pipeline {
 	}
 }
 
-func (p *Pipeline) AddStage(handler Stage) *Pipeline {
-	p.Stages = append(p.Stages, handler)
-	return p
+func (pipeline *Pipeline) AddStage(handler Stage) *Pipeline {
+	pipeline.Stages = append(pipeline.Stages, handler)
+	return pipeline
 }
 
-func (p *Pipeline) Get(k string) float64 {
-	return p.Data[k]
+func (pipeline *Pipeline) Get(k string) float64 {
+	return pipeline.Data[k]
 }
 
-func (p *Pipeline) Set(k string, v float64) *Pipeline {
-	p.Data[k] = v
-	return p
+func (pipeline *Pipeline) Set(k string, v float64) *Pipeline {
+	pipeline.Data[k] = v
+	return pipeline
 }
 
-func (p *Pipeline) Run(t time.Time) error {
-	for _, handler := range p.Stages {
+func (pipeline *Pipeline) Run(t time.Time) error {
+	for _, handler := range pipeline.Stages {
 		if err := handler(t); err != nil {
 			return err
 		}
@@ -39,3 +39,17 @@ func (p *Pipeline) Run(t time.Time) error {
 
 	return nil
 }
+
+// type BacktestReport {
+// 	StartEquity float64
+// 	EndEquity   float64
+// 	Return      float64
+// }
+
+// func (pipeline *Pipeline) RunBacktest(
+// 	start,
+// 	end time.Time,
+// 	out *Asset,
+// ) (*BacktestReport, error) {
+// 	return &BacktestReport{}, nil
+// }
