@@ -4,15 +4,13 @@ import (
 	// "fmt"
 	"math"
 	"math/rand"
-	"time"
 )
 
-// Sigmoid activation function
+// Activation function
 func sigmoid(x float64) float64 {
 	return 1 / (1 + math.Exp(-x))
 }
 
-// Derivative of sigmoid
 func sigmoidDerivative(s float64) float64 {
 	return s * (1 - s)
 }
@@ -32,8 +30,6 @@ func randWeight() float64 {
 
 // Create a new MLP with random weights
 func NewMLP(inputSize, hiddenSize, outputSize int, learningRate float64) *MLP {
-	rand.Seed(time.Now().UnixNano())
-
 	wIH := make([][]float64, inputSize)
 	for i := range wIH {
 		wIH[i] = make([]float64, hiddenSize)
@@ -127,7 +123,7 @@ func (mlp *MLP) Predict(input []float64) []float64 {
 }
 
 // MSE loss
-func mse(predicted, target []float64) float64 {
+func MSE(predicted, target []float64) float64 {
 	sum := 0.
 	for i := range predicted {
 		diff := predicted[i] - target[i]
@@ -154,19 +150,19 @@ func mse(predicted, target []float64) float64 {
 // 		{0},
 // 	}
 
-// 	// Training loop
-// 	epochs := 10000
-// 	for epoch := 1; epoch <= epochs; epoch++ {
-// 		totalLoss := 0.
-// 		for i := range inputs {
-// 			mlp.Train(inputs[i], targets[i])
-// 			pred := mlp.Predict(inputs[i])
-// 			totalLoss += mse(pred, targets[i])
-// 		}
-// 		if epoch%1000 == 0 {
-// 			fmt.Printf("Epoch %d: Loss = %.4f\n", epoch, totalLoss)
-// 		}
-// 	}
+	// // Training loop
+	// epochs := 10000
+	// for epoch := 1; epoch <= epochs; epoch++ {
+	// 	totalLoss := 0.
+	// 	for i := range inputs {
+	// 		mlp.Train(inputs[i], targets[i])
+	// 		pred := mlp.Predict(inputs[i])
+	// 		totalLoss += mse(pred, targets[i])
+	// 	}
+	// 	if epoch%1000 == 0 {
+	// 		fmt.Printf("Epoch %d: Loss = %.4f\n", epoch, totalLoss)
+	// 	}
+	// }
 
 // 	// Test
 // 	fmt.Println("\nTrained predictions:")
