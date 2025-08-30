@@ -14,12 +14,16 @@ type Order struct {
 	Type    OrderType
 }
 
-func NewOrder(pair *Pair, percent float64, isLive bool) *Order {
+func NewOrder(pair *Pair, percent float64) *Order {
 	return &Order{
 		Pair:    pair,
 		Percent: percent,
-		IsLive:  isLive,
 	}
+}
+
+func (order *Order) SetIsLive(isLive bool) *Order {
+	order.IsLive = isLive
+	return order
 }
 
 func (order *Order) SetBuy() *Order {

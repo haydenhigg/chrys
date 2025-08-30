@@ -41,7 +41,7 @@ lightweight algorithmic trading framework
 - `Interval time.Duration`
 
 ### Order
-*constructor*: `chrys.NewOrder(pair *Pair, percent float64, isLive bool) *Order`
+*constructor*: `chrys.NewOrder(pair *Pair, percent float64) *Order`
 
 #### fields
 - `Pair *Pair`
@@ -50,6 +50,7 @@ lightweight algorithmic trading framework
 - `Type OrderType` (e.g., `chrys.BUY`, `chrys.SELL`)
 
 #### functions
+- `SetIsLive(isLive bool) *Order`
 - `SetBuy() *Order`
 - `SetSell() *Order`
 
@@ -119,7 +120,7 @@ func main() {
 	pair := chrys.NewPair("BTC", "USD").SetCodes("XBT.F", "ZUSD")
 
 	series := chrys.NewSeries(pair, time.Hour)
-	order := chrys.NewOrder(pair, 0.10).SetLive(true) // ±10% live
+	order := chrys.NewOrder(pair, 0.10).SetIsLive(true) // ±10% live
 
 	// set up pipeline
 	pipeline := chrys.NewPipeline().AddStage(func(now time.Time) error {
