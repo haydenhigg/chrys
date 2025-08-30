@@ -13,16 +13,16 @@ type Connector interface {
 
 type Client struct {
 	Connector  Connector
-	Balances   map[string]float64
 	FrameCache map[string]map[time.Duration][]*Frame
+	Balances   map[string]float64
 	Fee        float64
 }
 
 func NewClient(connector Connector) *Client {
 	return &Client{
 		Connector:  connector,
-		Balances:   map[string]float64{},
 		FrameCache: map[string]map[time.Duration][]*Frame{},
+		Balances:   map[string]float64{},
 	}
 }
 

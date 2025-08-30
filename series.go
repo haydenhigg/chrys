@@ -1,9 +1,6 @@
 package chrys
 
-import (
-	"fmt"
-	"time"
-)
+import "time"
 
 type Series struct {
 	Pair     *Pair
@@ -15,8 +12,4 @@ func NewSeries(pair *Pair, interval time.Duration) *Series {
 		Pair:     pair,
 		Interval: interval,
 	}
-}
-
-func (series *Series) String() string {
-	return fmt.Sprintf("%s:%s", series.Pair, series.Interval)
 }

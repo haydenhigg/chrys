@@ -1,6 +1,7 @@
 package chrys
 
 type OrderType string
+
 const (
 	BUY  OrderType = "buy"
 	SELL           = "sell"
@@ -13,16 +14,12 @@ type Order struct {
 	Type    OrderType
 }
 
-func NewOrder(pair *Pair, percent float64) *Order {
+func NewOrder(pair *Pair, percent float64, isLive bool) *Order {
 	return &Order{
-		Pair: pair,
+		Pair:    pair,
 		Percent: percent,
+		IsLive:  isLive,
 	}
-}
-
-func (order *Order) SetLive(isLive bool) *Order {
-	order.IsLive = isLive
-	return order
 }
 
 func (order *Order) SetBuy() *Order {

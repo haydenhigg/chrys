@@ -25,7 +25,7 @@ func (pair *Pair) Base() string {
 }
 
 func (pair *Pair) Quote() string {
-	return pair.base
+	return pair.quote
 }
 
 func (pair *Pair) SetBaseCode(baseCode string) *Pair {

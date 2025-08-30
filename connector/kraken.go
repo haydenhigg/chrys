@@ -33,7 +33,7 @@ func NewKraken(key, secret string) (*Kraken, error) {
 	}
 
 	c := &Kraken{
-		Key: []byte(key),
+		Key:    []byte(key),
 		Secret: decodedSecret,
 	}
 

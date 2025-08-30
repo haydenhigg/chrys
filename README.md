@@ -1,16 +1,92 @@
 # chrys
 lightweight algorithmic trading framework
 
-## concepts
-- **chrys.Frame**: a frame of TOHLCV data
-- **chrys.Pair**: a tradeable pair with customizable asset codes
-- **chrys.Series**: a `chrys.Pair` and an interval
-- **chrys.Pipeline**: a stateful function pipeline
+## composable building blocks
+- **chrys.Frame** - a frame of TOHLCV data (a "candle")
+- **chrys.Pair** - a tradeable pair with customizable asset codes
+- **chrys.Series** - a `chrys.Pair` and an interval
+- **chrys.Order** - a `chrys.Pair` and order configuration details
+- **chrys.Client** - a caching client for connectors
+- **chrys.Pipeline** - a stateful function pipeline
+
+### Frame
+### fields
+- `Time   time.Time`
+- `Open   float64`
+- `High   float64`
+- `Low    float64`
+- `Close  float64`
+- `Volume float64`
+
+### Pair
+- *constructor*: `chrys.NewPair(base, quote string) &Pair`
+
+#### fields
+- `Symbol string`
+- `BaseCode string` (defaults to `base`)
+- `QuoteCode string` (defaults to `quote`)
+
+#### functions
+- `Base() string`
+- `Quote() string`
+- `SetBaseCode(baseCode string) *Pair`
+- `SetQuoteCode(quoteCode string) *Pair`
+- `SetCodes(baseCode, quoteCode string) *Pair`
+
+### Series
+- *constructor*: `chrys.NewSeries(pair *Pair, interval time.Duration) *Series`
+
+#### fields
+- `Pair *Pair`
+- `Interval time.Duration`
+
+### Order
+- *constructor*: `chrys.NewOrder(pair *Pair, percent float64, isLive bool) *Order`
+
+#### fields
+- `Pair *Pair`
+- `Percent float64`
+- `IsLive bool`
+- `Type OrderType` (e.g., `chrys.BUY`, `chrys.SELL`)
+
+#### functions
+- `SetBuy() *Order`
+- `SetSell() *Order`
+
+### Client
+- *constructor*: `chrys.NewClient(connector Connector) *Client`
+
+#### fields
+- `Connector Connector`
+- `FrameCache map[string]map[time.Duration][]*Frame`
+- `Balances map[string]float64`
+- `Fee float64`
+
+#### functions
+- `SetFee(fee float64) *Client`
+- `GetFramesSince(series *Series, t time.Time) ([]*Frame, error)`
+- `GetFrames(series *Series, t time.Time, n int) ([]*Frame, error)`
+- `GetBalances() (map[string]float64, error)`
+- `PlaceOrder(order *Order, t time.Time) error`
+
+### Pipeline
+- *constructor*: `chrys.NewPipeline() *Pipeline`
+- `type Stage = func(now time.Time) error`
+
+#### fields
+- `Stages []Stage`
+- `Data map[string]float64`
+
+#### functions
+- `AddStage(handler Stage) *Pipeline`
+- `Get(k string) float64`
+- `Set(k string, v float64) *Pipeline`
+- `Run(t time.Time) error`
 
 ## to-do
-- save time in `Client` so you can do client.AtTime(t)...
+- add plug-ins to `Pipeline`: `func(key string) func(now time.Time) error`
+- save time on `Client` so you can do `client.AtTime(t).`...
 
-## upcoming
 1. tidying and API improvements
 2. backtesting components
 3. algo state management components
@@ -73,7 +149,7 @@ func main() {
 }
 ```
 
-For more complex use cases, you'll potentially want to split the signal and order logic into separate stages. You can pass data down through the stages chain like so:
+For organization, you'll want to split different parts of your calculation into separate stages. You can pass data down through the stages chain like so:
 
 ```go
 pipeline := chrys.NewPipeline()
@@ -83,22 +159,19 @@ pipeline.AddStage(func(now time.Time) error {
 		return err
 	}
 
-	closes := algo.Closes(frames)
-
-	pipeline.Set("bb", algo.ZScore(closes))
-	pipeline.Set("bb-1/2", algo.ZScore(closes[10:]))
+	pipeline.Set("bb", algo.ZScore(algo.Closes(frames)))
 
 	return nil
 })
 pipeline.AddStage(func(now time.Time) error {
-	fmt.Println(pipeline.Data) // map[bb:... bb-1/2:...]
+	fmt.Println(pipeline.Data) // map[bb:...]
 
 	// ...
 
-	if pipeline.Get("bb") < -2 && pipeline.Get("bb-1/2") < -2 {
-		orderConfig.Side = "buy"
-	} else if pipeline.Get("bb") > 2 && pipeline.Get("bb-1/2") > 2 {
-		orderConfig.Side = "sell"
+	if pipeline.Get("bb") < -2 {
+		order.SetBuy()
+	} else if pipeline.Get("bb") > 2 	{
+		order.SetSell()
 	}
 
 	// ...

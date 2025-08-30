@@ -20,7 +20,7 @@ type Historical struct {
 func NewHistorical(dataRoot, nameFmt string) *Historical {
 	return &Historical{
 		DataRoot: dataRoot,
-		NameFmt: nameFmt,
+		NameFmt:  nameFmt,
 	}
 }
 

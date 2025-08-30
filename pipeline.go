@@ -21,17 +21,18 @@ func (p *Pipeline) AddStage(handler Stage) *Pipeline {
 	return p
 }
 
-func (p *Pipeline) Set(k string, v float64) {
-	p.Data[k] = v
-}
-
 func (p *Pipeline) Get(k string) float64 {
 	return p.Data[k]
 }
 
-func (p *Pipeline) Run(now time.Time) error {
+func (p *Pipeline) Set(k string, v float64) *Pipeline {
+	p.Data[k] = v
+	return p
+}
+
+func (p *Pipeline) Run(t time.Time) error {
 	for _, handler := range p.Stages {
-		if err := handler(now); err != nil {
+		if err := handler(t); err != nil {
 			return err
 		}
 	}
