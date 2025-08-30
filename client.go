@@ -147,16 +147,13 @@ func (client *Client) GetBalances() (map[string]float64, error) {
 }
 
 // ordering
-func (client *Client) PlaceOrder(config *OrderConfig, t time.Time) error {
-	// normalize config
-	if err := config.normalize(); err != nil {
-		return err
-	}
+func (client *Client) PlaceOrder(order *Order, t time.Time) error {
+	order.normalize()
 
 	// get latest price
-	price, ok := client.getCachedPriceAt(config.Pair, t)
+	price, ok := client.getCachedPriceAt(order.Pair, t)
 	if !ok {
-		minSeries := NewSeries(config.Pair, time.Minute)
+		minSeries := NewSeries(order.Pair, time.Minute)
 		frames, err := client.GetFrames(minSeries, t, 1)
 		if err != nil {
 			return err
@@ -173,20 +170,20 @@ func (client *Client) PlaceOrder(config *OrderConfig, t time.Time) error {
 
 	var baseQuantity, quoteQuantity float64
 
-	switch config.Side {
-	case MARKET_BUY:
-		quoteQuantity = config.Percent * balances[config.Pair.QuoteCode]
+	switch order.Type {
+	case BUY:
+		quoteQuantity = order.Percent * balances[order.Pair.QuoteCode]
 		baseQuantity = quoteQuantity / price
-	case MARKET_SELL:
-		baseQuantity = config.Percent * balances[config.Pair.BaseCode]
+	case SELL:
+		baseQuantity = order.Percent * balances[order.Pair.BaseCode]
 		quoteQuantity = baseQuantity * price
 	}
 
 	// place order
-	if config.IsLive {
+	if order.IsLive {
 		err = client.Connector.PlaceMarketOrder(
-			string(config.Side),
-			config.Pair.Symbol,
+			string(order.Type),
+			order.Pair.Symbol,
 			baseQuantity,
 		)
 		if err != nil {
@@ -197,13 +194,13 @@ func (client *Client) PlaceOrder(config *OrderConfig, t time.Time) error {
 	// update balances
 	invFee := 1 - client.Fee
 
-	switch config.Side {
-	case MARKET_BUY:
-		client.Balances[config.Pair.QuoteCode] -= quoteQuantity
-		client.Balances[config.Pair.BaseCode] += baseQuantity * invFee
-	case MARKET_SELL:
-		client.Balances[config.Pair.BaseCode] -= baseQuantity
-		client.Balances[config.Pair.QuoteCode] += quoteQuantity * invFee
+	switch order.Type {
+	case BUY:
+		client.Balances[order.Pair.QuoteCode] -= quoteQuantity
+		client.Balances[order.Pair.BaseCode] += baseQuantity * invFee
+	case SELL:
+		client.Balances[order.Pair.BaseCode] -= baseQuantity
+		client.Balances[order.Pair.QuoteCode] += quoteQuantity * invFee
 	}
 
 	return nil

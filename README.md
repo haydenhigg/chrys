@@ -3,14 +3,12 @@ lightweight algorithmic trading framework
 
 ## concepts
 - **chrys.Frame**: a frame of TOHLCV data
-- **chrys.Pair**: a tradeable pair
+- **chrys.Pair**: a tradeable pair with customizable asset codes
 - **chrys.Series**: a `chrys.Pair` and an interval
 - **chrys.Pipeline**: a stateful function pipeline
 
 ## to-do
-- make `Pair` essentially immutable (don't export the fields) and define a string field instead of using `.String()` everywhere
-- use `IsLive` instead of `isDryRun` in `client.OrderConfig`
-- polish up the `OrderConfig` (tbka `Order`) component
+- save time in `Client` so you can do client.AtTime(t)...
 
 ## upcoming
 1. tidying and API improvements
@@ -40,44 +38,32 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	client := chrys.NewClient(c).SetFee(0.004)
 
+	// set up strategy-specific data objects
 	pair := chrys.NewPair("BTC", "USD").SetCodes("XBT.F", "ZUSD")
-	series := chrys.NewSeries(pair, time.Hour)
 
-	orderConfig := &client.OrderConfig{
-		Pair:    pair,
-		Percent: 0.1,
-		IsLive: true,
-	}
+	series := chrys.NewSeries(pair, time.Hour)
+	order := chrys.NewOrder(pair, 0.10).SetLive(true) // ±10% live
 
 	// set up pipeline
 	pipeline := chrys.NewPipeline().AddStage(func(now time.Time) error {
-		frames, err := client.SetTime(now).FramesBefore(series, 20)
+		frames, err := client.GetFrames(series, now, 20)
 		if err != nil {
 			return err
 		}
 
 		zScore := algo.ZScore(algo.Closes(frames))
-
 		fmt.Println("BB =", zScore)
 
+		err = nil
 		if zScore < -2 {
-			orderConfig.Side = client.MARKET_BUY
+			err = client.PlaceOrder(order.SetBuy(), now)
 		} else if zScore > 2 {
-			orderConfig.Side = client.MARKET_SELL
-		} else {
-			return nil
+			err = client.PlaceOrder(order.SetSell(), now)
 		}
 
-		fmt.Println(orderConfig.Side)
-
-		if err := client.Order(orderConfig, now); err != nil {
-			return err
-		}
-
-		return nil
+		return err
 	})
 
 	// run

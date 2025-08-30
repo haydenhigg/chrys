@@ -32,7 +32,12 @@ func NewKraken(key, secret string) (*Kraken, error) {
 		return nil, err
 	}
 
-	return &Kraken{Key: []byte(key), Secret: decodedSecret}, nil
+	c := &Kraken{
+		Key: []byte(key),
+		Secret: decodedSecret,
+	}
+
+	return c, nil
 }
 
 // request helpers
