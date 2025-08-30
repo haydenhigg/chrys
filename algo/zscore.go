@@ -11,7 +11,7 @@ func ZScore(prices []float64) float64 {
 	}
 
 	n := len(prices)
-	sigma := math.Sqrt(sumOfSquaredDifferences / (float64(n) - 1))
+	sigma := math.Sqrt(sumOfSquaredDifferences / float64(n))
 
 	return (prices[n-1] - mu) / sigma
 }

@@ -150,19 +150,19 @@ func MSE(predicted, target []float64) float64 {
 // 		{0},
 // 	}
 
-	// // Training loop
-	// epochs := 10000
-	// for epoch := 1; epoch <= epochs; epoch++ {
-	// 	totalLoss := 0.
-	// 	for i := range inputs {
-	// 		mlp.Train(inputs[i], targets[i])
-	// 		pred := mlp.Predict(inputs[i])
-	// 		totalLoss += mse(pred, targets[i])
-	// 	}
-	// 	if epoch%1000 == 0 {
-	// 		fmt.Printf("Epoch %d: Loss = %.4f\n", epoch, totalLoss)
-	// 	}
-	// }
+// // Training loop
+// epochs := 10000
+// for epoch := 1; epoch <= epochs; epoch++ {
+// 	totalLoss := 0.
+// 	for i := range inputs {
+// 		mlp.Train(inputs[i], targets[i])
+// 		pred := mlp.Predict(inputs[i])
+// 		totalLoss += mse(pred, targets[i])
+// 	}
+// 	if epoch%1000 == 0 {
+// 		fmt.Printf("Epoch %d: Loss = %.4f\n", epoch, totalLoss)
+// 	}
+// }
 
 // 	// Test
 // 	fmt.Println("\nTrained predictions:")
