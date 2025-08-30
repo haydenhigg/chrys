@@ -2,16 +2,15 @@
 lightweight algorithmic trading framework
 
 ## to-do
-1. tidying and API improvements
-2. expand MLP implementation
-3. backtest machinery in `Pipeline`
+1. expand MLP implementation
+2. backtest machinery in `Pipeline`
     - create `type Asset struct { Symbol, Code string }`
     - make `Pair` into `struct { Base, Quote *Asset }` b/c that model is a little cleaner and it's good to be able to define a standalone asset for when there is a function `(client *Client) CalculateEquity(out *Asset, t time.Time) (float64, error)` (which is a big part of backtesting machinery)
     - add `(pipeline *Pipeline) RunBacktest`
     - add new backtesting metrics
-4. algo state management components
-5. add built-in logging to client
-6. plug-ins
+3. algo state management components
+4. add built-in logging to client
+5. plug-ins
 
 ## example
 This trades on **BOLL(20, 2)** signals for **1h BTC/USD** using a **10%** fractional trade amount.
@@ -113,6 +112,11 @@ a `chrys.Pair` and order configuration details
 #### constructor
 `chrys.NewOrder(pair *Pair, percent float64) *Order`
 
+#### types
+- `type OrderType string`
+    - `BUY = "buy"`
+    - `SELL = "sell"`
+
 #### fields
 - `Pair *Pair`
 - `Percent float64`
@@ -149,12 +153,15 @@ a stateful function pipeline
 #### constructor
 `chrys.NewPipeline() *Pipeline`
 
+#### types
+- `type Stage = func(now time.Time) error`
+
 #### fields
-- `Stages []func(now time.Time) error`
 - `Data map[string]float64`
+- `Stages []Stage`
 
 #### functions
-- `AddStage(handler func(now time.Time) error) *Pipeline`
 - `Get(k string) float64`
 - `Set(k string, v float64) *Pipeline`
+- `AddStage(handler Stage) *Pipeline`
 - `Run(t time.Time) error` (processes stages in order)

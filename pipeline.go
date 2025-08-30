@@ -5,20 +5,15 @@ import "time"
 type Stage = func(now time.Time) error
 
 type Pipeline struct {
-	Stages []Stage
 	Data   map[string]float64
+	Stages []Stage
 }
 
 func NewPipeline() *Pipeline {
 	return &Pipeline{
-		Stages: []Stage{},
 		Data:   map[string]float64{},
+		Stages: []Stage{},
 	}
-}
-
-func (pipeline *Pipeline) AddStage(handler Stage) *Pipeline {
-	pipeline.Stages = append(pipeline.Stages, handler)
-	return pipeline
 }
 
 func (pipeline *Pipeline) Get(k string) float64 {
@@ -27,6 +22,11 @@ func (pipeline *Pipeline) Get(k string) float64 {
 
 func (pipeline *Pipeline) Set(k string, v float64) *Pipeline {
 	pipeline.Data[k] = v
+	return pipeline
+}
+
+func (pipeline *Pipeline) AddStage(handler Stage) *Pipeline {
+	pipeline.Stages = append(pipeline.Stages, handler)
 	return pipeline
 }
 
