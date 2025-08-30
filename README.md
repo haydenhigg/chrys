@@ -10,7 +10,7 @@ lightweight algorithmic trading framework
 - **chrys.Pipeline** - a stateful function pipeline
 
 ### Frame
-### fields
+#### fields
 - `Time   time.Time`
 - `Open   float64`
 - `High   float64`
@@ -19,7 +19,7 @@ lightweight algorithmic trading framework
 - `Volume float64`
 
 ### Pair
-- *constructor*: `chrys.NewPair(base, quote string) &Pair`
+*constructor*: `chrys.NewPair(base, quote string) &Pair`
 
 #### fields
 - `Symbol string`
@@ -34,14 +34,14 @@ lightweight algorithmic trading framework
 - `SetCodes(baseCode, quoteCode string) *Pair`
 
 ### Series
-- *constructor*: `chrys.NewSeries(pair *Pair, interval time.Duration) *Series`
+*constructor*: `chrys.NewSeries(pair *Pair, interval time.Duration) *Series`
 
 #### fields
 - `Pair *Pair`
 - `Interval time.Duration`
 
 ### Order
-- *constructor*: `chrys.NewOrder(pair *Pair, percent float64, isLive bool) *Order`
+*constructor*: `chrys.NewOrder(pair *Pair, percent float64, isLive bool) *Order`
 
 #### fields
 - `Pair *Pair`
@@ -54,7 +54,7 @@ lightweight algorithmic trading framework
 - `SetSell() *Order`
 
 ### Client
-- *constructor*: `chrys.NewClient(connector Connector) *Client`
+*constructor*: `chrys.NewClient(connector Connector) *Client`
 
 #### fields
 - `Connector Connector`
@@ -70,30 +70,29 @@ lightweight algorithmic trading framework
 - `PlaceOrder(order *Order, t time.Time) error`
 
 ### Pipeline
-- *constructor*: `chrys.NewPipeline() *Pipeline`
-- `type Stage = func(now time.Time) error`
+*constructor*: `chrys.NewPipeline() *Pipeline`
 
 #### fields
-- `Stages []Stage`
+- `Stages []func(now time.Time) error`
 - `Data map[string]float64`
 
 #### functions
-- `AddStage(handler Stage) *Pipeline`
+- `AddStage(handler func(now time.Time) error) *Pipeline`
 - `Get(k string) float64`
 - `Set(k string, v float64) *Pipeline`
-- `Run(t time.Time) error`
+- `Run(t time.Time) error` (processes stages in order)
 
 ## to-do
-- add plug-ins to `Pipeline`: `func(key string) func(now time.Time) error`
 - save time on `Client` so you can do `client.AtTime(t).`...
 
 1. tidying and API improvements
 2. backtesting components
 3. algo state management components
-4. add built-in logging to client
-5. expand MLP implementation
+5. add built-in logging to client
+6. expand MLP implementation
+6. plug-ins
 
-## usage
+## example
 This trades on **BOLL(20, 2)** signals for **1h BTC/USD** using a **10%** fractional trade amount.
 
 ```go
@@ -148,34 +147,3 @@ func main() {
 	}
 }
 ```
-
-For organization, you'll want to split different parts of your calculation into separate stages. You can pass data down through the stages chain like so:
-
-```go
-pipeline := chrys.NewPipeline()
-pipeline.AddStage(func(now time.Time) error {
-	frames, err := client.GetFrames(series, now, 20)
-	if err != nil {
-		return err
-	}
-
-	pipeline.Set("bb", algo.ZScore(algo.Closes(frames)))
-
-	return nil
-})
-pipeline.AddStage(func(now time.Time) error {
-	fmt.Println(pipeline.Data) // map[bb:...]
-
-	// ...
-
-	if pipeline.Get("bb") < -2 {
-		order.SetBuy()
-	} else if pipeline.Get("bb") > 2 	{
-		order.SetSell()
-	}
-
-	// ...
-})
-```
-
-Stages are processed sequentially in the order that they are defined.
