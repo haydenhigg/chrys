@@ -2,21 +2,30 @@ package algo
 
 import "github.com/haydenhigg/chrys"
 
-func Closes(frames []*chrys.Frame) []float64 {
-	closes := make([]float64, len(frames))
+func MapFrames(
+	frames []*chrys.Frame,
+	processor func(*chrys.Frame) float64,
+) []float64 {
+	processed := make([]float64, len(frames))
 	for i, frame := range frames {
-		closes[i] = frame.Close
+		processed[i] = processor(frame)
 	}
 
-	return closes
+	return processed
 }
 
-func mean(xs []float64) float64 {
-	sum := 0.
+func Opens(frames []*chrys.Frame) []float64 {
+	return MapFrames(frames, func(f *chrys.Frame) float64 { return f.Open })
+}
 
-	for _, x := range xs {
-		sum += x
-	}
+func Highs(frames []*chrys.Frame) []float64 {
+	return MapFrames(frames, func(f *chrys.Frame) float64 { return f.High })
+}
 
-	return sum / float64(len(xs))
+func Lows(frames []*chrys.Frame) []float64 {
+	return MapFrames(frames, func(f *chrys.Frame) float64 { return f.Low })
+}
+
+func Closes(frames []*chrys.Frame) []float64 {
+	return MapFrames(frames, func(f *chrys.Frame) float64 { return f.Close })
 }
