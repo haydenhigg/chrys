@@ -14,6 +14,6 @@ func NewEMA(period int) *EMA {
 }
 
 func (ema *EMA) Next(v float64) *EMA {
-	ema.Value = v * ema.alpha + v * (1 - ema.alpha)
+	ema.Value = v * ema.alpha + ema.Value * (1 - ema.alpha)
 	return ema
 }
