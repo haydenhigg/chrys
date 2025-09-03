@@ -1,5 +1,7 @@
 package algo
 
+import "github.com/haydenhigg/chrys"
+
 type EMA struct {
 	Value  float64
 	Period int
@@ -13,7 +15,11 @@ func NewEMA(period int) *EMA {
 	}
 }
 
-func (ema *EMA) Next(v float64) *EMA {
+func (ema *EMA) NextRaw(v float64) *EMA {
 	ema.Value = v * ema.alpha + ema.Value * (1 - ema.alpha)
 	return ema
+}
+
+func (ema *EMA) Next(frame *chrys.Frame) *EMA {
+	return ema.NextRaw(frame.Close)
 }

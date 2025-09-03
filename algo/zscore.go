@@ -3,7 +3,7 @@ package algo
 import "math"
 
 func ZScore(prices []float64) float64 {
-	mu := mean(prices)
+	mu := Mean(prices)
 	sumOfSquaredDifferences := 0.
 
 	for _, price := range prices {
