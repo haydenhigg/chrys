@@ -41,7 +41,7 @@ func main() {
 	)
 
 	series := chrys.NewSeries(pair, time.Hour)
-	order := chrys.NewOrder(pair, 0.10).SetIsLive(true) // ±10% live
+	order := chrys.NewOrder(pair, 0.10).SetIsLive(true) // ±10%
 
 	// set up pipeline
 	pipeline := chrys.NewPipeline().AddStage(func(now time.Time) error {
@@ -70,52 +70,6 @@ func main() {
 }
 ```
 
-## Asset
-`chrys.NewAsset(symbol, code string) *Asset`
-an asset with a human-readable symbol and an exchange-specific code
-- `Symbol string`
-- `Code string`
-
-## Pair
-`chrys.NewPair(base, quote string) *Pair`
-a pair with a human-readable name
-- `Base *Asset`
-- `Quote *Asset`
-
-## Series
-`chrys.NewSeries(pair *Pair, interval time.Duration) *Series`
-a `Pair` and an interval to get a chartable series
-- `Pair *Pair`
-- `Interval time.Duration`
-
-## Order
-`chrys.NewOrder(pair *Pair, percent float64) *Order`
-a `Pair` and order configuration details
-- `Pair *Pair`
-- `Percent float64`
-- `IsLive bool`
-- `Type OrderType` (e.g., `chrys.BUY`, `chrys.SELL`)
-
-#### functions
-- `SetIsLive(isLive bool) *Order`
-- `SetBuy() *Order`
-- `SetSell() *Order`
-
-## Client
-`chrys.NewClient(connector Connector) *Client`
-a caching client for connectors
-- `Connector Connector`
-- `FrameCache map[string]map[time.Duration][]*Frame`
-- `Balances map[string]float64`
-- `Fee float64`
-
-#### functions
-- `SetFee(fee float64) *Client`
-- `GetFramesSince(series *Series, t time.Time) ([]*Frame, error)`
-- `GetFrames(series *Series, t time.Time, n int) ([]*Frame, error)`
-- `GetBalances() (map[string]float64, error)`
-- `PlaceOrder(order *Order, t time.Time) error`
-
 ## Frame
 a frame of TOHLCV data (a "candle")
 - `Time time.Time`
@@ -139,3 +93,55 @@ a stateful function pipeline
 
 #### types
 - `type Stage = func(now time.Time) error`
+
+## Asset
+`chrys.NewAsset(symbol, code string) *Asset`
+
+an asset with a human-readable symbol and an exchange-specific code
+- `Symbol string`
+- `Code string`
+
+## Pair
+`chrys.NewPair(base, quote string) *Pair`
+
+a pair with a human-readable name
+- `Base *Asset`
+- `Quote *Asset`
+- `Name string`
+
+## Series
+`chrys.NewSeries(pair *Pair, interval time.Duration) *Series`
+
+a `Pair` and an interval to get a chartable series
+- `Pair *Pair`
+- `Interval time.Duration`
+
+## Order
+`chrys.NewOrder(pair *Pair, percent float64) *Order`
+
+a `Pair` and order configuration details
+- `Pair *Pair`
+- `Percent float64`
+- `IsLive bool`
+- `Type OrderType` (e.g., `chrys.BUY`, `chrys.SELL`)
+
+#### functions
+- `SetIsLive(isLive bool) *Order`
+- `SetBuy() *Order`
+- `SetSell() *Order`
+
+## Client
+`chrys.NewClient(connector Connector) *Client`
+
+a caching client for connectors
+- `Connector Connector`
+- `FrameCache map[string]map[time.Duration][]*Frame`
+- `Balances map[string]float64`
+- `Fee float64`
+
+#### functions
+- `SetFee(fee float64) *Client`
+- `GetFramesSince(series *Series, t time.Time) ([]*Frame, error)`
+- `GetFrames(series *Series, t time.Time, n int) ([]*Frame, error)`
+- `GetBalances() (map[string]float64, error)`
+- `PlaceOrder(order *Order, t time.Time) error`
