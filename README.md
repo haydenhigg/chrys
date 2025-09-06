@@ -81,6 +81,7 @@ a frame of TOHLCV data (a "candle")
 
 ## Pipeline
 `chrys.NewPipeline() *Pipeline`
+
 a stateful function pipeline
 - `Data map[string]float64`
 - `Stages []Stage`
