@@ -30,8 +30,8 @@ func (c *Historical) FetchFramesSince(
 ) ([]*chrys.Frame, error) {
 	filePath := filepath.Join(c.DataRoot, fmt.Sprintf(
 		c.NameFmt,
-		series.Pair.Base(),
-		series.Pair.Quote(),
+		series.Pair.Base.Symbol,
+		series.Pair.Quote.Symbol,
 		int(series.Interval.Minutes()),
 	))
 

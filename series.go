@@ -9,7 +9,7 @@ type Series struct {
 
 func NewSeries(pair *Pair, interval time.Duration) *Series {
 	return &Series{
-		Pair:     pair,
-		Interval: interval,
+		Pair:        pair,
+		Interval:    interval,
 	}
 }

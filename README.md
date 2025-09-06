@@ -2,13 +2,12 @@
 lightweight algorithmic trading framework
 
 ## to-do
-1. expand MLP implementation
-2. backtest machinery in `Pipeline`
-    - create `type Asset struct { Symbol, Code string }`
-    - make `Pair` into `struct { Base, Quote *Asset }` b/c that model is a little cleaner and it's good to be able to define a standalone asset for when there is a function `(client *Client) CalculateEquity(out *Asset, t time.Time) (float64, error)` (which is a big part of backtesting machinery)
+1. backtest machinery in `Pipeline`
+    - add `(client *Client) CalculateEquity(out *Asset, t time.Time) (float64, error)`
     - add `(pipeline *Pipeline) RunBacktest`
     - add new backtesting metrics
-3. algo state management components
+2. algo state management components
+3. expand MLP implementation
 4. add built-in logging to client
 5. plug-ins
 
@@ -36,7 +35,11 @@ func main() {
 	client := chrys.NewClient(c).SetFee(0.004)
 
 	// set up strategy data
-	pair := chrys.NewPair("BTC", "USD").SetCodes("XBT.F", "ZUSD")
+	pair := chrys.NewPair(
+		chrys.NewAsset("BTC", "XBT.F"),
+		chrys.NewAsset("USD", "ZUSD"),
+	)
+
 	series := chrys.NewSeries(pair, time.Hour)
 	order := chrys.NewOrder(pair, 0.10).SetIsLive(true) // ±10% live
 
@@ -67,57 +70,27 @@ func main() {
 }
 ```
 
-## chrys.Frame
-a frame of TOHLCV data (a "candle")
-
-#### fields
-- `Time time.Time`
-- `Open float64`
-- `High float64`
-- `Low float64`
-- `Close float64`
-- `Volume float64`
-
-## chrys.Pair
-a tradeable pair with customizable asset codes
-
-#### constructor
-`chrys.NewPair(base, quote string) *Pair`
-
-#### fields
+## Asset
+`chrys.NewAsset(symbol, code string) *Asset`
+an asset with a human-readable symbol and an exchange-specific code
 - `Symbol string`
-- `BaseCode string` (defaults to `base`)
-- `QuoteCode string` (defaults to `quote`)
+- `Code string`
 
-#### functions
-- `Base() string`
-- `Quote() string`
-- `SetBaseCode(baseCode string) *Pair`
-- `SetQuoteCode(quoteCode string) *Pair`
-- `SetCodes(baseCode, quoteCode string) *Pair`
+## Pair
+`chrys.NewPair(base, quote string) *Pair`
+a pair with a human-readable name
+- `Base *Asset`
+- `Quote *Asset`
 
-## chrys.Series
-a `chrys.Pair` and an interval
-
-#### constructor
+## Series
 `chrys.NewSeries(pair *Pair, interval time.Duration) *Series`
-
-#### fields
+a `Pair` and an interval to get a chartable series
 - `Pair *Pair`
 - `Interval time.Duration`
 
-## chrys.Order
-a `chrys.Pair` and order configuration details
-
-#### constructor
+## Order
 `chrys.NewOrder(pair *Pair, percent float64) *Order`
-
-#### types
-- `type OrderType string`
-    - `BUY = "buy"`
-    - `SELL = "sell"`
-
-#### fields
+a `Pair` and order configuration details
 - `Pair *Pair`
 - `Percent float64`
 - `IsLive bool`
@@ -128,13 +101,9 @@ a `chrys.Pair` and order configuration details
 - `SetBuy() *Order`
 - `SetSell() *Order`
 
-## chrys.Client
-a caching client for connectors
-
-#### constructor
+## Client
 `chrys.NewClient(connector Connector) *Client`
-
-#### fields
+a caching client for connectors
 - `Connector Connector`
 - `FrameCache map[string]map[time.Duration][]*Frame`
 - `Balances map[string]float64`
@@ -147,16 +116,18 @@ a caching client for connectors
 - `GetBalances() (map[string]float64, error)`
 - `PlaceOrder(order *Order, t time.Time) error`
 
-## chrys.Pipeline
-a stateful function pipeline
+## Frame
+a frame of TOHLCV data (a "candle")
+- `Time time.Time`
+- `Open float64`
+- `High float64`
+- `Low float64`
+- `Close float64`
+- `Volume float64`
 
-#### constructor
+## Pipeline
 `chrys.NewPipeline() *Pipeline`
-
-#### types
-- `type Stage = func(now time.Time) error`
-
-#### fields
+a stateful function pipeline
 - `Data map[string]float64`
 - `Stages []Stage`
 
@@ -165,3 +136,6 @@ a stateful function pipeline
 - `Set(k string, v float64) *Pipeline`
 - `AddStage(handler Stage) *Pipeline`
 - `Run(t time.Time) error` (processes stages in order)
+
+#### types
+- `type Stage = func(now time.Time) error`

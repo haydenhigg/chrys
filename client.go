@@ -37,14 +37,14 @@ func (client *Client) getCachedFramesSince(
 	t time.Time,
 ) ([]*Frame, bool) {
 	// ensure FrameCache[pair] exists
-	if _, ok := client.FrameCache[series.Pair.Symbol]; !ok {
-		client.FrameCache[series.Pair.Symbol] = map[time.Duration][]*Frame{}
+	if _, ok := client.FrameCache[series.Pair.Name]; !ok {
+		client.FrameCache[series.Pair.Name] = map[time.Duration][]*Frame{}
 		return nil, false
 	}
 
 	// assert that the frames exist and contain the time requested
 	t = t.Truncate(series.Interval)
-	frames, ok := client.FrameCache[series.Pair.Symbol][series.Interval]
+	frames, ok := client.FrameCache[series.Pair.Name][series.Interval]
 	if !ok || !frames[0].Time.Before(t.Add(series.Interval)) {
 		return nil, false
 	}
@@ -76,7 +76,7 @@ func (client *Client) GetFramesSince(
 		return nil, err
 	}
 
-	client.FrameCache[series.Pair.Symbol][series.Interval] = frames
+	client.FrameCache[series.Pair.Name][series.Interval] = frames
 
 	return frames, nil
 }
@@ -127,7 +127,7 @@ func (client *Client) getCachedPriceAt(
 	pair *Pair,
 	t time.Time,
 ) (float64, bool) {
-	if intervalFrames, ok := client.FrameCache[pair.Symbol]; ok {
+	if intervalFrames, ok := client.FrameCache[pair.Name]; ok {
 		// scan all intervals for pair
 		for interval, frames := range intervalFrames {
 			// look for the frame before (because using the Close)
@@ -141,7 +141,7 @@ func (client *Client) getCachedPriceAt(
 		}
 	} else {
 		// ensure FrameCache[pair] exists
-		client.FrameCache[pair.Symbol] = map[time.Duration][]*Frame{}
+		client.FrameCache[pair.Name] = map[time.Duration][]*Frame{}
 	}
 
 	return 0, false
@@ -172,10 +172,10 @@ func (client *Client) PlaceOrder(order *Order, t time.Time) error {
 
 	switch order.Type {
 	case BUY:
-		quoteQuantity = order.Percent * balances[order.Pair.QuoteCode]
+		quoteQuantity = order.Percent * balances[order.Pair.Quote.Code]
 		baseQuantity = quoteQuantity / price
 	case SELL:
-		baseQuantity = order.Percent * balances[order.Pair.BaseCode]
+		baseQuantity = order.Percent * balances[order.Pair.Base.Code]
 		quoteQuantity = baseQuantity * price
 	}
 
@@ -183,7 +183,7 @@ func (client *Client) PlaceOrder(order *Order, t time.Time) error {
 	if order.IsLive {
 		err = client.Connector.PlaceMarketOrder(
 			string(order.Type),
-			order.Pair.Symbol,
+			order.Pair.Name,
 			baseQuantity,
 		)
 		if err != nil {
@@ -196,11 +196,11 @@ func (client *Client) PlaceOrder(order *Order, t time.Time) error {
 
 	switch order.Type {
 	case BUY:
-		client.Balances[order.Pair.QuoteCode] -= quoteQuantity
-		client.Balances[order.Pair.BaseCode] += baseQuantity * invFee
+		client.Balances[order.Pair.Quote.Code] -= quoteQuantity
+		client.Balances[order.Pair.Base.Code] += baseQuantity * invFee
 	case SELL:
-		client.Balances[order.Pair.BaseCode] -= baseQuantity
-		client.Balances[order.Pair.QuoteCode] += quoteQuantity * invFee
+		client.Balances[order.Pair.Base.Code] -= baseQuantity
+		client.Balances[order.Pair.Quote.Code] += quoteQuantity * invFee
 	}
 
 	return nil

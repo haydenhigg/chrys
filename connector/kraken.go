@@ -156,7 +156,7 @@ func (c *Kraken) FetchFramesSince(
 	sinceTimestamp := since.Truncate(series.Interval).Unix() - 1
 	rawResponse, err := c.public("GET", "/OHLC", &Payload{
 		Query: url.Values{
-			"pair":     {series.Pair.Symbol},
+			"pair":     {series.Pair.Name},
 			"interval": {strconv.Itoa(int(series.Interval.Minutes()))},
 			"since":    {strconv.FormatInt(sinceTimestamp, 10)},
 		},
@@ -176,7 +176,7 @@ func (c *Kraken) FetchFramesSince(
 		return nil, errors.New(response.Errors[0])
 	}
 
-	rawFrames, ok := response.Result[series.Pair.Symbol]
+	rawFrames, ok := response.Result[series.Pair.Name]
 	if !ok {
 		return nil, errors.New("no frames retrieved for pair")
 	}
