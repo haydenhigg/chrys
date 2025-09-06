@@ -1,7 +1,36 @@
 package algo
 
-import "github.com/haydenhigg/chrys"
+import (
+	"math"
+	"github.com/haydenhigg/chrys"
+)
 
+// mathematical utilities
+func Mean(xs []float64) float64 {
+	sum := 0.
+
+	for _, x := range xs {
+		sum += x
+	}
+
+	return sum / float64(len(xs))
+}
+
+func Variance(xs []float64, mean float64) float64 {
+	sum := 0.
+
+	for _, x := range xs {
+		sum += math.Pow(x-mean, 2)
+	}
+
+	return sum / float64(len(xs)-1)
+}
+
+func StandardDeviation(xs []float64, mean float64) float64 {
+	return math.Sqrt(Variance(xs, mean))
+}
+
+// frame utilities
 func MapFrames(
 	frames []*chrys.Frame,
 	processor func(*chrys.Frame) float64,

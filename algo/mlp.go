@@ -1,3 +1,8 @@
+/**
+ * This is not production-ready. It is still in progress, and it may not get
+ * finished at all. USE AT YOUR OWN RISK!
+ */
+
 package algo
 
 import (

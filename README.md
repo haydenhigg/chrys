@@ -2,13 +2,16 @@
 lightweight algorithmic trading framework
 
 ## to-do
-1. backtest machinery in `Pipeline`
+1. algo state management (through `Pipeline`? or its own component?)
+2. backtest machinery
     - add `(client *Client) CalculateEquity(out *Asset, t time.Time) (float64, error)`
     - add `(pipeline *Pipeline) RunBacktest`
-    - add new backtesting metrics
-2. algo state management components
-3. expand MLP implementation
-4. add built-in logging to client
+    - add more backtesting metrics (volatility, Sharpe ratio)
+3. add/test more algos
+    - ADI
+    - MFI
+    - make ZScore Incremental (`interface { NextRaw(v float64) Incremental; Next(frame *chrys.Frame) Incremental }`)
+4. expand MLP implementation
 5. plug-ins
 
 ## example
