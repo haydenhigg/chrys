@@ -19,7 +19,7 @@ func NewMACD(fastPeriod, slowPeriod, signalPeriod int) *MACD {
 
 func (macd *MACD) NextRaw(v float64) *MACD {
 	line := macd.Fast.NextRaw(v).Value - macd.Slow.NextRaw(v).Value
-	macd.Value = macd.Signal.NextRaw(v).Value - line
+	macd.Value = macd.Signal.NextRaw(line).Value - line
 	return macd
 }
 
