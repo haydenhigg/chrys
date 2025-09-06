@@ -13,7 +13,7 @@ type ATR struct {
 
 func NewATR(period int) *ATR {
 	return &ATR{
-		Period: period,
+		Period:    period,
 		lastClose: 0,
 	}
 }
@@ -25,9 +25,9 @@ func (atr *ATR) NextRaw(v float64) *ATR {
 
 func (atr *ATR) Next(frame *chrys.Frame) *ATR {
 	atr.NextRaw(max(
-		frame.High - frame.Low,
-		math.Abs(frame.High - atr.lastClose),
-		math.Abs(frame.Low - atr.lastClose),
+		frame.High-frame.Low,
+		math.Abs(frame.High-atr.lastClose),
+		math.Abs(frame.Low-atr.lastClose),
 	))
 	atr.lastClose = frame.Close
 	return atr

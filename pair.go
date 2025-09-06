@@ -12,6 +12,6 @@ func NewPair(base, quote *Asset) *Pair {
 	return &Pair{
 		Base:  base,
 		Quote: quote,
-		Name: fmt.Sprintf("%s/%s", base.Symbol, quote.Symbol),
+		Name:  fmt.Sprintf("%s/%s", base.Symbol, quote.Symbol),
 	}
 }

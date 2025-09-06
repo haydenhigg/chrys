@@ -8,6 +8,6 @@ type Asset struct {
 func NewAsset(symbol, code string) *Asset {
 	return &Asset{
 		Symbol: symbol,
-		Code: code,
+		Code:   code,
 	}
 }
