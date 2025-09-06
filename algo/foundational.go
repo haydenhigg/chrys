@@ -19,7 +19,7 @@ func Variance(xs []float64, mean float64) float64 {
 		sum += math.Pow(x-mean, 2)
 	}
 
-	return sum / float64(len(xs) - 1)
+	return sum / float64(len(xs)-1)
 }
 
 func StandardDeviation(xs []float64, mean float64) float64 {
