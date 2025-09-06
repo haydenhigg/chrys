@@ -16,7 +16,7 @@ type Frame struct {
 
 func (frame *Frame) String() string {
 	return fmt.Sprintf(
-		"&Frame{%s %f %f %f %f %f}",
+		"&Frame{Time:%s Open:%f High:%f Low:%f Close:%f Volume:%f}",
 		frame.Time,
 		frame.Open,
 		frame.High,

@@ -82,22 +82,6 @@ a frame of TOHLCV data (a "candle")
 - `Close float64`
 - `Volume float64`
 
-## Pipeline
-`chrys.NewPipeline() *Pipeline`
-
-a stateful function pipeline
-- `Data map[string]float64`
-- `Stages []Stage`
-
-#### functions
-- `Get(k string) float64`
-- `Set(k string, v float64) *Pipeline`
-- `AddStage(handler Stage) *Pipeline`
-- `Run(t time.Time) error` (processes stages in order)
-
-#### types
-- `type Stage = func(now time.Time) error`
-
 ## Asset
 `chrys.NewAsset(symbol, code string) *Asset`
 
@@ -149,3 +133,19 @@ a caching client for connectors
 - `GetFrames(series *Series, t time.Time, n int) ([]*Frame, error)`
 - `GetBalances() (map[string]float64, error)`
 - `PlaceOrder(order *Order, t time.Time) error`
+
+## Pipeline
+`chrys.NewPipeline() *Pipeline`
+
+a stateful function pipeline
+- `Data map[string]float64`
+- `Stages []Stage`
+
+#### functions
+- `Get(k string) float64`
+- `Set(k string, v float64) *Pipeline`
+- `AddStage(handler Stage) *Pipeline`
+- `Run(t time.Time) error` (processes stages in order)
+
+#### types
+- `type Stage = func(now time.Time) error`
