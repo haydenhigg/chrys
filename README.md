@@ -52,28 +52,20 @@ func main() {
 	series := chrys.NewSeries(pair, time.Hour)
 	order := chrys.NewOrder(pair, 0.10).SetIsLive(true) // ±10%
 
-	fast := algo.EMA(12)
-	slow := algo.EMA(26)
-
 	// set up pipeline
 	pipeline := chrys.NewPipeline().AddStage(func(now time.Time) error {
-		frames, err := client.GetFrames(series, now, 1)
+		frames, err := client.GetFrames(series, now, 20)
 		if err != nil {
 			return err
 		}
 
-		oldFast := fast.Val()
-		oldSlow := slow.Val()
-
-		fast.ApplyFrame(frames[0])
-		slow.ApplyFrame(frames[0])
-
-		fmt.Printf("fast = %f\nslow = %f\n", fast.Val(), slow.Val())
+		zScore := algo.ZScore(algo.Closes(frames))
+		fmt.Println("BB(20) =", zScore)
 
 		err = nil
-		if oldFast < oldSlow && fast.Val() > slow.Val() {
+		if zScore > 2 {
 			err = client.PlaceOrder(order.SetBuy(), now)
-		} else if oldFast > oldSlow && fast.Val() < slow.Val() {
+		} else if zScore < -2 {
 			err = client.PlaceOrder(order.SetSell(), now)
 		}
 
