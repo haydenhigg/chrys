@@ -8,7 +8,6 @@ import (
 type ATR struct {
 	Average   *MA
 	LastClose float64
-	Value     float64
 }
 
 func NewATR(period int) *ATR {
@@ -33,5 +32,5 @@ func (atr *ATR) ApplyFrame(frame *chrys.Frame) Composable {
 }
 
 func (atr *ATR) Val() float64 {
-	return atr.Value
+	return atr.Average.Val()
 }
