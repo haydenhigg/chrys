@@ -63,9 +63,9 @@ func main() {
 		fmt.Println("BB(20) =", zScore)
 
 		err = nil
-		if zScore > 2 {
+		if zScore < -2 {
 			err = client.PlaceOrder(order.SetBuy(), now)
-		} else if zScore < -2 {
+		} else if zScore > 2 {
 			err = client.PlaceOrder(order.SetSell(), now)
 		}
 
