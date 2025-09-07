@@ -1,60 +1,33 @@
 package algo
 
-import (
-	"math"
-	"github.com/haydenhigg/chrys"
-)
+import "github.com/haydenhigg/chrys"
 
-// mathematical utilities
-func Mean(xs []float64) float64 {
-	sum := 0.
-
-	for _, x := range xs {
-		sum += x
-	}
-
-	return sum / float64(len(xs))
+type Composable interface {
+	Apply(x float64) Composable
+	ApplyFrame(frame *chrys.Frame) Composable
+	Val() float64
 }
 
-func Variance(xs []float64, mean float64) float64 {
-	sum := 0.
-
-	for _, x := range xs {
-		sum += math.Pow(x-mean, 2)
-	}
-
-	return sum / float64(len(xs)-1)
+type Composed struct {
+	A     Composable
+	B     Composable
+	Value float64
 }
 
-func StandardDeviation(xs []float64, mean float64) float64 {
-	return math.Sqrt(Variance(xs, mean))
+func (composed *Composed) Apply(x float64) Composable {
+	composed.Value = composed.A.Apply(composed.B.Apply(x).Val()).Val()
+	return composed
 }
 
-// frame utilities
-func MapFrames(
-	frames []*chrys.Frame,
-	processor func(*chrys.Frame) float64,
-) []float64 {
-	processed := make([]float64, len(frames))
-	for i, frame := range frames {
-		processed[i] = processor(frame)
-	}
-
-	return processed
+func (composed *Composed) ApplyFrame(frame *chrys.Frame) Composable {
+	composed.Value = composed.A.Apply(composed.B.ApplyFrame(frame).Val()).Val()
+	return composed
 }
 
-func Opens(frames []*chrys.Frame) []float64 {
-	return MapFrames(frames, func(f *chrys.Frame) float64 { return f.Open })
+func (composed *Composed) Val() float64 {
+	return composed.Value
 }
 
-func Highs(frames []*chrys.Frame) []float64 {
-	return MapFrames(frames, func(f *chrys.Frame) float64 { return f.High })
-}
-
-func Lows(frames []*chrys.Frame) []float64 {
-	return MapFrames(frames, func(f *chrys.Frame) float64 { return f.Low })
-}
-
-func Closes(frames []*chrys.Frame) []float64 {
-	return MapFrames(frames, func(f *chrys.Frame) float64 { return f.Close })
+func Compose(a, b Composable) Composable {
+	return &Composed{A: a, B: b}
 }

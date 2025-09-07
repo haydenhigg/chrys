@@ -1,18 +1,24 @@
 # chrys
 lightweight algorithmic trading framework
 
+## principles
+* **Composability**: functionality is achieved by combining several logical building blocks at varying levels of abstraction.
+* **Flexibility**: all trading parameters and dynamics can be modified (... but they come with rational defaults).
+
 ## to-do
-1. algo state management (through `Pipeline`? or its own component?)
-2. backtest machinery
+1. algo composability (`type Machine interface { Next(*chrys.Frame) Machine; Value() float64 }` and `type Composer struct { ... }` that implements `Machine` as well as `interface { Add(Machine) Machine }`)
+    - make ZScore a Machine (`interface { NextRaw(v float64) Incremental; Next(frame *chrys.Frame) Incremental }`)
+    - make MA into its own Machine and simplify ATR as a result (ATR's moving average calculation is *wrong*! make sure to retest the live strategy after this.)
+    - figure out Composer
+2. algo state management (through `Pipeline`? or its own component?)
+3. backtest machinery
     - add `(client *Client) CalculateEquity(out *Asset, t time.Time) (float64, error)`
     - add `(pipeline *Pipeline) RunBacktest`
     - add more backtesting metrics (volatility, Sharpe ratio)
-3. add/test more algos
+4. add/test more algos
     - ADI
     - MFI
-    - make ZScore Incremental (`interface { NextRaw(v float64) Incremental; Next(frame *chrys.Frame) Incremental }`)
-4. expand MLP implementation
-5. plug-ins
+5. expand MLP implementation
 
 ## example
 This trades on **BOLL(20, 2)** signals for **1h BTC/USD** using a **10%** fractional trade amount.
@@ -46,20 +52,28 @@ func main() {
 	series := chrys.NewSeries(pair, time.Hour)
 	order := chrys.NewOrder(pair, 0.10).SetIsLive(true) // ±10%
 
+	fast := algo.EMA(12)
+	slow := algo.EMA(26)
+
 	// set up pipeline
 	pipeline := chrys.NewPipeline().AddStage(func(now time.Time) error {
-		frames, err := client.GetFrames(series, now, 20)
+		frames, err := client.GetFrames(series, now, 1)
 		if err != nil {
 			return err
 		}
 
-		zScore := algo.ZScore(algo.Closes(frames))
-		fmt.Println("BB =", zScore)
+		oldFast := fast.Val()
+		oldSlow := slow.Val()
+
+		fast.ApplyFrame(frames[0])
+		slow.ApplyFrame(frames[0])
+
+		fmt.Printf("fast = %f\nslow = %f\n", fast.Val(), slow.Val())
 
 		err = nil
-		if zScore < -2 {
+		if oldFast < oldSlow && fast.Val() > slow.Val() {
 			err = client.PlaceOrder(order.SetBuy(), now)
-		} else if zScore > 2 {
+		} else if oldFast > oldSlow && fast.Val() < slow.Val() {
 			err = client.PlaceOrder(order.SetSell(), now)
 		}
 

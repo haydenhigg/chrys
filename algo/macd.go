@@ -3,10 +3,10 @@ package algo
 import "github.com/haydenhigg/chrys"
 
 type MACD struct {
-	Value  float64
 	Fast   *EMA
 	Slow   *EMA
 	Signal *EMA
+	Value  float64
 }
 
 func NewMACD(fastPeriod, slowPeriod, signalPeriod int) *MACD {
@@ -17,12 +17,16 @@ func NewMACD(fastPeriod, slowPeriod, signalPeriod int) *MACD {
 	}
 }
 
-func (macd *MACD) NextRaw(v float64) *MACD {
-	line := macd.Fast.NextRaw(v).Value - macd.Slow.NextRaw(v).Value
-	macd.Value = macd.Signal.NextRaw(line).Value - line
+func (macd *MACD) Apply(x float64) Composable {
+	line := macd.Fast.Apply(x).Val() - macd.Slow.Apply(x).Val()
+	macd.Value = macd.Signal.Apply(line).Val() - line
 	return macd
 }
 
-func (macd *MACD) Next(frame *chrys.Frame) *MACD {
-	return macd.NextRaw(frame.Close)
+func (macd *MACD) ApplyFrame(frame *chrys.Frame) Composable {
+	return macd.Apply(frame.Close)
+}
+
+func (macd *MACD) Val() float64 {
+	return macd.Value
 }

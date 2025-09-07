@@ -6,29 +6,32 @@ import (
 )
 
 type ATR struct {
-	Value     float64
-	Period    int
+	Average   *MA
 	LastClose float64
+	Value     float64
 }
 
 func NewATR(period int) *ATR {
 	return &ATR{
-		Period:    period,
-		LastClose: 0,
+		Average: NewMA(period),
 	}
 }
 
-func (atr *ATR) NextRaw(v float64) *ATR {
-	atr.Value = (atr.Value + v) / float64(atr.Period)
+func (atr *ATR) Apply(x float64) Composable {
+	atr.Average.Apply(x)
 	return atr
 }
 
-func (atr *ATR) Next(frame *chrys.Frame) *ATR {
-	atr.NextRaw(max(
+func (atr *ATR) ApplyFrame(frame *chrys.Frame) Composable {
+	atr.Apply(max(
 		frame.High-frame.Low,
 		math.Abs(frame.High-atr.LastClose),
 		math.Abs(frame.Low-atr.LastClose),
 	))
 	atr.LastClose = frame.Close
 	return atr
+}
+
+func (atr *ATR) Val() float64 {
+	return atr.Value
 }
