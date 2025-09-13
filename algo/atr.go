@@ -16,12 +16,12 @@ func NewATR(period int) *ATR {
 	}
 }
 
-func (atr *ATR) Apply(x float64) Composable {
+func (atr *ATR) Apply(x float64) Machine {
 	atr.Average.Apply(x)
 	return atr
 }
 
-func (atr *ATR) ApplyFrame(frame *chrys.Frame) Composable {
+func (atr *ATR) ApplyFrame(frame *chrys.Frame) Machine {
 	atr.Apply(max(
 		frame.High-frame.Low,
 		math.Abs(frame.High-atr.LastClose),

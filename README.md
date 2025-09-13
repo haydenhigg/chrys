@@ -6,18 +6,17 @@ lightweight algorithmic trading framework
 * **Flexibility**: all trading parameters and dynamics can be modified (... but they come with rational defaults).
 
 ## to-do
-1. algo composability (`type Machine interface { Next(*chrys.Frame) Machine; Value() float64 }` and `type Composer struct { ... }` that implements `Machine` as well as `interface { Add(Machine) Machine }`)
-    - make ZScore a Machine (`interface { NextRaw(v float64) Incremental; Next(frame *chrys.Frame) Incremental }`)
-    - make MA into its own Machine and simplify ATR as a result (ATR's moving average calculation is *wrong*! make sure to retest the live strategy after this.)
-    - figure out Composer
+1. put domain-modelling objects in domain/ subdirectory
 2. algo state management (through `Pipeline`? or its own component?)
 3. backtest machinery
     - add `(client *Client) CalculateEquity(out *Asset, t time.Time) (float64, error)`
     - add `(pipeline *Pipeline) RunBacktest`
     - add more backtesting metrics (volatility, Sharpe ratio)
 4. add/test more algos
+    - ROC
     - ADI
     - MFI
+    - make ZScore a Machine
 5. expand MLP implementation
 
 ## example

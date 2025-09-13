@@ -17,13 +17,13 @@ func NewMACD(fastPeriod, slowPeriod, signalPeriod int) *MACD {
 	}
 }
 
-func (macd *MACD) Apply(x float64) Composable {
+func (macd *MACD) Apply(x float64) Machine {
 	line := macd.Fast.Apply(x).Val() - macd.Slow.Apply(x).Val()
 	macd.Value = macd.Signal.Apply(line).Val() - line
 	return macd
 }
 
-func (macd *MACD) ApplyFrame(frame *chrys.Frame) Composable {
+func (macd *MACD) ApplyFrame(frame *chrys.Frame) Machine {
 	return macd.Apply(frame.Close)
 }
 

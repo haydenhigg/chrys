@@ -13,12 +13,12 @@ func NewMA(period int) *MA {
 	}
 }
 
-func (ma *MA) Apply(x float64) Composable {
+func (ma *MA) Apply(x float64) Machine {
 	ma.Value = (x + ma.Value*(ma.Period-1)) / ma.Period
 	return ma
 }
 
-func (ma *MA) ApplyFrame(frame *chrys.Frame) Composable {
+func (ma *MA) ApplyFrame(frame *chrys.Frame) Machine {
 	return ma.Apply(frame.Close)
 }
 

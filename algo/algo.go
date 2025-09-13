@@ -2,32 +2,56 @@ package algo
 
 import "github.com/haydenhigg/chrys"
 
-type Composable interface {
-	Apply(x float64) Composable
-	ApplyFrame(frame *chrys.Frame) Composable
+type Machine interface {
+	Apply(x float64) Machine
+	ApplyFrame(frame *chrys.Frame) Machine
 	Val() float64
 }
 
-type Composed struct {
-	A     Composable
-	B     Composable
-	Value float64
+type Composer struct {
+	Machines []Machine
+	Value    float64
 }
 
-func (composed *Composed) Apply(x float64) Composable {
-	composed.Value = composed.A.Apply(composed.B.Apply(x).Val()).Val()
-	return composed
+func NewComposer(initial Machine) *Composer {
+	return &Composer{
+		Machines: []Machine{initial},
+	}
 }
 
-func (composed *Composed) ApplyFrame(frame *chrys.Frame) Composable {
-	composed.Value = composed.A.Apply(composed.B.ApplyFrame(frame).Val()).Val()
-	return composed
+func (composer *Composer) Of(machine Machine) *Composer {
+	composer.Machines = append(composer.Machines, machine)
+	return composer
 }
 
-func (composed *Composed) Val() float64 {
-	return composed.Value
+func (composer *Composer) feedForward(initial func(machine Machine) float64) {
+	endIndex := len(composer.Machines) - 1
+	for i := range composer.Machines {
+		machine := composer.Machines[endIndex-i]
+		if i == 0 {
+			composer.Value = initial(machine)
+		} else {
+			composer.Value = machine.Apply(composer.Value).Val()
+		}
+	}
 }
 
-func Compose(a, b Composable) Composable {
-	return &Composed{A: a, B: b}
+func (composer *Composer) Apply(x float64) Machine {
+	composer.feedForward(func(machine Machine) float64 {
+		return machine.Apply(x).Val()
+	})
+
+	return composer
+}
+
+func (composer *Composer) ApplyFrame(frame *chrys.Frame) Machine {
+	composer.feedForward(func(machine Machine) float64 {
+		return machine.ApplyFrame(frame).Val()
+	})
+
+	return composer
+}
+
+func (composer *Composer) Val() float64 {
+	return composer.Value
 }

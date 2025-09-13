@@ -13,12 +13,12 @@ func NewEMA(period int) *EMA {
 	}
 }
 
-func (ema *EMA) Apply(x float64) Composable {
+func (ema *EMA) Apply(x float64) Machine {
 	ema.Value = x*ema.Alpha + ema.Value*(1-ema.Alpha)
 	return ema
 }
 
-func (ema *EMA) ApplyFrame(frame *chrys.Frame) Composable {
+func (ema *EMA) ApplyFrame(frame *chrys.Frame) Machine {
 	return ema.Apply(frame.Close)
 }
 
