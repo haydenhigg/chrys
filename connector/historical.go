@@ -25,14 +25,15 @@ func NewHistorical(dataRoot, nameFmt string) *Historical {
 }
 
 func (c *Historical) FetchFramesSince(
-	series *chrys.Series,
+	pair *chrys.Pair,
+	interval time.Duration,
 	since time.Time,
 ) ([]*chrys.Frame, error) {
 	filePath := filepath.Join(c.DataRoot, fmt.Sprintf(
 		c.NameFmt,
-		series.Pair.Base.Symbol,
-		series.Pair.Quote.Symbol,
-		int(series.Interval.Minutes()),
+		pair.Base.Symbol,
+		pair.Quote.Symbol,
+		int(interval.Minutes()),
 	))
 
 	file, err := os.Open(filePath)

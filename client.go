@@ -4,7 +4,8 @@ import "time"
 
 type Connector interface {
 	FetchFramesSince(
-		series *Series,
+		pair *Pair,
+		interval time.Duration,
 		since time.Time,
 	) ([]*Frame, error)
 	FetchBalances() (map[string]float64, error)
@@ -33,23 +34,24 @@ func (client *Client) SetFee(fee float64) *Client {
 
 // frames
 func (client *Client) getCachedFramesSince(
-	series *Series,
+	pair *Pair,
+	interval time.Duration,
 	t time.Time,
 ) ([]*Frame, bool) {
 	// ensure FrameCache[pair] exists
-	if _, ok := client.FrameCache[series.Pair.Name]; !ok {
-		client.FrameCache[series.Pair.Name] = map[time.Duration][]*Frame{}
+	if _, ok := client.FrameCache[pair.Name]; !ok {
+		client.FrameCache[pair.Name] = map[time.Duration][]*Frame{}
 		return nil, false
 	}
 
 	// assert that the frames exist and contain the time requested
-	t = t.Truncate(series.Interval)
-	frames, ok := client.FrameCache[series.Pair.Name][series.Interval]
-	if !ok || !frames[0].Time.Before(t.Add(series.Interval)) {
+	t = t.Truncate(interval)
+	frames, ok := client.FrameCache[pair.Name][interval]
+	if !ok || !frames[0].Time.Before(t.Add(interval)) {
 		return nil, false
 	}
 
-	// chop off oldest frames
+	// chop off older frames
 	for i, frame := range frames {
 		if !frame.Time.Before(t) {
 			return frames[i:], true
@@ -60,35 +62,37 @@ func (client *Client) getCachedFramesSince(
 }
 
 func (client *Client) GetFramesSince(
-	series *Series,
+	pair *Pair,
+	interval time.Duration,
 	t time.Time,
 ) ([]*Frame, error) {
-	t = t.Truncate(series.Interval)
+	t = t.Truncate(interval)
 
 	// check cache
-	if frames, ok := client.getCachedFramesSince(series, t); ok {
+	if frames, ok := client.getCachedFramesSince(pair, interval, t); ok {
 		return frames, nil
 	}
 
 	// retrieve from data source
-	frames, err := client.Connector.FetchFramesSince(series, t)
+	frames, err := client.Connector.FetchFramesSince(pair, interval, t)
 	if err != nil {
 		return nil, err
 	}
 
-	client.FrameCache[series.Pair.Name][series.Interval] = frames
+	client.FrameCache[pair.Name][interval] = frames
 
 	return frames, nil
 }
 
 func (client *Client) GetFrames(
-	series *Series,
+	pair *Pair,
+	interval time.Duration,
 	t time.Time,
 	n int,
 ) ([]*Frame, error) {
-	t = t.Add(time.Duration(-n) * series.Interval)
+	t = t.Add(time.Duration(-n) * interval)
 
-	frames, err := client.GetFramesSince(series, t)
+	frames, err := client.GetFramesSince(pair, interval, t)
 	if err != nil {
 		return nil, err
 	}
@@ -153,8 +157,7 @@ func (client *Client) PlaceOrder(order *Order, t time.Time) error {
 	// get latest price
 	price, ok := client.getCachedPriceAt(order.Pair, t)
 	if !ok {
-		minSeries := NewSeries(order.Pair, time.Minute)
-		frames, err := client.GetFrames(minSeries, t, 1)
+		frames, err := client.GetFrames(order.Pair, time.Minute, t, 1)
 		if err != nil {
 			return err
 		}

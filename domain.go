@@ -5,10 +5,20 @@ import (
 	"time"
 )
 
-// domain-modeling utilities
+// Frame
+type Frame struct {
+	Time   time.Time
+	Open   float64
+	High   float64
+	Low    float64
+	Close  float64
+	Volume float64
+}
+
+// Asset
 type Asset struct {
 	Symbol string
-	Code   string // for trading
+	Code   string // for balances
 }
 
 func NewAsset(symbol, code string) *Asset {
@@ -18,6 +28,7 @@ func NewAsset(symbol, code string) *Asset {
 	}
 }
 
+// Pair
 type Pair struct {
 	Base  *Asset
 	Quote *Asset
@@ -29,17 +40,5 @@ func NewPair(base, quote *Asset) *Pair {
 		Base:  base,
 		Quote: quote,
 		Name:  fmt.Sprintf("%s/%s", base.Symbol, quote.Symbol),
-	}
-}
-
-type Series struct {
-	Pair     *Pair
-	Interval time.Duration
-}
-
-func NewSeries(pair *Pair, interval time.Duration) *Series {
-	return &Series{
-		Pair:     pair,
-		Interval: interval,
 	}
 }

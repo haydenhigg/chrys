@@ -6,18 +6,20 @@ lightweight algorithmic trading framework
 * **Flexibility**: all trading parameters and dynamics can be modified (... but they come with rational defaults).
 
 ## to-do
-1. put domain-modelling objects in domain/ subdirectory
-2. algo state management (through `Pipeline`? or its own component?)
-3. backtest machinery
-    - add `(client *Client) CalculateEquity(out *Asset, t time.Time) (float64, error)`
-    - add `(pipeline *Pipeline) RunBacktest`
-    - add more backtesting metrics (volatility, Sharpe ratio)
+1. clean up Frame/Asset/Pair and put them into a new subdirectory `domain/`
+2. backtest machinery
+    - write `(pipeline *Pipeline) RunBetween(start, end time.Time) error`
+    - write `(client *Client) CalculateEquity(out *Asset, t time.Time) (float64, error)`
+3. backtest metrics
+    - volatility
+    - Sharpe ratio
 4. add/test more algos
     - ROC
     - ADI
     - MFI
     - make ZScore a Machine
-5. expand MLP implementation
+    - make TrueRange a Machine
+5. unit tests
 
 ## example
 This trades on **BOLL(20, 2)** signals for **1h BTC/USD** using a **10%** fractional trade amount.
@@ -47,13 +49,11 @@ func main() {
 		chrys.NewAsset("BTC", "XBT.F"),
 		chrys.NewAsset("USD", "ZUSD"),
 	)
-
-	series := chrys.NewSeries(pair, time.Hour)
 	order := chrys.NewOrder(pair, 0.10).SetIsLive(true) // ±10%
 
 	// set up pipeline
 	pipeline := chrys.NewPipeline().AddStage(func(now time.Time) error {
-		frames, err := client.GetFrames(series, now, 20)
+		frames, err := client.GetFrames(pair, time.Hour, now, 20)
 		if err != nil {
 			return err
 		}
@@ -102,13 +102,6 @@ a pair with a human-readable name
 - `Quote *Asset`
 - `Name string`
 
-## Series
-`chrys.NewSeries(pair *Pair, interval time.Duration) *Series`
-
-a `Pair` and an interval to get a chartable series
-- `Pair *Pair`
-- `Interval time.Duration`
-
 ## Order
 `chrys.NewOrder(pair *Pair, percent float64) *Order`
 
@@ -134,8 +127,8 @@ a caching client for connectors
 
 #### functions
 - `SetFee(fee float64) *Client`
-- `GetFramesSince(series *Series, t time.Time) ([]*Frame, error)`
-- `GetFrames(series *Series, t time.Time, n int) ([]*Frame, error)`
+- `GetFramesSince(pair *Pair, interval time.Duration, t time.Time) ([]*Frame, error)`
+- `GetFrames(pair *Pair, interval time.Duration, t time.Time, n int) ([]*Frame, error)`
 - `GetBalances() (map[string]float64, error)`
 - `PlaceOrder(order *Order, t time.Time) error`
 
