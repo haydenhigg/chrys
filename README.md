@@ -109,7 +109,7 @@ a `Pair` and order configuration details
 - `Pair *Pair`
 - `Percent float64`
 - `IsLive bool`
-- `Type OrderType` (e.g., `chrys.BUY`, `chrys.SELL`)
+- `Type OrderType` (e.g., `chrys.MARKET_BUY`, `chrys.MARKET_SELL`)
 
 #### functions
 - `SetIsLive(isLive bool) *Order`

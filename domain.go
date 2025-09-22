@@ -19,7 +19,7 @@ type Frame struct {
 // Asset
 type Asset struct {
 	Symbol string
-	Code   string // for balances
+	Code   string // exchange-specific, for balances
 }
 
 func NewAsset(symbol, code string) *Asset {
@@ -49,7 +49,7 @@ type OrderType string
 
 const (
 	MARKET_BUY  OrderType = "buy"
-	MARKET_SELL           = "sell"
+	MARKET_SELL OrderType = "sell"
 )
 
 type Order struct {

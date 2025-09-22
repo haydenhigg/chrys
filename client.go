@@ -102,7 +102,7 @@ func (client *Client) GetFrames(
 
 // balances
 func (client *Client) getStoredBalances() (map[string]float64, bool) {
-	if client.Balances == nil || len(client.Balances) == 0 {
+	if len(client.Balances) == 0 {
 		return nil, false
 	}
 
