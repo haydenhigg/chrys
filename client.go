@@ -152,8 +152,6 @@ func (client *Client) getCachedPriceAt(
 }
 
 func (client *Client) PlaceOrder(order *Order, t time.Time) error {
-	order.normalize()
-
 	// get latest price
 	price, ok := client.getCachedPriceAt(order.Pair, t)
 	if !ok {
@@ -174,10 +172,10 @@ func (client *Client) PlaceOrder(order *Order, t time.Time) error {
 	var baseQuantity, quoteQuantity float64
 
 	switch order.Type {
-	case BUY:
+	case MARKET_BUY:
 		quoteQuantity = order.Percent * balances[order.Pair.Quote.Code]
 		baseQuantity = quoteQuantity / price
-	case SELL:
+	case MARKET_SELL:
 		baseQuantity = order.Percent * balances[order.Pair.Base.Code]
 		quoteQuantity = baseQuantity * price
 	}
@@ -198,10 +196,10 @@ func (client *Client) PlaceOrder(order *Order, t time.Time) error {
 	invFee := 1 - client.Fee
 
 	switch order.Type {
-	case BUY:
+	case MARKET_BUY:
 		client.Balances[order.Pair.Quote.Code] -= quoteQuantity
 		client.Balances[order.Pair.Base.Code] += baseQuantity * invFee
-	case SELL:
+	case MARKET_SELL:
 		client.Balances[order.Pair.Base.Code] -= baseQuantity
 		client.Balances[order.Pair.Quote.Code] += quoteQuantity * invFee
 	}
