@@ -1,8 +1,8 @@
 package state
 
 import (
-	"os"
 	"encoding/json"
+	"os"
 )
 
 func FromJSONFile(name string, v any) error {

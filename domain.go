@@ -2,8 +2,8 @@ package chrys
 
 import (
 	"fmt"
-	"time"
 	"math"
+	"time"
 )
 
 // Frame
