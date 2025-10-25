@@ -6,14 +6,14 @@ lightweight algorithmic trading framework
 * **Flexibility**: all trading parameters and dynamics can be modified (... but they come with rational defaults).
 
 ## to-do
-1. clean up Frame/Asset/Pair and put them into a new subdirectory `domain/`
-2. backtest machinery
+1. backtest machinery
     - write `(pipeline *Pipeline) RunBetween(start, end time.Time) error`
     - write `(client *Client) CalculateEquity(out *Asset, t time.Time) (float64, error)`
-3. backtest metrics
+2. backtest metrics
     - volatility
     - Sharpe ratio
-4. add/test more algos
+3. add/test more algos
+    - Range
     - ROC
     - ADI
     - MFI
@@ -78,72 +78,112 @@ func main() {
 }
 ```
 
-## Frame
-a frame of TOHLCV data (a "candle")
-- `Time time.Time`
-- `Open float64`
-- `High float64`
-- `Low float64`
-- `Close float64`
-- `Volume float64`
+## API
 
-## Asset
-`chrys.NewAsset(symbol, code string) *Asset`
+### Frame
 
-an asset with a human-readable symbol and an exchange-specific code
-- `Symbol string`
-- `Code string`
+Represents a single candle of OHLCV data.
 
-## Pair
-`chrys.NewPair(base, quote string) *Pair`
+- **Fields:**
+  - `Time time.Time`
+  - `Open float64`
+  - `High float64`
+  - `Low float64`
+  - `Close float64`
+  - `Volume float64`
 
-a pair with a human-readable name
-- `Base *Asset`
-- `Quote *Asset`
-- `Name string`
+---
 
-## Order
-`chrys.NewOrder(pair *Pair, percent float64) *Order`
+### Asset
 
-a `Pair` and order configuration details
-- `Pair *Pair`
-- `Percent float64`
-- `IsLive bool`
-- `Type OrderType` (e.g., `chrys.MARKET_BUY`, `chrys.MARKET_SELL`)
+Create with:
+```go
+chrys.NewAsset(symbol, code string) *Asset
+```
+Represents an asset with a human-readable symbol and an exchange-specific code.
 
-#### functions
-- `SetIsLive(isLive bool) *Order`
-- `SetBuy() *Order`
-- `SetSell() *Order`
+- **Fields:**
+  - `Symbol string`
+  - `Code string`
 
-## Client
-`chrys.NewClient(connector Connector) *Client`
+---
 
-a caching client for connectors
-- `Connector Connector`
-- `FrameCache map[string]map[time.Duration][]*Frame`
-- `Balances map[string]float64`
-- `Fee float64`
+### Pair
 
-#### functions
-- `SetFee(fee float64) *Client`
-- `GetFramesSince(pair *Pair, interval time.Duration, t time.Time) ([]*Frame, error)`
-- `GetFrames(pair *Pair, interval time.Duration, t time.Time, n int) ([]*Frame, error)`
-- `GetBalances() (map[string]float64, error)`
-- `PlaceOrder(order *Order, t time.Time) error`
+Create with:
+```go
+chrys.NewPair(base, quote *Asset) *Pair
+```
+Represents a trading pair.
 
-## Pipeline
-`chrys.NewPipeline() *Pipeline`
+- **Fields:**
+  - `Base *Asset`
+  - `Quote *Asset`
+  - `Name string`
 
-a stateful function pipeline
-- `Data map[string]float64`
-- `Stages []Stage`
+---
 
-#### functions
-- `Get(k string) float64`
-- `Set(k string, v float64) *Pipeline`
-- `AddStage(handler Stage) *Pipeline`
-- `Run(t time.Time) error` (processes stages in order)
+### Order
 
-#### types
-- `type Stage = func(now time.Time) error`
+Create with:
+```go
+chrys.NewOrder(pair *Pair, percent float64) *Order
+```
+Describes an order configuration on a pair.
+
+- **Fields:**
+  - `Pair *Pair`
+  - `Percent float64` — Fraction of portfolio to buy/sell, e.g., 0.10 for 10%
+  - `IsLive bool` — Execute order live or in simulation
+  - `Type OrderType` — One of `chrys.MARKET_BUY`, `chrys.MARKET_SELL`, etc.
+
+- **Methods:**
+  - `SetIsLive(isLive bool) *Order` — Enable/disable live mode
+  - `SetBuy() *Order` — Set as buy order
+  - `SetSell() *Order` — Set as sell order
+
+---
+
+### Client
+
+Create with:
+```go
+chrys.NewClient(connector Connector) *Client
+```
+Manages caching, balances, and calling trading connector.
+
+- **Fields:**
+  - `Connector Connector`
+  - `FrameCache map[string]map[time.Duration][]*Frame`
+  - `Balances map[string]float64`
+  - `Fee float64` — Trading fee as a decimal
+
+- **Methods:**
+  - `SetFee(fee float64) *Client` — Set per-trade fee
+  - `GetFramesSince(pair *Pair, interval time.Duration, t time.Time) ([]*Frame, error)` — Retrieve frames before a timestamp
+  - `GetFrames(pair *Pair, interval time.Duration, t time.Time, n int) ([]*Frame, error)` — Retrieve `n` frames before timestamp
+  - `GetBalances() (map[string]float64, error)` — Get asset balances
+  - `PlaceOrder(order *Order, t time.Time) error` — Place order at specified time
+
+---
+
+### Pipeline
+
+Create with:
+```go
+chrys.NewPipeline() *Pipeline
+```
+Stateful function-chaining pipeline for building strategy evaluations.
+
+- **Fields:**
+  - `Data map[string]float64`
+  - `Stages []Stage`
+
+- **Types:**
+  - `type Stage = func(now time.Time) error`
+
+- **Methods:**
+  - `Get(k string) float64` — Retrieve value from pipeline data store
+  - `Set(k string, v float64) *Pipeline` — Set value in data store
+  - `AddStage(handler Stage) *Pipeline` — Add a stage (function) to process
+  - `Run(t time.Time) error` — Process all stages in order
