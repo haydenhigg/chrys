@@ -13,13 +13,12 @@ lightweight algorithmic trading framework
     - volatility
     - Sharpe ratio
 3. add/test more algos
-    - Range
     - ROC
     - ADI
     - MFI
-    - make ZScore a Machine
-    - make TrueRange a Machine
-5. unit tests
+    - make ZScore a Machine?
+    - make TrueRange a Machine?
+4. unit tests
 
 ## example
 This trades on **BOLL(20, 2)** signals for **1h BTC/USD** using a **10%** fractional trade amount.
