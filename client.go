@@ -171,13 +171,22 @@ func (client *Client) PlaceOrder(order *Order, t time.Time) error {
 
 	var baseQuantity, quoteQuantity float64
 
-	switch order.Type {
-	case MARKET_BUY:
-		quoteQuantity = order.Percent * balances[order.Pair.Quote.Code]
+	// switch order.Type {
+	// case MARKET_BUY:
+	// 	quoteQuantity = order.Percent * balances[order.Pair.Quote.Code]
+	// 	baseQuantity = quoteQuantity / price
+	// case MARKET_SELL:
+	// 	baseQuantity = order.Percent * balances[order.Pair.Base.Code]
+	// 	quoteQuantity = baseQuantity * price
+	// }
+
+	baseQuantity = order.Percent * balances[order.Pair.Base.Code]
+	quoteQuantity = baseQuantity * price
+
+	quoteBalance := balances[order.Pair.Quote.Code]
+	if order.Type == MARKET_BUY && quoteQuantity > quoteBalance {
+		quoteQuantity = quoteBalance
 		baseQuantity = quoteQuantity / price
-	case MARKET_SELL:
-		baseQuantity = order.Percent * balances[order.Pair.Base.Code]
-		quoteQuantity = baseQuantity * price
 	}
 
 	// place order
