@@ -132,19 +132,19 @@ func (client *Client) getCachedPriceAt(
 	t time.Time,
 ) (float64, bool) {
 	if intervalFrames, ok := client.FrameCache[pair.Name]; ok {
-		// scan all intervals for pair
+		frameTime := t.Truncate(time.Minute)
+
 		for interval, frames := range intervalFrames {
-			// look for the frame before (because using the Close)
-			lastFrameTime := t.Truncate(interval).Add(-interval)
+			priorFrameTime := frameTime.Add(-interval)
 
 			for _, frame := range frames {
-				if frame.Time.Equal(lastFrameTime) {
+				if frame.Time.Equal(priorFrameTime) {
 					return frame.Close, true
 				}
 			}
 		}
 	} else {
-		// ensure FrameCache[pair] exists
+		// ensure pair exists in cache
 		client.FrameCache[pair.Name] = map[time.Duration][]*Frame{}
 	}
 
