@@ -61,6 +61,33 @@ func (client *Client) getCachedFramesSince(
 	return nil, false
 }
 
+func (client *Client) getCachedPriceAt(
+	pair *Pair,
+	t time.Time,
+) (float64, bool) {
+	// cycle through all cached intervals for an asset to see if any of them
+	// have a price for the needed time to avoid searching and missing the
+	// cache with a particular interval
+	if intervalFrames, ok := client.FrameCache[pair.Name]; ok {
+		frameTime := t.Truncate(time.Minute)
+
+		for interval, frames := range intervalFrames {
+			priorFrameTime := frameTime.Add(-interval)
+
+			for _, frame := range frames {
+				if frame.Time.Equal(priorFrameTime) {
+					return frame.Close, true
+				}
+			}
+		}
+	} else {
+		// ensure pair exists in cache
+		client.FrameCache[pair.Name] = map[time.Duration][]*Frame{}
+	}
+
+	return 0, false
+}
+
 func (client *Client) GetFramesSince(
 	pair *Pair,
 	interval time.Duration,
@@ -100,6 +127,20 @@ func (client *Client) GetFrames(
 	return frames[:n], nil
 }
 
+func (client *Client) GetPrice(pair *Pair, t time.Time) (float64, error) {
+	price, ok := client.getCachedPriceAt(pair, t)
+	if !ok {
+		frames, err := client.GetFrames(pair, time.Minute, t, 1)
+		if err != nil {
+			return 0, err
+		}
+
+		price = frames[len(frames)-1].Close
+	}
+
+	return price, nil
+}
+
 // balances
 func (client *Client) getStoredBalances() (map[string]float64, bool) {
 	if len(client.Balances) == 0 {
@@ -126,65 +167,68 @@ func (client *Client) GetBalances() (map[string]float64, error) {
 	return balances, nil
 }
 
-// ordering
-func (client *Client) getCachedPriceAt(
-	pair *Pair,
+func (client *Client) GetTotalValue(
+	assets []*Asset,
+	quote *Asset,
 	t time.Time,
-) (float64, bool) {
-	if intervalFrames, ok := client.FrameCache[pair.Name]; ok {
-		frameTime := t.Truncate(time.Minute)
+) (float64, error) {
+	balances, err := client.GetBalances()
+	if err != nil {
+		return 0, err
+	}
 
-		for interval, frames := range intervalFrames {
-			priorFrameTime := frameTime.Add(-interval)
+	total := 0.
 
-			for _, frame := range frames {
-				if frame.Time.Equal(priorFrameTime) {
-					return frame.Close, true
-				}
+	for baseCode, balance := range balances {
+		if baseCode == quote.Code {
+			total += balance
+			continue
+		}
+
+		var base *Asset = nil
+		for _, asset := range assets {
+			if asset.Code == baseCode {
+				base = asset
+				break
 			}
 		}
-	} else {
-		// ensure pair exists in cache
-		client.FrameCache[pair.Name] = map[time.Duration][]*Frame{}
-	}
 
-	return 0, false
-}
-
-func (client *Client) PlaceOrder(order *Order, t time.Time) error {
-	// get latest price
-	price, ok := client.getCachedPriceAt(order.Pair, t)
-	if !ok {
-		frames, err := client.GetFrames(order.Pair, time.Minute, t, 1)
-		if err != nil {
-			return err
+		if base == nil {
+			continue
 		}
 
-		price = frames[len(frames)-1].Close
+		price, err := client.GetPrice(NewPair(base, quote), t)
+		if err != nil {
+			return 0, err
+		}
+
+		total += balance * price
 	}
 
-	// determine quantities
+	return total, nil
+}
+
+// ordering
+func (client *Client) PlaceOrder(order *Order, t time.Time) error {
+	// get balances
 	balances, err := client.GetBalances()
 	if err != nil {
 		return err
 	}
 
-	var baseQuantity, quoteQuantity float64
+	// get latest price
+	price, err := client.GetPrice(order.Pair, t)
+	if err != nil {
+		return err
+	}
 
-	// switch order.Type {
-	// case MARKET_BUY:
-	// 	quoteQuantity = order.Percent * balances[order.Pair.Quote.Code]
-	// 	baseQuantity = quoteQuantity / price
-	// case MARKET_SELL:
-	// 	baseQuantity = order.Percent * balances[order.Pair.Base.Code]
-	// 	quoteQuantity = baseQuantity * price
-	// }
-
-	baseQuantity = order.Percent * balances[order.Pair.Base.Code]
-	quoteQuantity = baseQuantity * price
+	// determine quantities
+	baseQuantity := order.Percent * balances[order.Pair.Base.Code]
+	quoteQuantity := baseQuantity * price
 
 	quoteBalance := balances[order.Pair.Quote.Code]
 	if order.Type == MARKET_BUY && quoteQuantity > quoteBalance {
+		// you can't spend more than you have
 		quoteQuantity = quoteBalance
 		baseQuantity = quoteQuantity / price
 	}
