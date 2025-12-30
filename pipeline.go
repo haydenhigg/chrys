@@ -40,10 +40,6 @@ func (pipeline *Pipeline) Run(t time.Time) error {
 	return nil
 }
 
-// func (pipeline *Pipeline) RunBetween(tStart, tEnd time.Time) error {
-
-// }
-
 // type BacktestReport {
 // 	StartEquity float64
 // 	EndEquity   float64
