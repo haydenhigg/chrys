@@ -1,24 +1,25 @@
 # chrys
-lightweight algorithmic trading framework
+algorithmic trading toolbox
 
 ## principles
-* **Composability**: functionality is achieved by combining several logical building blocks at varying levels of abstraction.
-* **Flexibility**: all trading parameters and dynamics can be modified (... but they come with rational defaults).
+* **Simplicity**: setting up a successful strategy is easy and concise.
+* **Composability**: pieces can be combined in novel ways without writing new code.
+* **Flexibility**: all trading parameters and dynamics can be modified.
 
 ## to-do
-1. backtest machinery
+1. improve organization (and simplify domain modeling)
+2. unit tests
+3. backtest machinery
     - write `(pipeline *Pipeline) RunBetween(start, end time.Time) error`
-    - write `(client *Client) CalculateEquity(out *Asset, t time.Time) (float64, error)`
-2. backtest metrics
+4. backtest metrics
     - volatility
     - Sharpe ratio
-3. add/test more algos
+5. add/test more algos
     - ROC
     - ADI
     - MFI
     - make ZScore a Machine?
     - make TrueRange a Machine?
-4. unit tests
 
 ## example
 This trades on **BOLL(20, 2)** signals for **1h BTC/USD** using a **10%** fractional trade amount.
@@ -30,7 +31,6 @@ import (
 	"fmt"
 	"github.com/haydenhigg/chrys"
 	"github.com/haydenhigg/chrys/algo"
-	"github.com/haydenhigg/chrys/connector"
 	"os"
 	"time"
 )
