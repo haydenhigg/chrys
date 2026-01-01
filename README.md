@@ -8,7 +8,6 @@ algorithmic trading toolbox
 
 ## to-do
 1. improve organization (and simplify domain modeling)
-    - remove Order
     - split off FrameStore and BalanceStore from Client and pass the Connector to them so they can fetch the data themselves
     - add `.Alias(...)` to BalanceStore to track mappings between asset symbols and exchange specific asset codes
 2. unit tests
@@ -56,7 +55,7 @@ func main() {
 
 	// set up pipeline
 	pipeline := chrys.NewPipeline().AddStage(func(now time.Time) error {
-		frames, err := client.GetFrames(pair, time.Hour, now, 20)
+		frames, err := client.GetNFramesBefore(pair, time.Hour, 20, now)
 		if err != nil {
 			return err
 		}

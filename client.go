@@ -1,8 +1,8 @@
 package chrys
 
 import (
-	"time"
 	"math"
+	"time"
 )
 
 type Connector interface {
@@ -16,18 +16,18 @@ type Connector interface {
 }
 
 type Client struct {
-	Connector  Connector
-	FrameCache map[string]map[time.Duration][]*Frame
-	Balances   map[string]float64
-	Fee        float64
-	IsLive     bool
+	Connector Connector
+	Frames    FrameCache
+	Balances  map[string]float64
+	Fee       float64
+	IsLive    bool
 }
 
 func NewClient(connector Connector) *Client {
 	return &Client{
-		Connector:  connector,
-		FrameCache: map[string]map[time.Duration][]*Frame{},
-		Balances:   map[string]float64{},
+		Connector: connector,
+		Frames:    FrameCache{},
+		Balances:  map[string]float64{},
 	}
 }
 
@@ -42,61 +42,6 @@ func (client *Client) SetIsLive(isLive bool) *Client {
 }
 
 // frames
-func (client *Client) getCachedFramesSince(
-	pair *Pair,
-	interval time.Duration,
-	t time.Time,
-) ([]*Frame, bool) {
-	// ensure FrameCache[pair] exists
-	if _, ok := client.FrameCache[pair.Name]; !ok {
-		client.FrameCache[pair.Name] = map[time.Duration][]*Frame{}
-		return nil, false
-	}
-
-	// assert that the frames exist and contain the time requested
-	t = t.Truncate(interval)
-	frames, ok := client.FrameCache[pair.Name][interval]
-	if !ok || !frames[0].Time.Before(t.Add(interval)) {
-		return nil, false
-	}
-
-	// chop off older frames
-	for i, frame := range frames {
-		if !frame.Time.Before(t) {
-			return frames[i:], true
-		}
-	}
-
-	return nil, false
-}
-
-func (client *Client) getCachedPriceAt(
-	pair *Pair,
-	t time.Time,
-) (float64, bool) {
-	// cycle through all cached intervals for an asset to see if any of them
-	// have a price for the needed time to avoid searching and missing the
-	// cache with a particular interval
-	if intervalFrames, ok := client.FrameCache[pair.Name]; ok {
-		frameTime := t.Truncate(time.Minute)
-
-		for interval, frames := range intervalFrames {
-			priorFrameTime := frameTime.Add(-interval)
-
-			for _, frame := range frames {
-				if frame.Time.Equal(priorFrameTime) {
-					return frame.Close, true
-				}
-			}
-		}
-	} else {
-		// ensure pair exists in cache
-		client.FrameCache[pair.Name] = map[time.Duration][]*Frame{}
-	}
-
-	return 0, false
-}
-
 func (client *Client) GetFramesSince(
 	pair *Pair,
 	interval time.Duration,
@@ -105,7 +50,7 @@ func (client *Client) GetFramesSince(
 	t = t.Truncate(interval)
 
 	// check cache
-	if frames, ok := client.getCachedFramesSince(pair, interval, t); ok {
+	if frames, ok := client.Frames.GetSince(pair, interval, t); ok {
 		return frames, nil
 	}
 
@@ -115,16 +60,16 @@ func (client *Client) GetFramesSince(
 		return nil, err
 	}
 
-	client.FrameCache[pair.Name][interval] = frames
+	client.Frames[pair.Name][interval] = frames
 
 	return frames, nil
 }
 
-func (client *Client) GetFrames(
+func (client *Client) GetNFramesBefore(
 	pair *Pair,
 	interval time.Duration,
-	t time.Time,
 	n int,
+	t time.Time,
 ) ([]*Frame, error) {
 	t = t.Add(time.Duration(-n) * interval)
 
@@ -137,9 +82,9 @@ func (client *Client) GetFrames(
 }
 
 func (client *Client) GetPrice(pair *Pair, t time.Time) (float64, error) {
-	price, ok := client.getCachedPriceAt(pair, t)
+	price, ok := client.Frames.GetPriceAt(pair, t)
 	if !ok {
-		frames, err := client.GetFrames(pair, time.Minute, t, 1)
+		frames, err := client.GetNFramesBefore(pair, time.Minute, 1, t)
 		if err != nil {
 			return 0, err
 		}
