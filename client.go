@@ -3,6 +3,7 @@ package chrys
 import (
 	"math"
 	"time"
+	"fmt"
 )
 
 type Connector interface {
@@ -51,6 +52,7 @@ func (client *Client) GetFramesSince(
 
 	// check cache
 	if frames, ok := client.Frames.GetSince(pair, interval, t); ok {
+		fmt.Println("cache hit", pair.Name, interval, t)
 		return frames, nil
 	}
 
@@ -61,6 +63,7 @@ func (client *Client) GetFramesSince(
 	}
 
 	// cache retrieved data
+	fmt.Println("cache miss", pair.Name, interval, t)
 	client.Frames.Set(pair, interval, frames)
 
 	return frames, nil
