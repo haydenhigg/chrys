@@ -1,15 +1,18 @@
-package chrys
+package store
 
-import "time"
+import (
+	"github.com/haydenhigg/chrys"
+	"time"
+)
 
-type IntervalFrameCache = map[time.Duration][]*Frame
+type IntervalFrameCache = map[time.Duration][]*chrys.Frame
 type FrameCache map[string]IntervalFrameCache
 
 func (cache FrameCache) GetSince(
-	pair *Pair,
+	pair *chrys.Pair,
 	interval time.Duration,
 	t time.Time,
-) ([]*Frame, bool) {
+) ([]*chrys.Frame, bool) {
 	// check if pair is in cache
 	if _, ok := cache[pair.Name]; !ok {
 		return nil, false
@@ -32,7 +35,10 @@ func (cache FrameCache) GetSince(
 	return nil, false
 }
 
-func (cache FrameCache) GetPriceAt(pair *Pair, t time.Time) (float64, bool) {
+func (cache FrameCache) GetPriceAt(
+	pair *chrys.Pair,
+	t time.Time,
+) (float64, bool) {
 	// cycle through all cached intervals for a pair to see if any of them have
 	// a price for the given time
 	if intervalFrames, ok := cache[pair.Name]; ok {
@@ -53,9 +59,9 @@ func (cache FrameCache) GetPriceAt(pair *Pair, t time.Time) (float64, bool) {
 }
 
 func (cache FrameCache) Set(
-	pair *Pair,
+	pair *chrys.Pair,
 	interval time.Duration,
-	frames []*Frame,
+	frames []*chrys.Frame,
 ) {
 	// ensure pair is in cache
 	if _, ok := cache[pair.Name]; !ok {

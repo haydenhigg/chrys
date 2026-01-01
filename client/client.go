@@ -1,6 +1,8 @@
-package chrys
+package client
 
 import (
+	"github.com/haydenhigg/chrys"
+	"github.com/haydenhigg/chrys/store"
 	"fmt"
 	"math"
 	"time"
@@ -8,26 +10,26 @@ import (
 
 type Connector interface {
 	FetchFramesSince(
-		pair *Pair,
+		pair *chrys.Pair,
 		interval time.Duration,
 		since time.Time,
-	) ([]*Frame, error)
+	) ([]*chrys.Frame, error)
 	FetchBalances() (map[string]float64, error)
 	PlaceMarketOrder(side, pair string, quantity float64) error
 }
 
 type Client struct {
 	Connector Connector
-	Frames    FrameCache
+	Frames    store.FrameCache
 	Balances  map[string]float64
 	Fee       float64
 	IsLive    bool
 }
 
-func NewClient(connector Connector) *Client {
+func New(connector Connector) *Client {
 	return &Client{
 		Connector: connector,
-		Frames:    FrameCache{},
+		Frames:    store.FrameCache{},
 		Balances:  map[string]float64{},
 	}
 }
@@ -44,10 +46,10 @@ func (client *Client) SetIsLive(isLive bool) *Client {
 
 // frames
 func (client *Client) GetFramesSince(
-	pair *Pair,
+	pair *chrys.Pair,
 	interval time.Duration,
 	t time.Time,
-) ([]*Frame, error) {
+) ([]*chrys.Frame, error) {
 	t = t.Truncate(interval)
 
 	// check cache
@@ -70,11 +72,11 @@ func (client *Client) GetFramesSince(
 }
 
 func (client *Client) GetNFramesBefore(
-	pair *Pair,
+	pair *chrys.Pair,
 	interval time.Duration,
 	n int,
 	t time.Time,
-) ([]*Frame, error) {
+) ([]*chrys.Frame, error) {
 	t = t.Add(time.Duration(-n) * interval)
 
 	frames, err := client.GetFramesSince(pair, interval, t)
@@ -85,7 +87,10 @@ func (client *Client) GetNFramesBefore(
 	return frames[:n], nil
 }
 
-func (client *Client) GetPriceAt(pair *Pair, t time.Time) (float64, error) {
+func (client *Client) GetPriceAt(
+	pair *chrys.Pair,
+	t time.Time,
+) (float64, error) {
 	price, ok := client.Frames.GetPriceAt(pair, t)
 	if !ok {
 		frames, err := client.GetNFramesBefore(pair, time.Minute, 1, t)
@@ -126,8 +131,8 @@ func (client *Client) GetBalances() (map[string]float64, error) {
 }
 
 func (client *Client) GetTotalValue(
-	assets []*Asset,
-	quote *Asset,
+	assets []*chrys.Asset,
+	quote *chrys.Asset,
 	t time.Time,
 ) (float64, error) {
 	balances, err := client.GetBalances()
@@ -143,7 +148,7 @@ func (client *Client) GetTotalValue(
 			continue
 		}
 
-		var base *Asset = nil
+		var base *chrys.Asset = nil
 		for _, asset := range assets {
 			if asset.Code == baseCode {
 				base = asset
@@ -155,7 +160,7 @@ func (client *Client) GetTotalValue(
 			continue
 		}
 
-		price, err := client.GetPriceAt(NewPair(base, quote), t)
+		price, err := client.GetPriceAt(chrys.NewPair(base, quote), t)
 		if err != nil {
 			return 0, err
 		}
@@ -176,7 +181,7 @@ const (
 
 func (client *Client) Order(
 	side OrderSide,
-	pair *Pair,
+	pair *chrys.Pair,
 	percent float64,
 	t time.Time,
 ) error {
@@ -233,10 +238,18 @@ func (client *Client) Order(
 	return nil
 }
 
-func (client *Client) Buy(pair *Pair, percent float64, t time.Time) error {
+func (client *Client) Buy(
+	pair *chrys.Pair,
+	percent float64,
+	t time.Time,
+) error {
 	return client.Order(BUY, pair, percent, t)
 }
 
-func (client *Client) Sell(pair *Pair, percent float64, t time.Time) error {
+func (client *Client) Sell(
+	pair *chrys.Pair,
+	percent float64,
+	t time.Time,
+) error {
 	return client.Order(SELL, pair, percent, t)
 }

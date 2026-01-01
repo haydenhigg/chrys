@@ -32,8 +32,9 @@ package main
 import (
 	"fmt"
 	"github.com/haydenhigg/chrys"
-	"github.com/haydenhigg/chrys/algo"
+	"github.com/haydenhigg/chrys/client"
 	"github.com/haydenhigg/chrys/connector"
+	"github.com/haydenhigg/chrys/algo"
 	"os"
 	"time"
 )
@@ -45,7 +46,7 @@ func main() {
 		panic(err)
 	}
 
-	client := chrys.NewClient(c).SetFee(0.004).SetIsLive(true)
+	kraken := client.New(c).SetFee(0.004).SetIsLive(true)
 
 	// set up strategy data
 	btc := chrys.NewAsset("BTC", "XBT.F")
@@ -55,7 +56,7 @@ func main() {
 
 	// set up pipeline
 	pipeline := chrys.NewPipeline().AddStage(func(now time.Time) error {
-		frames, err := client.GetNFramesBefore(pair, time.Hour, 20, now)
+		frames, err := kraken.GetNFramesBefore(pair, time.Hour, 20, now)
 		if err != nil {
 			return err
 		}
@@ -65,9 +66,9 @@ func main() {
 
 		err = nil
 		if zScore < -2 {
-			err = client.Buy(pair, 0.10, now)
+			err = kraken.Buy(pair, 0.10, now)
 		} else if zScore > 2 {
-			err = client.Sell(pair, 0.10, now)
+			err = kraken.Sell(pair, 0.10, now)
 		}
 
 		return err
