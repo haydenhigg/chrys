@@ -7,21 +7,21 @@ algorithmic trading toolbox
 * **Flexibility**: all trading parameters and dynamics can be modified.
 
 ## to-do
-1. improve organization (and simplify domain modeling)
-    - split off FrameStore and BalanceStore from Client and pass the Connector to them so they can fetch the data themselves
-    - add `.Alias(...)` to BalanceStore to track mappings between asset symbols and exchange specific asset codes
+1. improve organization
+    - [x] split FrameStore off from Client
+    - [ ] split BalanceStore off from Client
+    - [ ] pass Connector to FrameStore/BalanceStore so they can choose how/when to fetch new data more easily
+    - [ ] make FrameCache retrieval more robust, i.e. if more than `interval` time has passed since the last frame in the series, assume that the cache is stale and refetch no matter what
+    - [ ] make FrameCache storage more robust, i.e. don't overwrite existing frames or introduce time gaps if fetching frames that are more recent than the most recent frame in the series
+    - [ ] add `.Alias(...)` to BalanceStore to track mappings between asset symbols and exchange specific asset codes
 2. unit tests
-3. backtest machinery
-    - write `(pipeline *Pipeline) RunBetween(start, end time.Time) error`
-4. backtest metrics
-    - volatility
-    - Sharpe ratio
-5. add/test more algos
-    - ROC
-    - ADI
-    - MFI
-    - make ZScore a Machine?
-    - make TrueRange a Machine?
+    - [ ] FrameStore
+    - [ ] BalanceStore
+    - [ ] Client
+    - [ ] Pipeline
+    - [ ] algo
+    - [ ] connector
+3. backtest machinery + reporting
 
 ## example
 This trades on **BOLL(20, 2)** signals for **1h BTC/USD** using a **10%** fractional trade amount.

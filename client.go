@@ -1,9 +1,9 @@
 package chrys
 
 import (
+	"fmt"
 	"math"
 	"time"
-	"fmt"
 )
 
 type Connector interface {
@@ -85,7 +85,7 @@ func (client *Client) GetNFramesBefore(
 	return frames[:n], nil
 }
 
-func (client *Client) GetPrice(pair *Pair, t time.Time) (float64, error) {
+func (client *Client) GetPriceAt(pair *Pair, t time.Time) (float64, error) {
 	price, ok := client.Frames.GetPriceAt(pair, t)
 	if !ok {
 		frames, err := client.GetNFramesBefore(pair, time.Minute, 1, t)
@@ -155,7 +155,7 @@ func (client *Client) GetTotalValue(
 			continue
 		}
 
-		price, err := client.GetPrice(NewPair(base, quote), t)
+		price, err := client.GetPriceAt(NewPair(base, quote), t)
 		if err != nil {
 			return 0, err
 		}
@@ -190,7 +190,7 @@ func (client *Client) Order(
 	}
 
 	// get latest price
-	price, err := client.GetPrice(pair, t)
+	price, err := client.GetPriceAt(pair, t)
 	if err != nil {
 		return err
 	}

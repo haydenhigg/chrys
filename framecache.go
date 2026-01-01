@@ -1,8 +1,6 @@
 package chrys
 
-import (
-	"time"
-)
+import "time"
 
 type IntervalFrameCache = map[time.Duration][]*Frame
 type FrameCache map[string]IntervalFrameCache
@@ -11,7 +9,7 @@ func (cache FrameCache) GetSince(
 	pair *Pair,
 	interval time.Duration,
 	t time.Time,
-)  ([]*Frame, bool) {
+) ([]*Frame, bool) {
 	// check if pair is in cache
 	if _, ok := cache[pair.Name]; !ok {
 		return nil, false
