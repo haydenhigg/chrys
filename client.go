@@ -60,7 +60,8 @@ func (client *Client) GetFramesSince(
 		return nil, err
 	}
 
-	client.Frames[pair.Name][interval] = frames
+	// cache retrieved data
+	client.Frames.Set(pair, interval, frames)
 
 	return frames, nil
 }

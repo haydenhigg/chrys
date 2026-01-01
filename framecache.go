@@ -53,3 +53,16 @@ func (cache FrameCache) GetPriceAt(pair *Pair, t time.Time) (float64, bool) {
 
 	return 0, false
 }
+
+func (cache FrameCache) Set(
+	pair *Pair,
+	interval time.Duration,
+	frames []*Frame,
+) {
+	// ensure pair is in cache
+	if _, ok := cache[pair.Name]; !ok {
+		cache[pair.Name] = IntervalFrameCache{}
+	}
+
+	cache[pair.Name][interval] = frames
+}
