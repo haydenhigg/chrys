@@ -1,6 +1,9 @@
 package chrys
 
-import "time"
+import (
+	"time"
+	"math"
+)
 
 type Connector interface {
 	FetchFramesSince(
@@ -17,6 +20,7 @@ type Client struct {
 	FrameCache map[string]map[time.Duration][]*Frame
 	Balances   map[string]float64
 	Fee        float64
+	IsLive     bool
 }
 
 func NewClient(connector Connector) *Client {
@@ -29,6 +33,11 @@ func NewClient(connector Connector) *Client {
 
 func (client *Client) SetFee(fee float64) *Client {
 	client.Fee = fee
+	return client
+}
+
+func (client *Client) SetIsLive(isLive bool) *Client {
+	client.IsLive = isLive
 	return client
 }
 
@@ -209,7 +218,22 @@ func (client *Client) GetTotalValue(
 }
 
 // ordering
-func (client *Client) PlaceOrder(order *Order, t time.Time) error {
+type OrderSide string
+
+const (
+	BUY  OrderSide = "buy"
+	SELL OrderSide = "sell"
+)
+
+func (client *Client) Order(
+	side OrderSide,
+	pair *Pair,
+	percent float64,
+	t time.Time,
+) error {
+	// clamp percent to [0, 1]
+	percent = math.Min(math.Max(percent, 0), 1)
+
 	// get balances
 	balances, err := client.GetBalances()
 	if err != nil {
@@ -217,27 +241,27 @@ func (client *Client) PlaceOrder(order *Order, t time.Time) error {
 	}
 
 	// get latest price
-	price, err := client.GetPrice(order.Pair, t)
+	price, err := client.GetPrice(pair, t)
 	if err != nil {
 		return err
 	}
 
 	// determine quantities
-	baseQuantity := order.Percent * balances[order.Pair.Base.Code]
+	baseQuantity := percent * balances[pair.Base.Code]
 	quoteQuantity := baseQuantity * price
 
-	quoteBalance := balances[order.Pair.Quote.Code]
-	if order.Type == MARKET_BUY && quoteQuantity > quoteBalance {
+	quoteBalance := balances[pair.Quote.Code]
+	if side == BUY && quoteQuantity > quoteBalance {
 		// you can't spend more than you have
 		quoteQuantity = quoteBalance
 		baseQuantity = quoteQuantity / price
 	}
 
 	// place order
-	if order.IsLive {
+	if client.IsLive {
 		err = client.Connector.PlaceMarketOrder(
-			string(order.Type),
-			order.Pair.Name,
+			string(side),
+			pair.Name,
 			baseQuantity,
 		)
 		if err != nil {
@@ -258,4 +282,12 @@ func (client *Client) PlaceOrder(order *Order, t time.Time) error {
 	}
 
 	return nil
+}
+
+func (client *Client) Buy(pair *Pair, percent float64, t time.Time) error {
+	return client.Order(BUY, pair, percent, t)
+}
+
+func (client *Client) Sell(pair *Pair, percent float64, t time.Time) error {
+	return client.Order(SELL, pair, percent, t)
 }

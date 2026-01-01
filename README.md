@@ -8,6 +8,9 @@ algorithmic trading toolbox
 
 ## to-do
 1. improve organization (and simplify domain modeling)
+    - remove Order
+    - split off FrameStore and BalanceStore from Client and pass the Connector to them so they can fetch the data themselves
+    - add `.Alias(...)` to BalanceStore to track mappings between asset symbols and exchange specific asset codes
 2. unit tests
 3. backtest machinery
     - write `(pipeline *Pipeline) RunBetween(start, end time.Time) error`
@@ -31,6 +34,7 @@ import (
 	"fmt"
 	"github.com/haydenhigg/chrys"
 	"github.com/haydenhigg/chrys/algo"
+	"github.com/haydenhigg/chrys/connector"
 	"os"
 	"time"
 )
@@ -41,14 +45,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	client := chrys.NewClient(c).SetFee(0.004)
+
+	client := chrys.NewClient(c).SetFee(0.004).SetIsLive(true)
 
 	// set up strategy data
-	pair := chrys.NewPair(
-		chrys.NewAsset("BTC", "XBT.F"),
-		chrys.NewAsset("USD", "ZUSD"),
-	)
-	order := chrys.NewOrder(pair, 0.10).SetIsLive(true) // ±10%
+	btc := chrys.NewAsset("BTC", "XBT.F")
+	usd := chrys.NewAsset("USD", "ZUSD")
+
+	pair := chrys.NewPair(btc, usd)
 
 	// set up pipeline
 	pipeline := chrys.NewPipeline().AddStage(func(now time.Time) error {
@@ -62,9 +66,9 @@ func main() {
 
 		err = nil
 		if zScore < -2 {
-			err = client.PlaceOrder(order.SetBuy(), now)
+			err = client.Buy(pair, 0.10, now)
 		} else if zScore > 2 {
-			err = client.PlaceOrder(order.SetSell(), now)
+			err = client.Sell(pair, 0.10, now)
 		}
 
 		return err
@@ -81,7 +85,7 @@ func main() {
 
 ### Frame
 
-Represents a single candle of OHLCV data.
+A single OHLCV candle.
 
 - **Fields:**
   - `Time time.Time`
@@ -95,84 +99,38 @@ Represents a single candle of OHLCV data.
 
 ### Asset
 
+A currency.
+
+- **Fields:**
+  - `Symbol string`
+  - `Code string` (for balance tracking on exchanges like Kraken that use proprietary asset codes)
+
 Create with:
 ```go
 chrys.NewAsset(symbol, code string) *Asset
 ```
-Represents an asset with a human-readable symbol and an exchange-specific code.
-
-- **Fields:**
-  - `Symbol string`
-  - `Code string`
 
 ---
 
 ### Pair
 
-Create with:
-```go
-chrys.NewPair(base, quote *Asset) *Pair
-```
-Represents a trading pair.
+A tradeable currency pair.
 
 - **Fields:**
   - `Base *Asset`
   - `Quote *Asset`
   - `Name string`
 
----
-
-### Order
-
 Create with:
 ```go
-chrys.NewOrder(pair *Pair, percent float64) *Order
+chrys.NewPair(base, quote *Asset) *Pair
 ```
-Describes an order configuration on a pair.
-
-- **Fields:**
-  - `Pair *Pair`
-  - `Percent float64` — Fraction of portfolio to buy/sell, e.g., 0.10 for 10%
-  - `IsLive bool` — Execute order live or in simulation
-  - `Type OrderType` — One of `chrys.MARKET_BUY`, `chrys.MARKET_SELL`, etc.
-
-- **Methods:**
-  - `SetIsLive(isLive bool) *Order` — Enable/disable live mode
-  - `SetBuy() *Order` — Set as buy order
-  - `SetSell() *Order` — Set as sell order
-
----
-
-### Client
-
-Create with:
-```go
-chrys.NewClient(connector Connector) *Client
-```
-Manages caching, balances, and calling trading connector.
-
-- **Fields:**
-  - `Connector Connector`
-  - `FrameCache map[string]map[time.Duration][]*Frame`
-  - `Balances map[string]float64`
-  - `Fee float64` — Trading fee as a decimal
-
-- **Methods:**
-  - `SetFee(fee float64) *Client` — Set per-trade fee
-  - `GetFramesSince(pair *Pair, interval time.Duration, t time.Time) ([]*Frame, error)` — Retrieve frames before a timestamp
-  - `GetFrames(pair *Pair, interval time.Duration, t time.Time, n int) ([]*Frame, error)` — Retrieve `n` frames before timestamp
-  - `GetBalances() (map[string]float64, error)` — Get asset balances
-  - `PlaceOrder(order *Order, t time.Time) error` — Place order at specified time
 
 ---
 
 ### Pipeline
 
-Create with:
-```go
-chrys.NewPipeline() *Pipeline
-```
-Stateful function-chaining pipeline for building strategy evaluations.
+A stateful function-chaining pipeline for building strategies.
 
 - **Fields:**
   - `Data map[string]float64`
@@ -186,3 +144,8 @@ Stateful function-chaining pipeline for building strategy evaluations.
   - `Set(k string, v float64) *Pipeline` — Set value in data store
   - `AddStage(handler Stage) *Pipeline` — Add a stage (function) to process
   - `Run(t time.Time) error` — Process all stages in order
+
+Create with:
+```go
+chrys.NewPipeline() *Pipeline
+```
