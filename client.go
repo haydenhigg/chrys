@@ -272,13 +272,13 @@ func (client *Client) Order(
 	// update balances
 	invFee := 1 - client.Fee
 
-	switch order.Type {
-	case MARKET_BUY:
-		client.Balances[order.Pair.Quote.Code] -= quoteQuantity
-		client.Balances[order.Pair.Base.Code] += baseQuantity * invFee
-	case MARKET_SELL:
-		client.Balances[order.Pair.Base.Code] -= baseQuantity
-		client.Balances[order.Pair.Quote.Code] += quoteQuantity * invFee
+	switch side {
+	case BUY:
+		client.Balances[pair.Quote.Code] -= quoteQuantity
+		client.Balances[pair.Base.Code] += baseQuantity * invFee
+	case SELL:
+		client.Balances[pair.Base.Code] -= baseQuantity
+		client.Balances[pair.Quote.Code] += quoteQuantity * invFee
 	}
 
 	return nil
