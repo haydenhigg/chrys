@@ -9,11 +9,12 @@ algorithmic trading toolbox
 ## to-do
 1. improve organization
     - [x] split FrameStore off from Client
+    - [x] pass Connector to FrameStore (makes specific frame retrieval easier than passing back a time)
     - [ ] split BalanceStore off from Client
-    - [ ] pass Connector to FrameStore/BalanceStore so they can choose how/when to fetch new data more easily
-    - [ ] make FrameCache retrieval more robust, i.e. if more than `interval` time has passed since the last frame in the series, assume that the cache is stale and refetch no matter what
-    - [ ] make FrameCache storage more robust, i.e. don't overwrite existing frames or introduce time gaps if fetching frames that are more recent than the most recent frame in the series
-    - [ ] add `.Alias(...)` to BalanceStore to track mappings between asset symbols and exchange specific asset codes
+    - [ ] pass Connector to BalanceStore (makes valuation easier)
+    - [ ] make Frames retrieval more robust, i.e. if more than `interval` time has passed since the last frame in the series, assume that the cache is stale and refetch no matter what
+    - [ ] make Frames storage more robust, i.e. don't overwrite existing frames or introduce time gaps if fetching frames that are more recent than the most recent frame in the series
+    - [ ] add `.Alias(...)` to BalanceStore to track mappings between asset symbols and exchange specific asset codes, then remove it from `Asset`
 2. unit tests
     - [ ] FrameStore
     - [ ] BalanceStore
@@ -27,13 +28,10 @@ algorithmic trading toolbox
 This trades on **BOLL(20, 2)** signals for **1h BTC/USD** using a **10%** fractional trade amount.
 
 ```go
-package main
-
 import (
 	"fmt"
 	"github.com/haydenhigg/chrys"
 	"github.com/haydenhigg/chrys/client"
-	"github.com/haydenhigg/chrys/connector"
 	"github.com/haydenhigg/chrys/algo"
 	"os"
 	"time"
@@ -41,12 +39,12 @@ import (
 
 func main() {
 	// set up client
-	c, err := connector.NewKraken(os.Getenv("API_KEY"), os.Getenv("API_SECRET"))
+	c, err := client.NewKraken(os.Getenv("API_KEY"), os.Getenv("API_SECRET"))
 	if err != nil {
 		panic(err)
 	}
 
-	kraken := client.New(c).SetFee(0.004).SetIsLive(true)
+	c.SetFee(0.004)
 
 	// set up strategy data
 	btc := chrys.NewAsset("BTC", "XBT.F")
@@ -56,7 +54,7 @@ func main() {
 
 	// set up pipeline
 	pipeline := chrys.NewPipeline().AddStage(func(now time.Time) error {
-		frames, err := kraken.GetNFramesBefore(pair, time.Hour, 20, now)
+		frames, err := c.Frames.GetNBefore(pair, time.Hour, 20, now)
 		if err != nil {
 			return err
 		}
@@ -66,9 +64,9 @@ func main() {
 
 		err = nil
 		if zScore < -2 {
-			err = kraken.Buy(pair, 0.10, now)
+			err = c.Buy(pair, 0.10, now)
 		} else if zScore > 2 {
-			err = kraken.Sell(pair, 0.10, now)
+			err = c.Sell(pair, 0.10, now)
 		}
 
 		return err

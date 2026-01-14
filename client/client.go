@@ -2,8 +2,7 @@ package client
 
 import (
 	"github.com/haydenhigg/chrys"
-	"github.com/haydenhigg/chrys/store"
-	"fmt"
+	"github.com/haydenhigg/chrys/client/connector"
 	"math"
 	"time"
 )
@@ -20,20 +19,31 @@ type Connector interface {
 
 type Client struct {
 	Connector Connector
-	Frames    store.FrameCache
+	Frames    *Frames
 	Balances  map[string]float64
 	Fee       float64
 	IsLive    bool
 }
 
+// initializers
 func New(connector Connector) *Client {
 	return &Client{
 		Connector: connector,
-		Frames:    store.FrameCache{},
+		Frames:    NewFrames(connector),
 		Balances:  map[string]float64{},
 	}
 }
 
+func NewKraken(key, secret string) (*Client, error) {
+	kraken, err := connector.NewKraken(key, secret)
+	if err != nil {
+		return nil, err
+	}
+
+	return New(kraken), nil
+}
+
+// setters
 func (client *Client) SetFee(fee float64) *Client {
 	client.Fee = fee
 	return client
@@ -42,66 +52,6 @@ func (client *Client) SetFee(fee float64) *Client {
 func (client *Client) SetIsLive(isLive bool) *Client {
 	client.IsLive = isLive
 	return client
-}
-
-// frames
-func (client *Client) GetFramesSince(
-	pair *chrys.Pair,
-	interval time.Duration,
-	t time.Time,
-) ([]*chrys.Frame, error) {
-	t = t.Truncate(interval)
-
-	// check cache
-	if frames, ok := client.Frames.GetSince(pair, interval, t); ok {
-		fmt.Println("cache hit", pair.Name, interval, t)
-		return frames, nil
-	}
-
-	// retrieve from data source
-	frames, err := client.Connector.FetchFramesSince(pair, interval, t)
-	if err != nil {
-		return nil, err
-	}
-
-	// cache retrieved data
-	fmt.Println("cache miss", pair.Name, interval, t)
-	client.Frames.Set(pair, interval, frames)
-
-	return frames, nil
-}
-
-func (client *Client) GetNFramesBefore(
-	pair *chrys.Pair,
-	interval time.Duration,
-	n int,
-	t time.Time,
-) ([]*chrys.Frame, error) {
-	t = t.Add(time.Duration(-n) * interval)
-
-	frames, err := client.GetFramesSince(pair, interval, t)
-	if err != nil {
-		return nil, err
-	}
-
-	return frames[:n], nil
-}
-
-func (client *Client) GetPriceAt(
-	pair *chrys.Pair,
-	t time.Time,
-) (float64, error) {
-	price, ok := client.Frames.GetPriceAt(pair, t)
-	if !ok {
-		frames, err := client.GetNFramesBefore(pair, time.Minute, 1, t)
-		if err != nil {
-			return 0, err
-		}
-
-		price = frames[len(frames)-1].Close
-	}
-
-	return price, nil
 }
 
 // balances
@@ -160,7 +110,7 @@ func (client *Client) GetTotalValue(
 			continue
 		}
 
-		price, err := client.GetPriceAt(chrys.NewPair(base, quote), t)
+		price, err := client.Frames.GetPriceAt(chrys.NewPair(base, quote), t)
 		if err != nil {
 			return 0, err
 		}
@@ -195,7 +145,7 @@ func (client *Client) Order(
 	}
 
 	// get latest price
-	price, err := client.GetPriceAt(pair, t)
+	price, err := client.Frames.GetPriceAt(pair, t)
 	if err != nil {
 		return err
 	}
