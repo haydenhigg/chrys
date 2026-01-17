@@ -1,4 +1,4 @@
-package client
+package store
 
 import (
 	"testing"
@@ -49,7 +49,7 @@ func Test_GetUncached(t *testing.T) {
 	}
 
 	// Get()
-	balances, err := NewBalanceStore(mockAPI).Get()
+	balances, err := NewBalances(mockAPI).Get()
 	if err != nil {
 		t.Errorf("err != nil: %v", err)
 	}
@@ -76,7 +76,7 @@ func Test_GetCached(t *testing.T) {
 	}
 
 	// Get()
-	store := NewBalanceStore(mockAPI)
+	store := NewBalances(mockAPI)
 	store.Get()
 
 	// reset didUseAPI
@@ -104,7 +104,7 @@ func Test_Set(t *testing.T) {
 	// set up mock
 	mockAPI := MockBalanceAPI{}
 
-	store := NewBalanceStore(mockAPI)
+	store := NewBalances(mockAPI)
 
 	// Set()
 	targetBalances, _ := mockAPI.FetchBalances()
@@ -122,7 +122,7 @@ func Test_SetAddSubtract(t *testing.T) {
 	// set up mock
 	mockAPI := MockBalanceAPI{}
 
-	store := NewBalanceStore(mockAPI)
+	store := NewBalances(mockAPI)
 
 	// Set()
 	targetBalances, _ := mockAPI.FetchBalances()
@@ -146,7 +146,7 @@ func Test_AliasSet(t *testing.T) {
 	// set up mock
 	mockAPI := MockBalanceAPI{}
 
-	store := NewBalanceStore(mockAPI)
+	store := NewBalances(mockAPI)
 	store.Alias("BTC", "XBT.F") // alias
 	store.Alias("ZUSD", "USD") // inverted alias
 
@@ -168,7 +168,7 @@ func Test_AliasSetAddSubtract(t *testing.T) {
 	// set up mock
 	mockAPI := MockBalanceAPI{}
 
-	store := NewBalanceStore(mockAPI)
+	store := NewBalances(mockAPI)
 	store.Alias("BTC", "XBT.F") // normal alias
 	store.Alias("ZUSD", "USD") // inverted alias
 

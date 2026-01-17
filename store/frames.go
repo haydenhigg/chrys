@@ -1,4 +1,4 @@
-package client
+package store
 
 import (
 	"fmt"
@@ -22,7 +22,7 @@ type FrameStore struct {
 	cache map[string]PartialFrameCache
 }
 
-func NewFrameStore(api FrameAPI) *FrameStore {
+func NewFrames(api FrameAPI) *FrameStore {
 	return &FrameStore{
 		api:   api,
 		cache: FrameCache{},

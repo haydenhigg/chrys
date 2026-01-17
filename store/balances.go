@@ -1,4 +1,4 @@
-package client
+package store
 
 type BalanceAPI interface {
 	FetchBalances() (map[string]float64, error)
@@ -10,7 +10,7 @@ type BalanceStore struct {
 	aliases    map[string]string
 }
 
-func NewBalanceStore(api BalanceAPI) *BalanceStore {
+func NewBalances(api BalanceAPI) *BalanceStore {
 	return &BalanceStore{
 		api:      api,
 		balances: map[string]float64{},

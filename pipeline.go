@@ -13,7 +13,7 @@ func NewPipeline() *Pipeline {
 	}
 }
 
-func (pipeline *Pipeline) Block(handler Block) *Pipeline {
+func (pipeline *Pipeline) AddBlock(handler Block) *Pipeline {
 	pipeline.Blocks = append(pipeline.Blocks, handler)
 	return pipeline
 }

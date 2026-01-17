@@ -1,4 +1,4 @@
-package client
+package chrys
 
 import (
 	"math"
@@ -60,13 +60,13 @@ func (client *Client) Order(
 	switch side {
 	case BUY:
 		client.Balances.Set(map[string]float64{
-			base:  balances[base] + baseQuantity*invFee,
-			quote: balances[quote] - quoteQuantity,
+			base:  baseQuantity*invFee,
+			quote: -quoteQuantity,
 		})
 	case SELL:
 		client.Balances.Set(map[string]float64{
-			base:  balances[base] - baseQuantity,
-			quote: balances[quote] + quoteQuantity*invFee,
+			base:  -baseQuantity,
+			quote: quoteQuantity*invFee,
 		})
 	}
 

@@ -1,37 +1,40 @@
-package client
+package chrys
 
-import "github.com/haydenhigg/chrys/client/driver"
+import (
+	"github.com/haydenhigg/chrys/store"
+	"github.com/haydenhigg/chrys/driver"
+)
 
 type API interface {
-	BalanceAPI
-	FrameAPI
+	store.BalanceAPI
+	store.FrameAPI
 	MarketOrder(side, pair string, quantity float64) error
 }
 
 type Client struct {
 	api      API
-	Frames   *FrameStore
-	Balances *BalanceStore
+	Frames   *store.FrameStore
+	Balances *store.BalanceStore
 	Fee      float64
 	IsLive   bool
 }
 
 // initializers
-func New(api API) *Client {
+func NewClient(api API) *Client {
 	return &Client{
 		api:      api,
-		Frames:   NewFrameStore(api),
-		Balances: NewBalanceStore(api),
+		Frames:   store.NewFrames(api),
+		Balances: store.NewBalances(api),
 	}
 }
 
-func NewKraken(key, secret string) (*Client, error) {
+func NewKrakenClient(key, secret string) (*Client, error) {
 	kraken, err := driver.NewKraken(key, secret)
 	if err != nil {
 		return nil, err
 	}
 
-	return New(kraken).SetFee(0.004), nil
+	return NewClient(kraken).SetFee(0.004), nil
 }
 
 // setters
