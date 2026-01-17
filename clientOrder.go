@@ -60,13 +60,13 @@ func (client *Client) Order(
 	switch side {
 	case BUY:
 		client.Balances.Set(map[string]float64{
-			base:  baseQuantity*invFee,
+			base:  baseQuantity * invFee,
 			quote: -quoteQuantity,
 		})
 	case SELL:
 		client.Balances.Set(map[string]float64{
 			base:  -baseQuantity,
-			quote: quoteQuantity*invFee,
+			quote: quoteQuantity * invFee,
 		})
 	}
 

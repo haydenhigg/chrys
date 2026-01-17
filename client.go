@@ -1,8 +1,8 @@
 package chrys
 
 import (
-	"github.com/haydenhigg/chrys/store"
 	"github.com/haydenhigg/chrys/driver"
+	"github.com/haydenhigg/chrys/store"
 )
 
 type API interface {

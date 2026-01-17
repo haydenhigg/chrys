@@ -47,9 +47,11 @@ func (store *FrameStore) getCachedSince(
 		return nil, false
 	}
 
-	// check if frames contain necessary time
-	// TODO: check if
-	if !frames[0].Time.Before(t.Add(interval)) {
+	// check if frames contain this time
+	firstFrameIsOldEnough := frames[0].Time.Before(t.Add(interval))
+	lastFrameIsNewEnough := !frames[len(frames)-1].Time.Before(t.Add(-2 * interval))
+
+	if !firstFrameIsOldEnough || !lastFrameIsNewEnough {
 		return nil, false
 	}
 

@@ -21,27 +21,27 @@ const (
 	KRAKEN_CONTENT_TYPE = "application/x-www-form-urlencoded; charset=utf-8"
 )
 
-type Kraken struct {
+type KrakenDriver struct {
 	Key    []byte
 	Secret []byte
 }
 
-func NewKraken(key, secret string) (*Kraken, error) {
+func NewKraken(key, secret string) (*KrakenDriver, error) {
 	decodedSecret, err := base64.StdEncoding.DecodeString(secret)
 	if err != nil {
 		return nil, err
 	}
 
-	c := &Kraken{
+	d := &KrakenDriver{
 		Key:    []byte(key),
 		Secret: decodedSecret,
 	}
 
-	return c, nil
+	return d, nil
 }
 
 // request helpers
-func (c *Kraken) buildURL(path string, query url.Values) string {
+func (d *KrakenDriver) buildURL(path string, query url.Values) string {
 	u := url.URL{
 		Scheme: "https",
 		Host:   KRAKEN_HOST,
@@ -55,12 +55,12 @@ func (c *Kraken) buildURL(path string, query url.Values) string {
 	return u.String()
 }
 
-func (c *Kraken) buildSignature(path string, body url.Values) string {
+func (d *KrakenDriver) buildSignature(path string, body url.Values) string {
 	hasher := sha256.New()
 	hasher.Write([]byte(body.Get("nonce")))
 	hasher.Write([]byte(body.Encode()))
 
-	h := hmac.New(sha512.New, c.Secret)
+	h := hmac.New(sha512.New, d.Secret)
 	h.Write([]byte(path))
 	h.Write(hasher.Sum(nil))
 
@@ -85,7 +85,7 @@ func doRequest(request *http.Request) ([]byte, error) {
 	return io.ReadAll(response.Body)
 }
 
-func (c *Kraken) public(
+func (d *KrakenDriver) public(
 	method,
 	path string,
 	payload *Payload,
@@ -96,7 +96,7 @@ func (c *Kraken) public(
 
 	// set up the request
 	fullPath := "/0/public" + path
-	u := c.buildURL(fullPath, payload.Query)
+	u := d.buildURL(fullPath, payload.Query)
 
 	var bodyReader io.Reader
 	if payload.Body != nil {
@@ -114,7 +114,7 @@ func (c *Kraken) public(
 	return doRequest(request)
 }
 
-func (c *Kraken) private(
+func (d *KrakenDriver) private(
 	method,
 	path string,
 	payload *Payload,
@@ -125,7 +125,7 @@ func (c *Kraken) private(
 
 	// set up the request
 	fullPath := "/0/private" + path
-	u := c.buildURL(fullPath, payload.Query)
+	u := d.buildURL(fullPath, payload.Query)
 
 	if payload.Body == nil {
 		payload.Body = url.Values{}
@@ -143,8 +143,8 @@ func (c *Kraken) private(
 	request.Header.Add("Content-Type", KRAKEN_CONTENT_TYPE)
 
 	// these are added directly to request.Header to sidestep canonicalization
-	request.Header["API-Key"] = []string{string(c.Key)}
-	request.Header["API-Sign"] = []string{c.buildSignature(
+	request.Header["API-Key"] = []string{string(d.Key)}
+	request.Header["API-Sign"] = []string{d.buildSignature(
 		fullPath,
 		payload.Body,
 	)}
@@ -153,14 +153,14 @@ func (c *Kraken) private(
 }
 
 // driver functions
-func (c *Kraken) FetchFramesSince(
+func (d *KrakenDriver) FetchFramesSince(
 	pair string,
 	interval time.Duration,
 	since time.Time,
 ) ([]*frame.Frame, error) {
 	// make request
 	sinceTimestamp := since.Truncate(interval).Unix() - 1
-	rawResponse, err := c.public("GET", "/OHLC", &Payload{
+	rawResponse, err := d.public("GET", "/OHLC", &Payload{
 		Query: url.Values{
 			"pair":     {pair},
 			"interval": {strconv.Itoa(int(interval.Minutes()))},
@@ -210,9 +210,9 @@ func (c *Kraken) FetchFramesSince(
 	return frames, nil
 }
 
-func (c *Kraken) FetchBalances() (map[string]float64, error) {
+func (d *KrakenDriver) FetchBalances() (map[string]float64, error) {
 	// make request
-	rawResponse, err := c.private("POST", "/Balance", nil)
+	rawResponse, err := d.private("POST", "/Balance", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +231,7 @@ func (c *Kraken) FetchBalances() (map[string]float64, error) {
 	// process returned quantities
 	store := map[string]float64{}
 
-	for c, v := range response.Result {
+	for d, v := range response.Result {
 		balance, err := strconv.ParseFloat(v, 64)
 		if err != nil {
 			return nil, err
@@ -242,15 +242,15 @@ func (c *Kraken) FetchBalances() (map[string]float64, error) {
 			continue
 		}
 
-		store[c] = balance
+		store[d] = balance
 	}
 
 	return store, nil
 }
 
-func (c *Kraken) MarketOrder(side, pair string, quantity float64) error {
+func (d *KrakenDriver) MarketOrder(side, pair string, quantity float64) error {
 	// make request
-	rawResponse, err := c.private("POST", "/AddOrder", &Payload{
+	rawResponse, err := d.private("POST", "/AddOrder", &Payload{
 		Body: url.Values{
 			"ordertype": {"market"},
 			"type":      {side},

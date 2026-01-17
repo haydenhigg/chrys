@@ -5,9 +5,9 @@ type BalanceAPI interface {
 }
 
 type BalanceStore struct {
-	api        BalanceAPI
-	balances   map[string]float64
-	aliases    map[string]string
+	api      BalanceAPI
+	balances map[string]float64
+	aliases  map[string]string
 }
 
 func NewBalances(api BalanceAPI) *BalanceStore {

@@ -23,9 +23,11 @@ algorithmic trading toolbox
 This trades on **BOLL(20, 2)** signals for **1h BTC/USD** using a **10%** fractional trade amount.
 
 ```go
+package main
+
 import (
 	"fmt"
-	"github.com/haydenhigg/chrys/client"
+	"github.com/haydenhigg/chrys"
 	"github.com/haydenhigg/chrys/algo"
 	"os"
 	"time"
@@ -33,7 +35,7 @@ import (
 
 func main() {
 	// set up client
-	kraken, err := client.NewKraken(
+	client, err := chrys.NewKrakenClient(
 		os.Getenv("API_KEY"),
 		os.Getenv("API_SECRET"),
 	)
@@ -41,9 +43,12 @@ func main() {
 		panic(err)
 	}
 
+	client.Balances.Alias("BTC", "XBT.F").Alias("USD", "ZUSD")
+
 	// set up pipeline
-	pipeline := chrys.NewPipeline().AddStage(func(now time.Time) error {
-		frames, err := kraken.GetNFramesBefore("BTC/USD", time.Hour, 20, now)
+	pipeline := chrys.NewPipeline()
+	pipeline.AddBlock(func(now time.Time) error {
+		frames, err := client.Frames.GetNBefore("BTC/USD", time.Hour, 20, now)
 		if err != nil {
 			return err
 		}
@@ -53,9 +58,9 @@ func main() {
 
 		err = nil
 		if zScore < -2 {
-			err = kraken.Buy("BTC/USD", 0.10, now)
+			err = client.Buy("BTC/USD", 0.10, now)
 		} else if zScore > 2 {
-			err = kraken.Sell("BTC/USD", 0.10, now)
+			err = client.Sell("BTC/USD", 0.10, now)
 		}
 
 		return err

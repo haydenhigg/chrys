@@ -13,19 +13,19 @@ import (
 	"time"
 )
 
-type Historical struct {
+type HistoricalDriver struct {
 	DataRoot string
 	NameFmt  string // the fmt string for the CSV files with the frames
 }
 
-func NewHistorical(dataRoot, nameFmt string) *Historical {
-	return &Historical{
+func NewHistorical(dataRoot, nameFmt string) *HistoricalDriver {
+	return &HistoricalDriver{
 		DataRoot: dataRoot,
 		NameFmt:  nameFmt,
 	}
 }
 
-func (c *Historical) FetchFramesSince(
+func (d *HistoricalDriver) FetchFramesSince(
 	pair string,
 	interval time.Duration,
 	since time.Time,
@@ -35,8 +35,8 @@ func (c *Historical) FetchFramesSince(
 	base, quote := assets[0], assets[1]
 
 	// format data file path
-	dataFile := fmt.Sprintf(c.NameFmt, base, quote, int(interval.Minutes()))
-	dataFilePath := filepath.Join(c.DataRoot, dataFile)
+	dataFile := fmt.Sprintf(d.NameFmt, base, quote, int(interval.Minutes()))
+	dataFilePath := filepath.Join(d.DataRoot, dataFile)
 
 	// read data file
 	file, err := os.Open(dataFilePath)
@@ -84,10 +84,10 @@ func (c *Historical) FetchFramesSince(
 	return frames, nil
 }
 
-func (c *Historical) FetchBalances() (map[string]float64, error) {
+func (d *HistoricalDriver) FetchBalances() (map[string]float64, error) {
 	return map[string]float64{}, nil
 }
 
-func (c *Historical) MarketOrder(side, pair string, quantity float64) error {
+func (d *HistoricalDriver) MarketOrder(side, pair string, quantity float64) error {
 	return nil
 }

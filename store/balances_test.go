@@ -1,8 +1,8 @@
 package store
 
 import (
-	"testing"
 	"math"
+	"testing"
 )
 
 // mock
@@ -27,7 +27,7 @@ func assertBalancesEqual(a, b map[string]float64, t *testing.T) {
 	for k, va := range a {
 		if vb, ok := b[k]; !ok {
 			t.Errorf(`b["%s"] does not exist`, k)
-		} else if math.Abs(va - vb) > 10e-6 {
+		} else if math.Abs(va-vb) > 10e-6 {
 			t.Errorf(`a["%s"] != b["%s"]: %v != %v`, k, k, va, vb)
 		}
 	}
@@ -148,7 +148,7 @@ func Test_AliasSet(t *testing.T) {
 
 	store := NewBalances(mockAPI)
 	store.Alias("BTC", "XBT.F") // alias
-	store.Alias("ZUSD", "USD") // inverted alias
+	store.Alias("ZUSD", "USD")  // inverted alias
 
 	// Set()
 	targetBalances, _ := mockAPI.FetchBalances()
@@ -156,11 +156,11 @@ func Test_AliasSet(t *testing.T) {
 
 	// assert
 	assertBalancesEqual(map[string]float64{
-		"USD": 133.70,
-		"ZUSD": 133.70,
-		"BTC": 0.001337,
+		"USD":   133.70,
+		"ZUSD":  133.70,
+		"BTC":   0.001337,
 		"XBT.F": 0.001337,
-		"ETH": 0.01337,
+		"ETH":   0.01337,
 	}, store.balances, t)
 }
 
@@ -170,7 +170,7 @@ func Test_AliasSetAddSubtract(t *testing.T) {
 
 	store := NewBalances(mockAPI)
 	store.Alias("BTC", "XBT.F") // normal alias
-	store.Alias("ZUSD", "USD") // inverted alias
+	store.Alias("ZUSD", "USD")  // inverted alias
 
 	// Set()
 	targetBalances, _ := mockAPI.FetchBalances()
@@ -184,10 +184,10 @@ func Test_AliasSetAddSubtract(t *testing.T) {
 
 	// assert
 	assertBalancesEqual(map[string]float64{
-		"USD": 165.83,
-		"ZUSD": 165.83,
-		"BTC": 0.001,
+		"USD":   165.83,
+		"ZUSD":  165.83,
+		"BTC":   0.001,
 		"XBT.F": 0.001,
-		"ETH": 0.01337,
+		"ETH":   0.01337,
 	}, store.balances, t)
 }
