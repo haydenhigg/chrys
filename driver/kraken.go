@@ -159,12 +159,11 @@ func (d *KrakenDriver) FetchFramesSince(
 	since time.Time,
 ) ([]*frame.Frame, error) {
 	// make request
-	sinceTimestamp := since.Truncate(interval).Unix() - 1
 	rawResponse, err := d.public("GET", "/OHLC", &Payload{
 		Query: url.Values{
 			"pair":     {pair},
 			"interval": {strconv.Itoa(int(interval.Minutes()))},
-			"since":    {strconv.FormatInt(sinceTimestamp, 10)},
+			"since":    {strconv.FormatInt(since.Unix() - 1, 10)},
 		},
 	})
 	if err != nil {

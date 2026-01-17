@@ -7,9 +7,12 @@ algorithmic trading toolbox
 * **Flexibility**: all trading parameters and dynamics can be modified.
 
 ## to-do
-1. improve organization
-    - [ ] make Frames retrieval more robust, i.e. if more than `interval` time has passed since the last frame in the series, assume that the cache is stale and refetch no matter what
-    - [ ] make Frames storage more robust, i.e. don't overwrite existing frames or introduce time gaps if fetching frames that are more recent than the most recent frame in the series
+1. improve Frames
+    - [x] if more than `interval` time has passed since the last frame in the cache, assume that the cache is stale and refetch
+    - [ ] in the above case, only retrieve what's new and needed (`since = frames[len(frames)-1].Time + interval`) instead of retrieving all the overlapping frames
+    - [ ] overwrite old frames when merging if a new frame and old frame have the exact same time
+    - [ ] use a binary search to find where to chop off older cached frames
+    - [ ] unit test
 2. unit tests
     - [ ] FrameStore
     - [ ] BalanceStore

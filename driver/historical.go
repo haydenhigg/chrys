@@ -57,9 +57,9 @@ func (d *HistoricalDriver) FetchFramesSince(
 		}
 
 		epochTime, _ := strconv.ParseInt(record[0], 10, 64)
-		time := time.Unix(epochTime, 0)
+		t := time.Unix(epochTime, 0)
 
-		if !time.Before(since) {
+		if !t.Before(since) {
 			open, _ := strconv.ParseFloat(record[1], 64)
 			high, _ := strconv.ParseFloat(record[2], 64)
 			low, _ := strconv.ParseFloat(record[3], 64)
@@ -67,7 +67,7 @@ func (d *HistoricalDriver) FetchFramesSince(
 			volume, _ := strconv.ParseFloat(record[5], 64)
 
 			frames = append(frames, &frame.Frame{
-				Time:   time,
+				Time:   t,
 				Open:   open,
 				High:   high,
 				Low:    low,
