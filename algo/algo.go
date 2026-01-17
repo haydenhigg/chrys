@@ -1,10 +1,10 @@
 package algo
 
-import "github.com/haydenhigg/chrys"
+import domain "github.com/haydenhigg/chrys/frame"
 
 type Machine interface {
 	Apply(x float64) Machine
-	ApplyFrame(frame *chrys.Frame) Machine
+	ApplyFrame(frame *domain.Frame) Machine
 	Val() float64
 }
 
@@ -44,7 +44,7 @@ func (composer *Composer) Apply(x float64) Machine {
 	return composer
 }
 
-func (composer *Composer) ApplyFrame(frame *chrys.Frame) Machine {
+func (composer *Composer) ApplyFrame(frame *domain.Frame) Machine {
 	composer.feedForward(func(machine Machine) float64 {
 		return machine.ApplyFrame(frame).Val()
 	})

@@ -2,36 +2,24 @@ package chrys
 
 import "time"
 
-type Stage = func(now time.Time) error
-
+type Block = func(now time.Time) error
 type Pipeline struct {
-	Data   map[string]float64
-	Stages []Stage
+	Blocks []Block
 }
 
 func NewPipeline() *Pipeline {
 	return &Pipeline{
-		Data:   map[string]float64{},
-		Stages: []Stage{},
+		Blocks: []Block{},
 	}
 }
 
-func (pipeline *Pipeline) Get(k string) float64 {
-	return pipeline.Data[k]
-}
-
-func (pipeline *Pipeline) Set(k string, v float64) *Pipeline {
-	pipeline.Data[k] = v
-	return pipeline
-}
-
-func (pipeline *Pipeline) AddStage(handler Stage) *Pipeline {
-	pipeline.Stages = append(pipeline.Stages, handler)
+func (pipeline *Pipeline) Block(handler Block) *Pipeline {
+	pipeline.Blocks = append(pipeline.Blocks, handler)
 	return pipeline
 }
 
 func (pipeline *Pipeline) Run(t time.Time) error {
-	for _, handler := range pipeline.Stages {
+	for _, handler := range pipeline.Blocks {
 		if err := handler(t); err != nil {
 			return err
 		}

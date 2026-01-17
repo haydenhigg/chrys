@@ -1,6 +1,6 @@
 package algo
 
-import "github.com/haydenhigg/chrys"
+import domain "github.com/haydenhigg/chrys/frame"
 
 type MA struct {
 	Period float64
@@ -18,7 +18,7 @@ func (ma *MA) Apply(x float64) Machine {
 	return ma
 }
 
-func (ma *MA) ApplyFrame(frame *chrys.Frame) Machine {
+func (ma *MA) ApplyFrame(frame *domain.Frame) Machine {
 	return ma.Apply(frame.Close)
 }
 

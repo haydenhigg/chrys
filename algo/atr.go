@@ -1,7 +1,7 @@
 package algo
 
 import (
-	"github.com/haydenhigg/chrys"
+	domain "github.com/haydenhigg/chrys/frame"
 	"math"
 )
 
@@ -21,7 +21,7 @@ func (atr *ATR) Apply(x float64) Machine {
 	return atr
 }
 
-func (atr *ATR) ApplyFrame(frame *chrys.Frame) Machine {
+func (atr *ATR) ApplyFrame(frame *domain.Frame) Machine {
 	atr.Apply(max(
 		frame.High-frame.Low,
 		math.Abs(frame.High-atr.LastClose),

@@ -1,14 +1,15 @@
-package connector
+package driver
 
 import (
 	"encoding/csv"
 	"fmt"
-	"github.com/haydenhigg/chrys"
+	"github.com/haydenhigg/chrys/frame"
 	"io"
 	"os"
 	"path/filepath"
 	"slices"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -25,26 +26,28 @@ func NewHistorical(dataRoot, nameFmt string) *Historical {
 }
 
 func (c *Historical) FetchFramesSince(
-	pair *chrys.Pair,
+	pair string,
 	interval time.Duration,
 	since time.Time,
-) ([]*chrys.Frame, error) {
-	filePath := filepath.Join(c.DataRoot, fmt.Sprintf(
-		c.NameFmt,
-		pair.Base.Symbol,
-		pair.Quote.Symbol,
-		int(interval.Minutes()),
-	))
+) ([]*frame.Frame, error) {
+	// split pair into assets
+	assets := strings.SplitN(pair, "/", 2)
+	base, quote := assets[0], assets[1]
 
-	file, err := os.Open(filePath)
+	// format data file path
+	dataFile := fmt.Sprintf(c.NameFmt, base, quote, int(interval.Minutes()))
+	dataFilePath := filepath.Join(c.DataRoot, dataFile)
+
+	// read data file
+	file, err := os.Open(dataFilePath)
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
 
-	frames := []*chrys.Frame{}
-
 	reader := csv.NewReader(file)
+	frames := []*frame.Frame{}
+
 	for {
 		record, err := reader.Read()
 		if err == io.EOF {
@@ -53,8 +56,8 @@ func (c *Historical) FetchFramesSince(
 			return frames, err
 		}
 
-		timeEpoch, _ := strconv.ParseInt(record[0], 10, 64)
-		time := time.Unix(timeEpoch, 0)
+		epochTime, _ := strconv.ParseInt(record[0], 10, 64)
+		time := time.Unix(epochTime, 0)
 
 		if !time.Before(since) {
 			open, _ := strconv.ParseFloat(record[1], 64)
@@ -63,7 +66,7 @@ func (c *Historical) FetchFramesSince(
 			close, _ := strconv.ParseFloat(record[4], 64)
 			volume, _ := strconv.ParseFloat(record[5], 64)
 
-			frames = append(frames, &chrys.Frame{
+			frames = append(frames, &frame.Frame{
 				Time:   time,
 				Open:   open,
 				High:   high,
@@ -74,7 +77,7 @@ func (c *Historical) FetchFramesSince(
 		}
 	}
 
-	slices.SortFunc(frames, func(a, b *chrys.Frame) int {
+	slices.SortFunc(frames, func(a, b *frame.Frame) int {
 		return a.Time.Compare(b.Time)
 	})
 
@@ -85,6 +88,6 @@ func (c *Historical) FetchBalances() (map[string]float64, error) {
 	return map[string]float64{}, nil
 }
 
-func (c *Historical) PlaceMarketOrder(side, pair string, quantity float64) error {
+func (c *Historical) MarketOrder(side, pair string, quantity float64) error {
 	return nil
 }

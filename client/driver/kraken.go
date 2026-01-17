@@ -1,4 +1,4 @@
-package connector
+package driver
 
 import (
 	"crypto/hmac"
@@ -7,7 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"github.com/haydenhigg/chrys"
+	"github.com/haydenhigg/chrys/frame"
 	"io"
 	"net/http"
 	"net/url"
@@ -152,17 +152,17 @@ func (c *Kraken) private(
 	return doRequest(request)
 }
 
-// connector functions
+// driver functions
 func (c *Kraken) FetchFramesSince(
-	pair *chrys.Pair,
+	pair string,
 	interval time.Duration,
 	since time.Time,
-) ([]*chrys.Frame, error) {
+) ([]*frame.Frame, error) {
 	// make request
 	sinceTimestamp := since.Truncate(interval).Unix() - 1
 	rawResponse, err := c.public("GET", "/OHLC", &Payload{
 		Query: url.Values{
-			"pair":     {pair.Name},
+			"pair":     {pair},
 			"interval": {strconv.Itoa(int(interval.Minutes()))},
 			"since":    {strconv.FormatInt(sinceTimestamp, 10)},
 		},
@@ -182,13 +182,13 @@ func (c *Kraken) FetchFramesSince(
 		return nil, errors.New(response.Errors[0])
 	}
 
-	rawFrames, ok := response.Result[pair.Name]
+	rawFrames, ok := response.Result[pair]
 	if !ok {
 		return nil, errors.New("no frames retrieved for pair")
 	}
 
 	// process returned frames
-	frames := []*chrys.Frame{}
+	frames := []*frame.Frame{}
 
 	for _, rawFrame := range rawFrames[:len(rawFrames)-1] {
 		open, _ := strconv.ParseFloat(rawFrame[1].(string), 64)
@@ -197,7 +197,7 @@ func (c *Kraken) FetchFramesSince(
 		close, _ := strconv.ParseFloat(rawFrame[4].(string), 64)
 		volume, _ := strconv.ParseFloat(rawFrame[6].(string), 64)
 
-		frames = append(frames, &chrys.Frame{
+		frames = append(frames, &frame.Frame{
 			Time:   time.Unix(int64(rawFrame[0].(float64)), 0),
 			Open:   open,
 			High:   high,
@@ -248,7 +248,7 @@ func (c *Kraken) FetchBalances() (map[string]float64, error) {
 	return store, nil
 }
 
-func (c *Kraken) PlaceMarketOrder(side, pair string, quantity float64) error {
+func (c *Kraken) MarketOrder(side, pair string, quantity float64) error {
 	// make request
 	rawResponse, err := c.private("POST", "/AddOrder", &Payload{
 		Body: url.Values{

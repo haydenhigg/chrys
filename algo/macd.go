@@ -1,6 +1,6 @@
 package algo
 
-import "github.com/haydenhigg/chrys"
+import domain "github.com/haydenhigg/chrys/frame"
 
 type MACD struct {
 	Fast   *EMA
@@ -23,7 +23,7 @@ func (macd *MACD) Apply(x float64) Machine {
 	return macd
 }
 
-func (macd *MACD) ApplyFrame(frame *chrys.Frame) Machine {
+func (macd *MACD) ApplyFrame(frame *domain.Frame) Machine {
 	return macd.Apply(frame.Close)
 }
 
