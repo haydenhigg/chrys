@@ -6,20 +6,18 @@ algorithmic trading toolbox
 * **Composability**: pieces can be combined in novel ways without writing new code.
 * **Flexibility**: all trading parameters and dynamics can be modified.
 
+## notes
+FrameStore caches frames, but it does not try to check if new frames are available from the data source if frames already exist in the cache. So, you should not trust the output of the cache if your program runs longer than the interval you use.
+
 ## to-do
-1. improve Frames
-    - [x] ~~if more than `interval` time has passed since the last frame in the cache, assume that the cache is stale and refetch~~ **It's not possible to do this because the cache miss at the end will need to use `time.Now()` as a reference, which will not work for the HistoricalDriver (since its data often does not go up to the present moment). So the cache will never miss at the end; in other words, the cache should only be used within the interval that it was created. chrys is not for long-running programs.**
-    - [ ] ~~in the above case, only retrieve what's new and needed (`since = frames[len(frames)-1].Time + interval`) instead of retrieving all the overlapping frames~~
-    - [x] use a binary search to find where to chop off older cached frames
-    - [ ] unit test
+1. backtest machinery + reporting
 2. unit tests
-    - [ ] FrameStore
-    - [ ] BalanceStore
+    - [x] FrameStore
+    - [x] BalanceStore
     - [ ] Client
     - [ ] Pipeline
     - [ ] algo
     - [ ] connector
-3. backtest machinery + reporting
 
 ## example
 This trades on **BOLL(20, 2)** signals for **1h BTC/USD** using a **10%** fractional trade amount.
