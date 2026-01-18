@@ -8,9 +8,7 @@ type Pipeline struct {
 }
 
 func NewPipeline() *Pipeline {
-	return &Pipeline{
-		Blocks: []Block{},
-	}
+	return &Pipeline{Blocks: []Block{}}
 }
 
 func (pipeline *Pipeline) AddBlock(handler Block) *Pipeline {

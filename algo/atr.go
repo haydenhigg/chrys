@@ -11,9 +11,7 @@ type ATR struct {
 }
 
 func NewATR(period int) *ATR {
-	return &ATR{
-		Average: NewMA(period),
-	}
+	return &ATR{Average: NewMA(period)}
 }
 
 func (atr *ATR) Apply(x float64) Machine {

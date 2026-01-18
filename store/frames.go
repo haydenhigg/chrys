@@ -79,12 +79,6 @@ func (store *FrameStore) getCachedSince(
 		return nil, false
 	}
 
-	// check if frames contain this time
-	firstFrameIsOldEnough := frames[0].Time.Before(t.Add(interval))
-	if !firstFrameIsOldEnough {
-		return nil, false
-	}
-
 	// chop off older frames
 	index := searchFrames(frames, t)
 	if index > -1 {
@@ -203,20 +197,18 @@ func (store *FrameStore) Set(
 	pair string,
 	interval time.Duration,
 	frames []*frame.Frame,
-) {
+) (*FrameStore) {
 	// check if pair is in cache
 	if _, ok := store.cache[pair]; !ok {
-		store.cache[pair] = PartialFrameCache{
-			interval: frames,
-		}
-		return
+		store.cache[pair] = PartialFrameCache{interval: frames}
+		return store
 	}
 
 	// check if interval is in pair's partial cache {
 	oldFrames, ok := store.cache[pair][interval]
 	if !ok {
 		store.cache[pair][interval] = frames
-		return
+		return store
 	}
 
 	// merge frames

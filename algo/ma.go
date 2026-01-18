@@ -8,9 +8,7 @@ type MA struct {
 }
 
 func NewMA(period int) *MA {
-	return &MA{
-		Period: float64(period),
-	}
+	return &MA{Period: float64(period)}
 }
 
 func (ma *MA) Apply(x float64) Machine {

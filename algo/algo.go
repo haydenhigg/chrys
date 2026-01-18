@@ -14,9 +14,7 @@ type Composer struct {
 }
 
 func NewComposer(initial Machine) *Composer {
-	return &Composer{
-		Machines: []Machine{initial},
-	}
+	return &Composer{Machines: []Machine{initial}}
 }
 
 func (composer *Composer) Of(machine Machine) *Composer {

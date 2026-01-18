@@ -8,9 +8,7 @@ type EMA struct {
 }
 
 func NewEMA(period int) *EMA {
-	return &EMA{
-		Alpha: 2 / (1 + float64(period)),
-	}
+	return &EMA{Alpha: 2 / (1 + float64(period))}
 }
 
 func (ema *EMA) Apply(x float64) Machine {
