@@ -94,16 +94,13 @@ func Test_GetCached(t *testing.T) {
 	}
 }
 
-func Test_Set(t *testing.T) {
-	// set up mock
-	mockAPI := MockBalanceAPI{}
-
+func Test_Set_balances(t *testing.T) {
 	// set up store
-	store := NewBalances(mockAPI)
+	store := NewBalances(MockBalanceAPI{})
 
 	// Set()
-	targetBalances, _ := mockAPI.FetchBalances()
-	store.Set(targetBalances)
+	expectedBalances, _ := store.api.FetchBalances()
+	store.Set(expectedBalances)
 
 	// assert
 	assertBalancesEqual(store.balances, map[string]float64{
@@ -114,15 +111,12 @@ func Test_Set(t *testing.T) {
 }
 
 func Test_SetAddSubtract(t *testing.T) {
-	// set up mock
-	mockAPI := MockBalanceAPI{}
-
 	// set up store
-	store := NewBalances(mockAPI)
+	store := NewBalances(MockBalanceAPI{})
 
 	// Set()
-	targetBalances, _ := mockAPI.FetchBalances()
-	store.Set(targetBalances)
+	expectedBalances, _ := store.api.FetchBalances()
+	store.Set(expectedBalances)
 
 	// Set() with existing keys
 	store.Set(map[string]float64{
@@ -139,17 +133,14 @@ func Test_SetAddSubtract(t *testing.T) {
 }
 
 func Test_AliasSet(t *testing.T) {
-	// set up mock
-	mockAPI := MockBalanceAPI{}
-
 	// set up store
-	store := NewBalances(mockAPI)
+	store := NewBalances(MockBalanceAPI{})
 	store.Alias("BTC", "XBT.F") // alias
 	store.Alias("ZUSD", "USD")  // inverted alias
 
 	// Set()
-	targetBalances, _ := mockAPI.FetchBalances()
-	store.Set(targetBalances)
+	expectedBalances, _ := store.api.FetchBalances()
+	store.Set(expectedBalances)
 
 	// assert
 	assertBalancesEqual(store.balances, map[string]float64{
@@ -162,17 +153,14 @@ func Test_AliasSet(t *testing.T) {
 }
 
 func Test_AliasSetAddSubtract(t *testing.T) {
-	// set up mock
-	mockAPI := MockBalanceAPI{}
-
 	// set up store
-	store := NewBalances(mockAPI)
+	store := NewBalances(MockBalanceAPI{})
 	store.Alias("BTC", "XBT.F") // normal alias
 	store.Alias("ZUSD", "USD")  // inverted alias
 
 	// Set()
-	targetBalances, _ := mockAPI.FetchBalances()
-	store.Set(targetBalances)
+	expectedBalances, _ := store.api.FetchBalances()
+	store.Set(expectedBalances)
 
 	// Set() with existing keys
 	store.Set(map[string]float64{

@@ -28,7 +28,7 @@ func NewFrames(api FrameAPI) *FrameStore {
 	}
 }
 
-// binary search a sorted frame slice for the first frame that starts !Before(t)
+// binary search a sorted frame slice for the first frame that starts at/after t
 func searchFrames(frames []*frame.Frame, t time.Time) int {
 	low, high := 0, len(frames)-1
 	epochs := 0
@@ -197,7 +197,7 @@ func (store *FrameStore) Set(
 	pair string,
 	interval time.Duration,
 	frames []*frame.Frame,
-) (*FrameStore) {
+) *FrameStore {
 	// check if pair is in cache
 	if _, ok := store.cache[pair]; !ok {
 		store.cache[pair] = PartialFrameCache{interval: frames}
@@ -213,4 +213,6 @@ func (store *FrameStore) Set(
 
 	// merge frames
 	store.cache[pair][interval] = mergeFrames(frames, oldFrames)
+
+	return store
 }
