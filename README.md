@@ -1,23 +1,12 @@
 # chrys
-algorithmic trading toolbox
+
+algorithmic trading toolbox for medium-frequency strategies
 
 ## principles
-* **Simplicity**: setting up a successful strategy is easy and concise.
-* **Composability**: pieces can be combined in novel ways without writing new code.
-* **Flexibility**: all trading parameters and dynamics can be modified.
 
-## notes
-FrameStore caches frames, but it does not try to check if new frames are available from the data source if frames already exist in the cache. So, you should not trust the output of the cache if your program runs longer than the interval you use.
-
-## to-do
-1. backtest machinery + reporting
-2. unit tests
-    - [x] FrameStore
-    - [x] BalanceStore
-    - [ ] Client
-    - [ ] Pipeline
-    - [ ] algo
-    - [ ] connector
+1. **Simplicity**: setting up a successful strategy is easy and concise.
+2. **Composability**: pieces can be combined in novel ways without writing new code.
+3. **Flexibility**: all trading parameters and dynamics can be modified.
 
 ## example
 This trades on **BOLL(20, 2)** signals for **1h BTC/USD** using a **10%** fractional trade amount.
@@ -87,8 +76,6 @@ A single OHLCV candle.
   - `Close float64`
   - `Volume float64`
 
----
-
 ### Pipeline
 
 A stateful function-chaining pipeline for building strategies.
@@ -107,3 +94,74 @@ Create with:
 ```go
 chrys.NewPipeline() *Pipeline
 ```
+
+### Client
+
+A trading client that wraps an `API` and provides cached access to frames and balances, plus convenience order helpers.
+
+- **Fields:**
+  - `Frames *store.FrameStore` — cached OHLCV access
+  - `Balances *store.BalanceStore` — cached balances + aliasing
+  - `Fee float64` — applied to simulated balance updates
+  - `IsLive bool` — if `true`, places real orders via the underlying `API`
+
+- **Methods:**
+  - `SetFee(fee float64) *Client` — Set fee rate used when updating balances
+  - `SetIsLive(isLive bool) *Client` — Toggle live order placement
+  - `Order(side OrderSide, pair string, percent float64, t time.Time) error` — Place a market order by fractional sizing
+  - `Buy(pair string, percent float64, t time.Time) error` — Convenience wrapper for `Order(BUY, ...)`
+  - `Sell(pair string, percent float64, t time.Time) error` — Convenience wrapper for `Order(SELL, ...)`
+
+Create with:
+```go
+chrys.NewClient(api chrys.API) *chrys.Client
+chrys.NewKrakenClient(key, secret string) (*chrys.Client, error) // default Fee is 0.4%
+```
+
+Notes:
+- Order `percent` is clamped to `[0, 1]`.
+- Order sizing is based on `percent * balances[base]`, using `Frames.GetPriceAt(pair, t)` to ensure you don’t overspend the quote balance on buys.
+- If `IsLive == false`, no exchange order is placed; balances are still updated locally (useful for paper trading).
+
+### API
+
+Low-level interface a driver must implement. `Client` depends on this.
+
+- **Embedded interfaces:**
+  - `store.BalanceAPI`
+  - `store.FrameAPI`
+
+- **Methods:**
+  - `MarketOrder(side, pair string, quantity float64) error`
+
+### OrderSide
+
+Side of an order.
+
+- **Type:**
+  - `type OrderSide string`
+
+- **Constants:**
+  - `BUY`
+  - `SELL`
+
+### FromJSONFile / ToJSONFile
+
+Minimal helpers for persisting state to disk.
+
+- **Functions:**
+  - `FromJSONFile(name string, v any) error` — Read JSON from `name` into `v`
+  - `ToJSONFile(name string, v any) error` — Write `v` as JSON to `name`
+
+---
+
+## to-do
+
+1. backtest machinery + reporting
+2. unit tests
+    - [x] FrameStore
+    - [x] BalanceStore
+    - [ ] Client
+    - [ ] Pipeline
+    - [ ] algo
+    - [ ] connector
