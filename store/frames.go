@@ -1,7 +1,6 @@
 package store
 
 import (
-	"fmt"
 	"github.com/haydenhigg/chrys/frame"
 	"time"
 )
@@ -29,13 +28,46 @@ func NewFrames(api FrameAPI) *FrameStore {
 	}
 }
 
+// binary search a sorted frame slice for the first frame that starts !Before(t)
+func searchFrames(frames []*frame.Frame, t time.Time) int {
+	low, high := 0, len(frames)-1
+	epochs := 0
+
+	for high-low > 0 {
+		epochs++
+		if frames[low].Time.Equal(t) {
+			return low
+		} else if frames[high].Time.Equal(t) {
+			return high
+		}
+
+		if high-low == 1 {
+			if frames[low].Time.Before(t) && frames[high].Time.After(t) {
+				return high
+			} else {
+				break
+			}
+		}
+
+		midIndex := (low + high) / 2
+
+		if frames[midIndex].Time.Before(t) {
+			low = midIndex
+		} else if frames[midIndex].Time.After(t) {
+			high = midIndex
+		} else {
+			return midIndex
+		}
+	}
+
+	return -1
+}
+
 func (store *FrameStore) getCachedSince(
 	pair string,
 	interval time.Duration,
 	t time.Time,
 ) ([]*frame.Frame, bool) {
-	t = t.Truncate(interval)
-
 	// check if pair is in cache
 	if _, ok := store.cache[pair]; !ok {
 		return nil, false
@@ -43,23 +75,20 @@ func (store *FrameStore) getCachedSince(
 
 	// check if interval is in pair's partial cache
 	frames, ok := store.cache[pair][interval]
-	if !ok {
+	if !ok || len(frames) == 0 {
 		return nil, false
 	}
 
 	// check if frames contain this time
 	firstFrameIsOldEnough := frames[0].Time.Before(t.Add(interval))
-	lastFrameIsNewEnough := !frames[len(frames)-1].Time.Before(t.Add(-2 * interval))
-
-	if !firstFrameIsOldEnough || !lastFrameIsNewEnough {
+	if !firstFrameIsOldEnough {
 		return nil, false
 	}
 
 	// chop off older frames
-	for i, frame := range frames {
-		if !frame.Time.Before(t) {
-			return frames[i:], true
-		}
+	index := searchFrames(frames, t)
+	if index > -1 {
+		return frames[index:], true
 	}
 
 	return nil, false
@@ -70,15 +99,10 @@ func (store *FrameStore) GetSince(
 	interval time.Duration,
 	t time.Time,
 ) ([]*frame.Frame, error) {
-	t = t.Truncate(interval)
-
 	// check cache
 	if frames, ok := store.getCachedSince(pair, interval, t); ok {
-		fmt.Println("cache hit", pair, interval, t)
 		return frames, nil
 	}
-
-	fmt.Println("cache miss", pair, interval, t)
 
 	// retrieve from data source
 	frames, err := store.api.FetchFramesSince(pair, interval, t)
@@ -102,8 +126,7 @@ func (store *FrameStore) GetNBefore(
 	n int,
 	t time.Time,
 ) ([]*frame.Frame, error) {
-	// TODO: t.Truncate(interval).Add(...) ?
-	t = t.Add(time.Duration(-n) * interval)
+	t = t.Truncate(interval).Add(time.Duration(-n) * interval)
 
 	frames, err := store.GetSince(pair, interval, t)
 	if err != nil {
@@ -151,6 +174,7 @@ func (store *FrameStore) GetPriceAt(pair string, t time.Time) (float64, error) {
 	return frames[len(frames)-1].Close, nil
 }
 
+// merge and deduplicate two sorted frame slices
 func mergeFrames(a, b []*frame.Frame) []*frame.Frame {
 	merged := make([]*frame.Frame, 0, len(a)+len(b))
 	i, j := 0, 0

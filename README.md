@@ -8,10 +8,9 @@ algorithmic trading toolbox
 
 ## to-do
 1. improve Frames
-    - [x] if more than `interval` time has passed since the last frame in the cache, assume that the cache is stale and refetch
-    - [ ] in the above case, only retrieve what's new and needed (`since = frames[len(frames)-1].Time + interval`) instead of retrieving all the overlapping frames
-    - [ ] overwrite old frames when merging if a new frame and old frame have the exact same time
-    - [ ] use a binary search to find where to chop off older cached frames
+    - [x] ~~if more than `interval` time has passed since the last frame in the cache, assume that the cache is stale and refetch~~ **It's not possible to do this because the cache miss at the end will need to use `time.Now()` as a reference, which will not work for the HistoricalDriver (since its data often does not go up to the present moment). So the cache will never miss at the end; in other words, the cache should only be used within the interval that it was created. chrys is not for long-running programs.**
+    - [ ] ~~in the above case, only retrieve what's new and needed (`since = frames[len(frames)-1].Time + interval`) instead of retrieving all the overlapping frames~~
+    - [x] use a binary search to find where to chop off older cached frames
     - [ ] unit test
 2. unit tests
     - [ ] FrameStore

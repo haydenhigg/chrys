@@ -163,7 +163,7 @@ func (d *KrakenDriver) FetchFramesSince(
 		Query: url.Values{
 			"pair":     {pair},
 			"interval": {strconv.Itoa(int(interval.Minutes()))},
-			"since":    {strconv.FormatInt(since.Unix() - 1, 10)},
+			"since":    {strconv.FormatInt(since.Unix()-1, 10)},
 		},
 	})
 	if err != nil {
