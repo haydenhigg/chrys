@@ -49,8 +49,10 @@ func (store *BalanceStore) Set(balances map[string]float64) *BalanceStore {
 }
 
 func (store *BalanceStore) Alias(asset, assetAlias string) *BalanceStore {
-	store.aliases[asset] = assetAlias
-	store.aliases[assetAlias] = asset
+	if asset != assetAlias {
+		store.aliases[asset] = assetAlias
+		store.aliases[assetAlias] = asset
+	}
 
 	return store
 }
