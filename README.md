@@ -153,6 +153,135 @@ Minimal helpers for persisting state to disk.
   - `FromJSONFile(name string, v any) error` — Read JSON from `name` into `v`
   - `ToJSONFile(name string, v any) error` — Write `v` as JSON to `name`
 
+### algo
+
+Indicators and small composable “machines” for turning sequences of prices/frames into signals.
+
+#### Machine
+
+A stateful transformer that can be fed raw values or `*frame.Frame` and produces a single float output.
+
+- **Methods:**
+  - `Apply(x float64) Machine` — Update internal state with a scalar
+  - `ApplyFrame(frame *frame.Frame) Machine` — Update internal state with a frame (typically uses `Close`)
+  - `Val() float64` — Current output value
+
+#### Composer
+
+A simple chain/combinator for `Machine`s. It applies the most recently-added machine first, then feeds its output backward through earlier machines.
+
+- **Fields:**
+  - `Machines []Machine`
+  - `Value float64`
+
+- **Methods:**
+  - `Of(machine Machine) *Composer` — Append a machine to the chain
+  - `Apply(x float64) Machine` — Apply chained machines to a scalar and update `Value`
+  - `ApplyFrame(frame *frame.Frame) Machine` — Apply chained machines to a frame and update `Value`
+  - `Val() float64` — Current composed value
+
+Create with:
+```go
+algo.NewComposer(initial algo.Machine) *algo.Composer
+```
+
+#### MA
+
+Exponential-style running moving average (updates in O(1) time per tick).
+
+- **Fields:**
+  - `Period float64`
+  - `Value float64`
+
+- **Methods:**
+  - `Apply(x float64) Machine`
+  - `ApplyFrame(frame *frame.Frame) Machine`
+  - `Val() float64`
+
+Create with:
+```go
+algo.NewMA(period int) *algo.MA
+```
+
+#### EMA
+
+Exponential moving average with default `Alpha = 2 / (1 + period)`.
+
+- **Fields:**
+  - `Alpha float64`
+  - `Value float64`
+
+- **Methods:**
+  - `Apply(x float64) Machine`
+  - `ApplyFrame(frame *frame.Frame) Machine`
+  - `Val() float64`
+
+Create with:
+```go
+algo.NewEMA(period int) *algo.EMA
+```
+
+#### MACD
+
+Moving average convergence/divergence. Internally computes a fast EMA minus slow EMA, then runs that through a signal EMA and returns `signal - line` (a histogram-like value).
+
+- **Fields:**
+  - `Fast *EMA`
+  - `Slow *EMA`
+  - `Signal *EMA`
+  - `Value float64`
+
+- **Methods:**
+  - `Apply(x float64) Machine`
+  - `ApplyFrame(frame *frame.Frame) Machine`
+  - `Val() float64`
+
+Create with:
+```go
+algo.NewMACD(fastPeriod, slowPeriod, signalPeriod int) *algo.MACD
+```
+
+#### ATR
+
+Average True Range. Computes true range per frame using the previous close, then smooths it using `MA`.
+
+- **Fields:**
+  - `Average *MA`
+  - `LastClose float64`
+
+- **Methods:**
+  - `Apply(x float64) Machine` — Feed a precomputed true range value
+  - `ApplyFrame(frame *frame.Frame) Machine` — Compute true range from the frame + prior close
+  - `Val() float64` — Current ATR
+
+Create with:
+```go
+algo.NewATR(period int) *algo.ATR
+```
+
+#### ZScore
+
+Compute the z-score of the most recent element in a series.
+
+- **Function:**
+  - `ZScore(xs []float64) float64`
+
+#### Utilities
+
+Basic math and frame helpers.
+
+- **Math:**
+  - `Mean(xs []float64) float64`
+  - `Variance(xs []float64, mean float64) float64`
+  - `StandardDeviation(xs []float64, mean float64) float64`
+
+- **Frames:**
+  - `MapFrames(frames []*frame.Frame, processor func(*frame.Frame) float64) []float64`
+  - `Opens(frames []*frame.Frame) []float64`
+  - `Highs(frames []*frame.Frame) []float64`
+  - `Lows(frames []*frame.Frame) []float64`
+  - `Closes(frames []*frame.Frame) []float64`
+
 ---
 
 ## to-do
