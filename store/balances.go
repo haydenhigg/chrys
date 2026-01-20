@@ -5,16 +5,18 @@ type BalanceAPI interface {
 }
 
 type BalanceStore struct {
-	api      BalanceAPI
-	balances map[string]float64
-	aliases  map[string]string
+	api        BalanceAPI
+	balances   map[string]float64
+	aliases    map[string]string
+	invAliases map[string]string
 }
 
 func NewBalances(api BalanceAPI) *BalanceStore {
 	return &BalanceStore{
-		api:      api,
-		balances: map[string]float64{},
-		aliases:  map[string]string{},
+		api:        api,
+		balances:   map[string]float64{},
+		aliases:    map[string]string{},
+		invAliases: map[string]string{},
 	}
 }
 
@@ -43,6 +45,10 @@ func (store *BalanceStore) Set(balances map[string]float64) *BalanceStore {
 		if alias, ok := store.aliases[asset]; ok {
 			store.balances[alias] += balance
 		}
+
+		if alias, ok := store.invAliases[asset]; ok {
+			store.balances[alias] += balance
+		}
 	}
 
 	return store
@@ -51,7 +57,7 @@ func (store *BalanceStore) Set(balances map[string]float64) *BalanceStore {
 func (store *BalanceStore) Alias(asset, assetAlias string) *BalanceStore {
 	if asset != assetAlias {
 		store.aliases[asset] = assetAlias
-		store.aliases[assetAlias] = asset
+		store.invAliases[assetAlias] = asset
 	}
 
 	return store

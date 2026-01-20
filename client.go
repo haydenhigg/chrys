@@ -4,6 +4,7 @@ import (
 	"github.com/haydenhigg/chrys/driver"
 	"github.com/haydenhigg/chrys/store"
 	"time"
+	"fmt"
 )
 
 type API interface {
@@ -62,6 +63,8 @@ func (client *Client) TotalValue(quote string, t time.Time) (float64, error) {
 			total += balance
 			continue
 		}
+
+		fmt.Println(base+"/"+quote)
 
 		price, err := client.Frames.GetPriceAt(base+"/"+quote, t)
 		if err != nil {

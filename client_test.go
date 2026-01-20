@@ -2,9 +2,9 @@ package chrys
 
 import (
 	"github.com/haydenhigg/chrys/frame"
+	"math"
 	"testing"
 	"time"
-	"math"
 )
 
 // mock
@@ -40,7 +40,7 @@ func (api MockAPI) FetchFramesSince(
 	for t := since; !t.After(now); t = t.Add(interval) {
 		if t.Equal(t.Truncate(interval)) {
 			frames = append(frames, &frame.Frame{
-				Time: t,
+				Time:  t,
 				Close: price + i,
 			})
 			i++
@@ -99,8 +99,30 @@ func Test_TotalValue(t *testing.T) {
 	}
 
 	// assert
-	if math.Abs(value - 291.12299265) > 10e-6 {
+	if math.Abs(value-291.12299265) > 10e-6 {
 		t.Errorf("value != 291.12299265: %f", value)
 	}
 
+}
+
+func Test_TotalValueAliases(t *testing.T) {
+	// create Client
+	client := NewClient(MockAPI{})
+
+	// set aliases
+	client.Balances.
+		Alias("BTC", "XBT.F").
+		Alias("ZETH", "ETH").
+		Alias("ZUSD", "USD")
+
+	// TotalValue()
+	value, err := client.TotalValue("USD", time.Now())
+	if err != nil {
+		t.Errorf("err: %v", err)
+	}
+
+	// assert
+	if math.Abs(value-291.12299265) > 10e-6 {
+		t.Errorf("value != 291.12299265: %f", value)
+	}
 }
