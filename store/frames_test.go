@@ -379,7 +379,7 @@ func Test_GetPriceAtExactTimeCachedMiss(t *testing.T) {
 
 	// GetNBefore()
 	now := time.Now().Truncate(30 * time.Minute).Add(time.Minute)
-	store.GetNBefore("BTC/USD", 30 * time.Minute, 5, now)
+	store.GetNBefore("BTC/USD", 30*time.Minute, 5, now)
 
 	// reset didUseAPI
 	didUseAPI = false
@@ -485,7 +485,7 @@ func Test_GetPriceAtInexactTimeCachedMiss(t *testing.T) {
 	now := time.Now().Truncate(30 * time.Minute).
 		Add(time.Minute).
 		Add(37 * time.Second)
-	store.GetNBefore("BTC/USD", 30 * time.Minute, 5, now)
+	store.GetNBefore("BTC/USD", 30*time.Minute, 5, now)
 
 	// reset didUseAPI
 	didUseAPI = false
@@ -525,7 +525,7 @@ func Test_SetInitial(t *testing.T) {
 	newFrames, _ := store.api.FetchFramesSince(
 		"BTC/USD",
 		time.Hour,
-		now.Add(-5 * time.Hour),
+		now.Add(-5*time.Hour),
 	)
 
 	store.Set("BTC/USD", time.Hour, newFrames)
@@ -552,7 +552,7 @@ func Test_SetMerge(t *testing.T) {
 	newFrames, _ := store.api.FetchFramesSince(
 		"BTC/USD",
 		time.Hour,
-		now.Add(-5 * time.Hour),
+		now.Add(-5*time.Hour),
 	)
 
 	store.Set("BTC/USD", time.Hour, newFrames)
@@ -561,7 +561,7 @@ func Test_SetMerge(t *testing.T) {
 	newFrames, _ = store.api.FetchFramesSince(
 		"BTC/USD",
 		time.Hour,
-		now.Add(-2 * time.Hour),
+		now.Add(-2*time.Hour),
 	)
 
 	store.Set("BTC/USD", time.Hour, newFrames)

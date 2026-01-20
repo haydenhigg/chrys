@@ -99,15 +99,15 @@ func Test_Set_balances(t *testing.T) {
 	store := NewBalances(MockBalanceAPI{})
 
 	// Set()
-	expectedBalances, _ := store.api.FetchBalances()
-	store.Set(expectedBalances)
-
-	// assert
-	assertBalancesEqual(store.balances, map[string]float64{
+	expectedBalances := map[string]float64{
 		"USD": 133.70,
 		"BTC": 0.001337,
 		"ETH": 0.01337,
-	}, t)
+	}
+	store.Set(expectedBalances)
+
+	// assert
+	assertBalancesEqual(store.balances, expectedBalances, t)
 }
 
 func Test_SetAddSubtract(t *testing.T) {
@@ -115,8 +115,11 @@ func Test_SetAddSubtract(t *testing.T) {
 	store := NewBalances(MockBalanceAPI{})
 
 	// Set()
-	expectedBalances, _ := store.api.FetchBalances()
-	store.Set(expectedBalances)
+	store.Set(map[string]float64{
+		"USD": 133.70,
+		"BTC": 0.001337,
+		"ETH": 0.01337,
+	})
 
 	// Set() with existing keys
 	store.Set(map[string]float64{
@@ -139,8 +142,11 @@ func Test_AliasSet(t *testing.T) {
 	store.Alias("ZUSD", "USD")  // inverted alias
 
 	// Set()
-	expectedBalances, _ := store.api.FetchBalances()
-	store.Set(expectedBalances)
+	store.Set(map[string]float64{
+		"USD": 133.70,
+		"BTC": 0.001337,
+		"ETH": 0.01337,
+	})
 
 	// assert
 	assertBalancesEqual(store.balances, map[string]float64{
@@ -159,8 +165,11 @@ func Test_AliasSetAddSubtract(t *testing.T) {
 	store.Alias("ZUSD", "USD")  // inverted alias
 
 	// Set()
-	expectedBalances, _ := store.api.FetchBalances()
-	store.Set(expectedBalances)
+	store.Set(map[string]float64{
+		"USD": 133.70,
+		"BTC": 0.001337,
+		"ETH": 0.01337,
+	})
 
 	// Set() with existing keys
 	store.Set(map[string]float64{
