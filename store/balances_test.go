@@ -157,7 +157,6 @@ func Test_SetAddSubtract(t *testing.T) {
 	}, t)
 }
 
-
 func Test_SetWithAlias(t *testing.T) {
 	// set up store
 	store := NewBalances(MockBalanceAPI{})
