@@ -1,7 +1,6 @@
 package chrys
 
 import (
-	"fmt"
 	"github.com/haydenhigg/chrys/driver"
 	"github.com/haydenhigg/chrys/store"
 	"time"
@@ -61,19 +60,13 @@ func (client *Client) TotalValue(
 		return 0, err
 	}
 
-	fmt.Println(balances)
-
 	total := 0.
 	for _, base := range assets {
-		fmt.Println(base, quote)
-
 		// get balance for asset
 		balance, ok := balances[base]
 		if !ok {
 			continue
 		}
-
-		fmt.Println(base, quote, balance)
 
 		// add balance directly if asset is quote asset
 		if base == quote {
@@ -86,8 +79,6 @@ func (client *Client) TotalValue(
 		if err != nil {
 			return total, err
 		}
-
-		fmt.Println(base, quote, balance*price)
 
 		total += balance * price
 	}
