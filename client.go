@@ -1,10 +1,10 @@
 package chrys
 
 import (
+	"fmt"
 	"github.com/haydenhigg/chrys/driver"
 	"github.com/haydenhigg/chrys/store"
 	"time"
-	"fmt"
 )
 
 type API interface {
@@ -63,6 +63,8 @@ func (client *Client) TotalValue(
 
 	total := 0.
 	for _, base := range assets {
+		fmt.Println(base, quote)
+
 		// get balance for asset
 		balance, ok := balances[base]
 		if !ok {
@@ -83,7 +85,7 @@ func (client *Client) TotalValue(
 			return total, err
 		}
 
-		fmt.Println(base, quote, balance * price)
+		fmt.Println(base, quote, balance*price)
 
 		total += balance * price
 	}
