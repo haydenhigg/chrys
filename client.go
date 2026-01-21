@@ -61,6 +61,8 @@ func (client *Client) TotalValue(
 		return 0, err
 	}
 
+	fmt.Println(balances)
+
 	total := 0.
 	for _, base := range assets {
 		fmt.Println(base, quote)
