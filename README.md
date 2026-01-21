@@ -56,13 +56,18 @@ func main() {
 	})
 
 	// run
-	now := pipeline.Run(time.Now())
-	if value, err := pipeline.Run(time.Now()); err != nil {
+	now := time.Now()
+	if err := pipeline.Run(now); err != nil {
 		panic(err)
 	}
 
 	// print portfolio value
-	fmt.Println(client.TotalValue("USD", now))
+	value, err := client.TotalValue([]string{"USD", "BTC"}, "USD", now)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("Portfolio Value: $%.2f\n", value)
 }
 ```
 
