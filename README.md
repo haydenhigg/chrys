@@ -32,7 +32,7 @@ func main() {
 		panic(err)
 	}
 
-	client.Balances.Alias("BTC", "XBT.F").Alias("USD", "ZUSD")
+	client.Balances.Alias("BTC", "XXBT").Alias("USD", "ZUSD")
 
 	// set up pipeline
 	pipeline := chrys.NewPipeline()

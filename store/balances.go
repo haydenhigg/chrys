@@ -1,7 +1,5 @@
 package store
 
-import "fmt"
-
 type BalanceAPI interface {
 	FetchBalances() (map[string]float64, error)
 }
@@ -48,8 +46,6 @@ func (store *BalanceStore) Set(balances map[string]float64) *BalanceStore {
 			store.balances[alias] += balance
 		}
 	}
-
-	fmt.Println(store.balances)
 
 	return store
 }

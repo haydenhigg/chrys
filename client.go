@@ -1,7 +1,6 @@
 package chrys
 
 import (
-	"fmt"
 	"github.com/haydenhigg/chrys/driver"
 	"github.com/haydenhigg/chrys/store"
 	"time"
@@ -67,19 +66,7 @@ func (client *Client) TotalValue(
 		balance, ok := balances[base]
 		if !ok {
 			continue
-			// // try to get a balance for the aliased asset
-			// baseAlias, ok := client.Balances.Aliased(base)
-			// if !ok {
-			// 	continue
-			// }
-
-			// balance, ok = balances[baseAlias]
-			// if !ok {
-			// 	continue
-			// }
 		}
-
-		fmt.Println(base + "/" + quote)
 
 		// add balance directly if asset is quote asset
 		if base == quote {
@@ -92,8 +79,6 @@ func (client *Client) TotalValue(
 		if err != nil {
 			return total, err
 		}
-
-		fmt.Printf("price=%f, balance=%f\n", price, balance)
 
 		total += balance * price
 	}

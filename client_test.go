@@ -113,7 +113,7 @@ func Test_TotalValueAliases(t *testing.T) {
 
 	// set aliases
 	client.Balances.
-		Alias("BTC", "XBT.F").
+		Alias("BTC", "XXBT").
 		Alias("ZETH", "ETH").
 		Alias("ZUSD", "USD")
 

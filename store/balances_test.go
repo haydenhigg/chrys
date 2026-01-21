@@ -138,7 +138,7 @@ func Test_SetAddSubtract(t *testing.T) {
 func Test_AliasSet(t *testing.T) {
 	// set up store
 	store := NewBalances(MockBalanceAPI{})
-	store.Alias("BTC", "XBT.F") // alias
+	store.Alias("BTC", "XXBT") // alias
 	store.Alias("ZUSD", "USD")  // inverted alias
 
 	// Set()
@@ -153,7 +153,7 @@ func Test_AliasSet(t *testing.T) {
 		"USD":   133.70,
 		"ZUSD":  133.70,
 		"BTC":   0.001337,
-		"XBT.F": 0.001337,
+		"XXBT": 0.001337,
 		"ETH":   0.01337,
 	}, t)
 }
@@ -161,7 +161,7 @@ func Test_AliasSet(t *testing.T) {
 func Test_AliasSetAddSubtract(t *testing.T) {
 	// set up store
 	store := NewBalances(MockBalanceAPI{})
-	store.Alias("BTC", "XBT.F") // normal alias
+	store.Alias("BTC", "XXBT") // normal alias
 	store.Alias("ZUSD", "USD")  // inverted alias
 
 	// Set()
@@ -182,7 +182,7 @@ func Test_AliasSetAddSubtract(t *testing.T) {
 		"USD":   165.83,
 		"ZUSD":  165.83,
 		"BTC":   0.001,
-		"XBT.F": 0.001,
+		"XXBT": 0.001,
 		"ETH":   0.01337,
 	}, t)
 }
@@ -190,11 +190,11 @@ func Test_AliasSetAddSubtract(t *testing.T) {
 func Test_Aliased(t *testing.T) {
 	// set up store
 	store := NewBalances(MockBalanceAPI{})
-	store.Alias("BTC", "XBT.F") // alias
+	store.Alias("BTC", "XXBT") // alias
 	store.Alias("ZUSD", "USD")  // inverted alias
 
 	// Aliased()
-	alias, ok := store.Aliased("XBT.F")
+	alias, ok := store.Aliased("XXBT")
 	if !ok {
 		t.Errorf(`"ZUSD" is not aliased`)
 	} else if alias != "BTC" {
