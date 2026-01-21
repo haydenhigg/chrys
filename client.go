@@ -1,10 +1,10 @@
 package chrys
 
 import (
+	"fmt"
 	"github.com/haydenhigg/chrys/driver"
 	"github.com/haydenhigg/chrys/store"
 	"time"
-	"fmt"
 )
 
 type API interface {
@@ -51,20 +51,32 @@ func (client *Client) SetIsLive(isLive bool) *Client {
 }
 
 // methods
-func (client *Client) TotalValue(quote string, t time.Time) (float64, error) {
+func (client *Client) TotalValue(
+	assets []string,
+	quote string,
+	t time.Time,
+) (float64, error) {
 	balances, err := client.Balances.Get()
 	if err != nil {
 		return 0, err
 	}
 
 	total := 0.
-	for base, balance := range balances {
+	for _, base := range assets {
+		// get balance for asset
+		balance, ok := balances[base]
+		if !ok {
+			continue
+		}
+
+		// add balance directly if asset is quote asset
 		if base == quote {
 			total += balance
 			continue
 		}
 
-		fmt.Println(base+"/"+quote)
+		// add balance for asset given pair price
+		fmt.Println(base + "/" + quote)
 
 		price, err := client.Frames.GetPriceAt(base+"/"+quote, t)
 		if err != nil {
