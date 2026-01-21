@@ -29,9 +29,10 @@ func (api MockAPI) FetchFramesSince(
 	i := 0.
 
 	price := 0.
-	if pair == "BTC/USD" {
+	switch pair {
+	case "BTC/USD":
 		price = 88304.55
-	} else if pair == "ETH/USD" {
+	case "ETH/USD":
 		price = 2943.89
 	}
 

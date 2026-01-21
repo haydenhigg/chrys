@@ -67,6 +67,16 @@ func (client *Client) TotalValue(
 		balance, ok := balances[base]
 		if !ok {
 			continue
+			// // try to get a balance for the aliased asset
+			// baseAlias, ok := client.Balances.Aliased(base)
+			// if !ok {
+			// 	continue
+			// }
+
+			// balance, ok = balances[baseAlias]
+			// if !ok {
+			// 	continue
+			// }
 		}
 
 		// add balance directly if asset is quote asset
@@ -82,6 +92,8 @@ func (client *Client) TotalValue(
 		if err != nil {
 			return total, err
 		}
+
+		fmt.Println(price)
 
 		total += balance * price
 	}
