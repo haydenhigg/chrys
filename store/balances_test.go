@@ -186,3 +186,26 @@ func Test_AliasSetAddSubtract(t *testing.T) {
 		"ETH":   0.01337,
 	}, t)
 }
+
+func Test_Aliased(t *testing.T) {
+	// set up store
+	store := NewBalances(MockBalanceAPI{})
+	store.Alias("BTC", "XBT.F") // alias
+	store.Alias("ZUSD", "USD")  // inverted alias
+
+	// Aliased()
+	alias, ok := store.Aliased("XBT.F")
+	if !ok {
+		t.Errorf(`"ZUSD" is not aliased`)
+	} else if alias != "BTC" {
+		t.Errorf(`alias != "BTC": %s`, alias)
+	}
+
+	// inverted Aliased()
+	alias, ok = store.Aliased("ZUSD")
+	if !ok {
+		t.Errorf(`"ZUSD" is not aliased`)
+	} else if alias != "USD" {
+		t.Errorf(`alias != "USD": %s`, alias)
+	}
+}

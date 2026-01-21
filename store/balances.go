@@ -42,11 +42,7 @@ func (store *BalanceStore) Set(balances map[string]float64) *BalanceStore {
 	for asset, balance := range balances {
 		store.balances[asset] += balance
 
-		if alias, ok := store.aliases[asset]; ok {
-			store.balances[alias] += balance
-		}
-
-		if alias, ok := store.invAliases[asset]; ok {
+		if alias, ok := store.Aliased(asset); ok {
 			store.balances[alias] += balance
 		}
 	}
@@ -61,4 +57,14 @@ func (store *BalanceStore) Alias(asset, assetAlias string) *BalanceStore {
 	}
 
 	return store
+}
+
+func (store *BalanceStore) Aliased(asset string) (string, bool) {
+	if alias, ok := store.aliases[asset]; ok {
+		return alias, true
+	} else if alias, ok = store.invAliases[asset]; ok {
+		return alias, true
+	} else {
+		return asset, false
+	}
 }
