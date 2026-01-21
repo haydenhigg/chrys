@@ -33,7 +33,7 @@ func (store *BalanceStore) Get() (map[string]float64, error) {
 	// cache retrieved data
 	store.Set(balances)
 
-	return balances, nil
+	return store.balances, nil
 }
 
 func (store *BalanceStore) Set(balances map[string]float64) *BalanceStore {

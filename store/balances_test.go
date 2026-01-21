@@ -62,6 +62,28 @@ func Test_GetUncached(t *testing.T) {
 	}
 }
 
+func Test_GetUncachedWithAlias(t *testing.T) {
+	// set up store
+	store := NewBalances(MockBalanceAPI{})
+	store.Alias("BTC", "XXBT") // alias
+	store.Alias("ZUSD", "USD") // inverted alias
+
+	// Get()
+	balances, err := store.Get()
+	if err != nil {
+		t.Errorf("err != nil: %v", err)
+	}
+
+	// assert
+	assertBalancesEqual(balances, map[string]float64{
+		"USD":  133.70,
+		"ZUSD": 133.70,
+		"BTC":  0.001337,
+		"XXBT": 0.001337,
+		"ETH":  0.01337,
+	}, t)
+}
+
 func Test_GetCached(t *testing.T) {
 	// set up mock
 	didUseAPI := false
@@ -135,7 +157,8 @@ func Test_SetAddSubtract(t *testing.T) {
 	}, t)
 }
 
-func Test_AliasSet(t *testing.T) {
+
+func Test_SetWithAlias(t *testing.T) {
 	// set up store
 	store := NewBalances(MockBalanceAPI{})
 	store.Alias("BTC", "XXBT") // alias
@@ -158,7 +181,7 @@ func Test_AliasSet(t *testing.T) {
 	}, t)
 }
 
-func Test_AliasSetAddSubtract(t *testing.T) {
+func Test_SetAddSubtractWithAlias(t *testing.T) {
 	// set up store
 	store := NewBalances(MockBalanceAPI{})
 	store.Alias("BTC", "XXBT") // normal alias
