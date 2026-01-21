@@ -80,7 +80,7 @@ func (client *Client) TotalValue(
 
 		price, err := client.Frames.GetPriceAt(base+"/"+quote, t)
 		if err != nil {
-			continue
+			return total, err
 		}
 
 		total += balance * price
