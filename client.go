@@ -79,6 +79,8 @@ func (client *Client) TotalValue(
 			// }
 		}
 
+		fmt.Println(base + "/" + quote)
+
 		// add balance directly if asset is quote asset
 		if base == quote {
 			total += balance
@@ -86,14 +88,12 @@ func (client *Client) TotalValue(
 		}
 
 		// add balance for asset given pair price
-		fmt.Println(base + "/" + quote)
-
 		price, err := client.Frames.GetPriceAt(base+"/"+quote, t)
 		if err != nil {
 			return total, err
 		}
 
-		fmt.Println(price)
+		fmt.Printf("price=%f, balance=%f\n", price, balance)
 
 		total += balance * price
 	}
