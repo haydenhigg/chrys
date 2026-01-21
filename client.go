@@ -68,7 +68,7 @@ func (client *Client) TotalValue(quote string, t time.Time) (float64, error) {
 
 		price, err := client.Frames.GetPriceAt(base+"/"+quote, t)
 		if err != nil {
-			return 0, err
+			continue
 		}
 
 		total += balance * price
