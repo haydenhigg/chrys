@@ -4,6 +4,7 @@ import (
 	"github.com/haydenhigg/chrys/driver"
 	"github.com/haydenhigg/chrys/store"
 	"time"
+	"fmt"
 )
 
 type API interface {
@@ -68,6 +69,8 @@ func (client *Client) TotalValue(
 			continue
 		}
 
+		fmt.Println(base, quote, balance)
+
 		// add balance directly if asset is quote asset
 		if base == quote {
 			total += balance
@@ -79,6 +82,8 @@ func (client *Client) TotalValue(
 		if err != nil {
 			return total, err
 		}
+
+		fmt.Println(base, quote, balance * price)
 
 		total += balance * price
 	}
