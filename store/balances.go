@@ -36,10 +36,15 @@ func (store *BalanceStore) Get() (map[string]float64, error) {
 	return store.balances, nil
 }
 
+// func (store *BalanceStore) Get(assets []string) (map[string]float64, error) {
+// }
+
 func (store *BalanceStore) Set(balances map[string]float64) *BalanceStore {
+	// update all balances additively
 	for asset, balance := range balances {
 		store.balances[asset] += balance
 
+		// update alias balances
 		if alias, ok := store.aliases[asset]; ok {
 			store.balances[alias] += balance
 		}
@@ -50,8 +55,8 @@ func (store *BalanceStore) Set(balances map[string]float64) *BalanceStore {
 
 func (store *BalanceStore) Alias(asset, assetAlias string) *BalanceStore {
 	if asset != assetAlias {
-		store.aliases[asset] = assetAlias
-		store.aliases[assetAlias] = asset
+		store.aliases[asset] = assetAlias // alias
+		store.aliases[assetAlias] = asset // inverted alias
 	}
 
 	return store

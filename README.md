@@ -62,7 +62,7 @@ func main() {
 	}
 
 	// print portfolio value
-	value, err := client.TotalValue([]string{"USD", "BTC"}, "USD", now)
+	value, err := client.TotalValue([]string{"USD", "BTC"}, now)
 	if err != nil {
 		panic(err)
 	}

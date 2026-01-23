@@ -52,14 +52,23 @@ func (client *Client) SetIsLive(isLive bool) *Client {
 // methods
 func (client *Client) TotalValue(
 	assets []string,
-	quote string,
 	t time.Time,
 ) (float64, error) {
+	// check for assets
+	if len(assets) == 0 {
+		return 0, nil
+	}
+
+	// set quote asset
+	quote := assets[0]
+
+	// get all balances
 	balances, err := client.Balances.Get()
 	if err != nil {
 		return 0, err
 	}
 
+	// sum balances
 	total := 0.
 	for _, base := range assets {
 		// get balance for asset

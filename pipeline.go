@@ -26,16 +26,16 @@ func (pipeline *Pipeline) Run(t time.Time) error {
 	return nil
 }
 
-// type BacktestReport {
-// 	StartEquity float64
-// 	EndEquity   float64
-// 	Return      float64
-// }
+type BacktestReport struct {
+	Start, End           time.Time
+	StartValue, EndValue float64
+	EndEquity,
+	Return float64
+}
 
-// func (pipeline *Pipeline) RunBacktest(
-// 	start,
-// 	end time.Time,
-// 	out *Asset,
-// ) (*BacktestReport, error) {
-// 	return &BacktestReport{}, nil
-// }
+func (pipeline *Pipeline) RunBacktest(
+	start, end time.Time,
+	out []string,
+) (BacktestReport, error) {
+	return BacktestReport{}, nil
+}

@@ -95,7 +95,7 @@ func Test_TotalValue(t *testing.T) {
 
 	// TotalValue()
 	assets := []string{"USD", "ETH", "BTC"}
-	value, err := client.TotalValue(assets, "USD", time.Now())
+	value, err := client.TotalValue(assets, time.Now())
 	if err != nil {
 		t.Errorf("err: %v", err)
 	}
@@ -119,7 +119,7 @@ func Test_TotalValueAliases(t *testing.T) {
 
 	// TotalValue()
 	assets := []string{"USD", "ETH", "BTC"}
-	value, err := client.TotalValue(assets, "USD", time.Now())
+	value, err := client.TotalValue(assets, time.Now())
 	if err != nil {
 		t.Errorf("err: %v", err)
 	}
