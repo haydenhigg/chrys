@@ -38,8 +38,8 @@ func NewKrakenClient(key, secret string) (*Client, error) {
 	return NewClient(kraken).SetFee(0.004), nil
 }
 
-func NewHistoricalClient(dataRoot, nameFmt string) (*Client, error) {
-	return NewClient(driver.NewHistorical(dataRoot, nameFmt)), nil
+func NewHistoricalClient(dataRoot, nameFmt string) *Client {
+	return NewClient(driver.NewHistorical(dataRoot, nameFmt))
 }
 
 // setters
