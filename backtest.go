@@ -2,34 +2,6 @@ package chrys
 
 import "time"
 
-type Block = func(now time.Time) error
-type Pipeline struct {
-	Blocks []Block
-}
-
-// initializer
-func NewPipeline() *Pipeline {
-	return &Pipeline{Blocks: []Block{}}
-}
-
-// simple setter
-func (pipeline *Pipeline) AddBlock(handler Block) *Pipeline {
-	pipeline.Blocks = append(pipeline.Blocks, handler)
-	return pipeline
-}
-
-// run
-func (pipeline *Pipeline) Run(t time.Time) error {
-	for _, handler := range pipeline.Blocks {
-		if err := handler(t); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// backtesting
 type BacktestReport struct {
 	Start         time.Time
 	End           time.Time

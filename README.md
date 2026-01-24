@@ -1,30 +1,30 @@
 # chrys
 
-algorithmic trading toolbox for medium-frequency strategies
+algorithmic trading framework for medium-frequency (>=1min) strategies
 
 ## principles
 
-1. **Simplicity**: setting up a successful strategy is concise and intuitive.
-2. **Flexibility**: all trading parameters and dynamics can be modified.
-3. **Composability**: pieces can be combined in novel ways without writing new code.
+1. **Reliable**: It's robust enough to handle serious sums of money.
+2. **Simple**: Setting up an effective strategy is concise and intuitive.
+3. **Flexible**: All functionality can be modified or composed.
 
 ## to-do
 
 1. create backtest machinery.
-    - interval argument in `pipeline.AddBlock`
+    - a Backtester subpackage with `Backtest(client *Client, runner Runner)`
     - OrderStore with an internal ledger
-    - a Backtester subpackage
-2. write key unit test suites.
+2. write key unit tests.
     - [x] FrameStore
     - [x] BalanceStore
     - [ ] OrderStore
     - [x] Client
-    - [ ] Pipeline
+    - [x] Scheduler
 3. optimize. backtests over 1hr interval for 1yr are slow -- why?
-4. change driver interface.
+4. plug-ins
+5. change driver interface.
     - replace `driver.FetchFramesSince` with `driver.FetchNFrames`
     - remove `client.GetFramesSince`
-5. clean up and complete documentation.
+6. clean up and complete documentation.
 
 ## example
 This trades on **BOLL(20, 2)** signals for **1h BTC/USD** using a **10%** fractional trade amount.
@@ -52,9 +52,9 @@ func main() {
 
 	client.Balances.Alias("BTC", "XXBT").Alias("USD", "ZUSD")
 
-	// set up pipeline
-	pipeline := chrys.NewPipeline()
-	pipeline.AddBlock(func(now time.Time) error {
+	// set up scheduler
+	scheduler := chrys.NewScheduler()
+	scheduler.Add(time.Hour, func(now time.Time) error {
 		frames, err := client.Frames.GetNBefore("BTC/USD", time.Hour, 20, now)
 		if err != nil {
 			return err
@@ -75,7 +75,7 @@ func main() {
 
 	// run
 	now := time.Now()
-	if err := pipeline.Run(now); err != nil {
+	if err := scheduler.Run(now); err != nil {
 		panic(err)
 	}
 
