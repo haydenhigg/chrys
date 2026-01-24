@@ -31,10 +31,10 @@ func Test_Run(t *testing.T) {
 	scheduler.Add(time.Minute, func(now time.Time) error {
 		didRunMin = true
 		return nil
-	}).Add(5 * time.Minute, func(now time.Time) error {
+	}).Add(5*time.Minute, func(now time.Time) error {
 		didRun5Min = true
 		return nil
-	}).Add(15 * time.Minute, func(now time.Time) error {
+	}).Add(15*time.Minute, func(now time.Time) error {
 		didRun15Min = true
 		return nil
 	})
