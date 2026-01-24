@@ -27,6 +27,7 @@ algorithmic trading framework for medium-frequency (>=1min) strategies
 6. clean up and complete documentation.
 
 ## example
+
 This trades on **BOLL(20, 2)** signals for **1h BTC/USD** using a **10%** fractional trade amount.
 
 ```go
@@ -54,16 +55,21 @@ func main() {
 
 	// set up scheduler
 	scheduler := chrys.NewScheduler()
-	scheduler.Add(time.Hour, func(now time.Time) error {
-		frames, err := client.Frames.GetNBefore("BTC/USD", time.Hour, 20, now)
+	scheduler.Add(time.Minute, func(now time.Time) error {
+		// print portfolio value
+		value, err := client.TotalValue([]string{"USD", "BTC"}, now)
+		if err == nil {
+			fmt.Printf("Portfolio value: $%.2f\n", value)
+		}
+
+		// get frames
+		frames, err := client.Frames.GetNBefore("BTC/USD", time.Minute, 20, now)
 		if err != nil {
 			return err
 		}
 
+		// calculate signal and place order if necessary
 		zScore := algo.ZScore(algo.Closes(frames))
-		fmt.Println("BB(20) =", zScore)
-
-		err = nil
 		if zScore < -2 {
 			err = client.Buy("BTC/USD", 0.10, now)
 		} else if zScore > 2 {
@@ -74,26 +80,17 @@ func main() {
 	})
 
 	// run
-	now := time.Now()
-	if err := scheduler.Run(now); err != nil {
+	if err := scheduler.Run(time.Now()); err != nil {
 		panic(err)
 	}
-
-	// print portfolio value
-	value, err := client.TotalValue([]string{"USD", "BTC"}, now)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Printf("Portfolio Value: $%.2f\n", value)
 }
 ```
 
-## API
+## documentation
 
 ### Frame
 
-A single OHLCV candle.
+A single OHLC bar.
 
 - **Fields:**
   - `Time time.Time`
