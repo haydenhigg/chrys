@@ -62,6 +62,38 @@ func (test *Backtest) Sharpe(annualRiskFreeReturn float64) float64 {
 	return sharpe * math.Sqrt(YEAR/float64(test.Step))
 }
 
+func (test *Backtest) Sortino(annualRiskFreeReturn float64) float64 {
+	periodicRiskFreeReturn := annualRiskFreeReturn / (YEAR / float64(test.Step))
+
+	downside := make([]float64, len(test.Returns))
+	for i, ret := range test.Returns {
+		if ret < periodicRiskFreeReturn {
+			downside[i] = ret - periodicRiskFreeReturn
+		} else {
+			downside[i] = 0
+		}
+	}
+
+	meanReturn := algo.Mean(test.Returns)
+	downsideVolatility := algo.StandardDeviation(downside, algo.Mean(downside))
+
+	sortino := (meanReturn - periodicRiskFreeReturn) / downsideVolatility
+
+	return sortino * math.Sqrt(YEAR/float64(test.Step))
+}
+
+func (test *Backtest) Skew() float64 {
+	meanReturn := algo.Mean(test.Returns)
+	volatility := algo.StandardDeviation(test.Returns, meanReturn)
+
+	skew := 0.
+	for _, ret := range test.Returns {
+		skew += math.Pow((ret-meanReturn)/volatility, 3)
+	}
+
+	return skew / float64(len(test.Returns))
+}
+
 func (test *Backtest) MaxDrawdown() float64 {
 	peak := test.Values[0]
 	maxDrawdown := 0.
