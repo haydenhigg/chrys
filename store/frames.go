@@ -3,6 +3,7 @@ package store
 import (
 	"github.com/haydenhigg/chrys/frame"
 	"time"
+	"fmt"
 )
 
 type FrameAPI interface {
@@ -99,10 +100,12 @@ func (store *FrameStore) GetSince(
 	}
 
 	// retrieve from data source
+	fmt.Printf("store.api.FetchFramesSince(%s, %v, %v)\n", pair, interval, t)
 	frames, err := store.api.FetchFramesSince(pair, interval, t)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("frames = %+v\n", frames)
 
 	// cache retrieved data
 	store.Set(pair, interval, frames)
