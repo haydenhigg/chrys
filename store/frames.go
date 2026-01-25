@@ -105,11 +105,7 @@ func (store *FrameStore) GetSince(
 	}
 
 	// cache retrieved data
-	if _, ok := store.cache[pair]; !ok {
-		store.cache[pair] = PartialFrameCache{}
-	}
-
-	store.cache[pair][interval] = frames
+	store.Set(pair, interval, frames)
 
 	return frames, nil
 }
@@ -134,7 +130,7 @@ func (store *FrameStore) getCachedPriceAt(
 	pair string,
 	t time.Time,
 ) (float64, bool) {
-	// check all cached intervals for a pair to find a price for the given time
+	// check all cached intervals to find a Close price for the given time
 	if intervalFrames, ok := store.cache[pair]; ok {
 		frameTime := t.Truncate(time.Minute)
 
