@@ -1,6 +1,7 @@
 package chrys
 
 import (
+	"github.com/haydenhigg/chrys/algo"
 	"math"
 	"time"
 )
@@ -42,6 +43,12 @@ func (test *Backtest) AverageReturn() float64 {
 	}
 
 	return geometricMean(onePlusReturns) - 1
+}
+
+func (test *Backtest) Volatility() float64 {
+	volatility := algo.StandardDeviation(test.Returns, algo.Mean(test.Returns))
+
+	return volatility * math.Sqrt(float64(YEAR)/float64(test.Step))
 }
 
 // // print metrics
