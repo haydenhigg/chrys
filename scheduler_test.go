@@ -10,7 +10,7 @@ func assertSlicesEqual(a, b []float64, t *testing.T) {
 	for i, va := range a {
 		if i >= len(b) {
 			t.Errorf("b[%d] does not exist", i)
-		} else if vb := b[i]; math.Abs(va-vb) > 10e-6 {
+		} else if vb := b[i]; math.Abs(va-vb) > 1e-6 {
 			t.Errorf("a[%d] != b[%d]: %v != %v", i, i, va, vb)
 		}
 	}

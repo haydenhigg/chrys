@@ -100,7 +100,7 @@ func Test_Value(t *testing.T) {
 	}
 
 	// assert
-	if math.Abs(value-291.12299265) > 10e-6 {
+	if math.Abs(value-291.12299265) > 1e-6 {
 		t.Errorf("value != 291.12299265: %f", value)
 	}
 
@@ -123,7 +123,7 @@ func Test_ValueAliases(t *testing.T) {
 	}
 
 	// assert
-	if math.Abs(value-291.12299265) > 10e-6 {
+	if math.Abs(value-291.12299265) > 1e-6 {
 		t.Errorf("value != 291.12299265: %f", value)
 	}
 }

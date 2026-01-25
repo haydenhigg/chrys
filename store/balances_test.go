@@ -27,7 +27,7 @@ func assertBalancesEqual(a, b map[string]float64, t *testing.T) {
 	for k, va := range a {
 		if vb, ok := b[k]; !ok {
 			t.Errorf(`b["%s"] does not exist`, k)
-		} else if math.Abs(va-vb) > 10e-6 {
+		} else if math.Abs(va-vb) > 1e-6 {
 			t.Errorf(`a["%s"] != b["%s"]: %v != %v`, k, k, va, vb)
 		}
 	}

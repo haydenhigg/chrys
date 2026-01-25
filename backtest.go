@@ -14,13 +14,13 @@ type Backtest struct {
 	Returns []float64
 }
 
-const YEAR = time.Hour * 8760
+const YEAR float64 = 3.1536e+16
 
 func (test *Backtest) CAGR() float64 {
 	totalReturn := test.Values[len(test.Values)-1] / test.Values[0]
 	duration := test.End.Sub(test.Start)
 
-	return math.Pow(totalReturn, float64(YEAR)/float64(duration)) - 1
+	return math.Pow(totalReturn, YEAR/float64(duration)) - 1
 }
 
 func geometricMean(xs []float64) float64 {
@@ -37,49 +37,31 @@ func geometricMean(xs []float64) float64 {
 }
 
 func (test *Backtest) AverageReturn() float64 {
-	onePlusReturns := make([]float64, len(test.Returns))
-	for i, r := range test.Returns {
-		onePlusReturns[i] = 1 + r
+	growthFactors := make([]float64, len(test.Returns))
+	for i, ret := range test.Returns {
+		growthFactors[i] = 1 + ret
 	}
 
-	return geometricMean(onePlusReturns) - 1
+	return geometricMean(growthFactors) - 1
 }
 
 func (test *Backtest) Volatility() float64 {
 	volatility := algo.StandardDeviation(test.Returns, algo.Mean(test.Returns))
 
-	return volatility * math.Sqrt(float64(YEAR)/float64(test.Step))
+	return volatility * math.Sqrt(YEAR/float64(test.Step))
 }
 
-// // print metrics
-// returns := make([]float64, len(values)-1)
-// for i, value := range values[1:] {
-// 	returns[i] = value/values[i] - 1
+func (test *Backtest) Sharpe(annualRiskFreeReturn float64) float64 {
+	periodicRiskFreeReturn := annualRiskFreeReturn / (YEAR / float64(test.Step))
+
+	meanReturn := algo.Mean(test.Returns)
+	volatility := algo.StandardDeviation(test.Returns, meanReturn)
+
+	sharpe := (meanReturn - periodicRiskFreeReturn) / volatility
+
+	return sharpe * math.Sqrt(YEAR/float64(test.Step))
+}
+
+// func (test *Backtest) MaxDrawdown() float64 {
+
 // }
-
-// avgReturn := algo.Mean(returns)
-// volatility := algo.StandardDeviation(returns, avgReturn)
-// fmt.Printf("return: %+.2f%%\n", 100*(values[len(values)-1]/values[0]-1))
-// fmt.Printf("annualized avg. return: %+.2f%%\n", 100*(math.Pow(1+avgReturn, 8760)-1))
-// fmt.Printf("annualized volatility: %.2f%%\n", 100*volatility*math.Sqrt(8760))
-
-// btcReturns := make([]float64, len(btcValues)-1)
-// excessReturns := []float64{}
-// for i, value := range btcValues[1:] {
-// 	btcReturns[i] = value/btcValues[i] - 1
-// 	excessReturns = append(excessReturns, returns[i]-btcReturns[i])
-// }
-
-// btcAvgReturn := algo.Mean(btcReturns)
-// btcVolatility := algo.StandardDeviation(btcReturns, btcAvgReturn)
-// fmt.Printf("baseline return: %+.2f%%\n", 100*(btcValues[len(btcValues)-1]/btcValues[0]-1))
-// fmt.Printf("baseline annualized avg. return: %+.2f%%\n", 100*(math.Pow(1+btcAvgReturn, 8760)-1))
-// fmt.Printf("baseline annualized volatility: %.2f%%\n", 100*btcVolatility*math.Sqrt(8760))
-
-// avgExcessReturn := algo.Mean(excessReturns)
-// excessVolatility := algo.StandardDeviation(excessReturns, avgExcessReturn)
-
-// fmt.Printf("sharpe ratio: %.2f\n", ((avgReturn-btcAvgReturn)/excessVolatility)*math.Sqrt(8760))
-
-// fmt.Println("buys:", buys)
-// fmt.Println("sells:", sells)

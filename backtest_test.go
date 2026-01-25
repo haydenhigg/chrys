@@ -13,7 +13,7 @@ import (
 // 	totalReturn := test.TotalReturn()
 
 // 	// assert
-// 	if math.Abs(totalReturn-3.0) > 10e-6 {
+// 	if math.Abs(totalReturn-3.0) > 1e-6 {
 // 		t.Errorf("total return != 3.0: %f", totalReturn)
 // 	}
 // }
@@ -26,7 +26,7 @@ func Test_geometricMean(t *testing.T) {
 	mean := geometricMean(xs)
 
 	// assert
-	if math.Abs(mean-4.1195343) > 10e-6 {
+	if math.Abs(mean-4.1195343) > 1e-6 {
 		t.Errorf("geometric mean != 4.1195343: %f", mean)
 	}
 }
@@ -39,7 +39,7 @@ func Test_AverageReturn(t *testing.T) {
 	averageReturn := test.AverageReturn()
 
 	// assert
-	if math.Abs(averageReturn-0.0055495) > 10e-6 {
+	if math.Abs(averageReturn-0.0055495) > 1e-6 {
 		t.Errorf("average return != 0.0055495: %f", averageReturn)
 	}
 }
