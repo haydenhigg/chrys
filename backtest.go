@@ -13,12 +13,13 @@ type Backtest struct {
 	Returns []float64
 }
 
-// func (test *Backtest) annualize(x float64) float64 {
+const YEAR = time.Hour * 8760
 
-// }
+func (test *Backtest) CAGR() float64 {
+	totalReturn := test.Values[len(test.Values)-1] / test.Values[0]
+	duration := test.End.Sub(test.Start)
 
-func (test *Backtest) TotalReturn() float64 {
-	return test.Values[len(test.Values)-1]/test.Values[0] - 1
+	return math.Pow(totalReturn, float64(YEAR)/float64(duration)) - 1
 }
 
 func geometricMean(xs []float64) float64 {

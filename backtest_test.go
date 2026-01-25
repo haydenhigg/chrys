@@ -5,18 +5,18 @@ import (
 	"testing"
 )
 
-func Test_TotalReturn(t *testing.T) {
-	// mock Backtest
-	test := &Backtest{Values: []float64{1, 1.5, 2.25, 3.125, 4}}
+// func Test_TotalReturn(t *testing.T) {
+// 	// mock Backtest
+// 	test := &Backtest{Values: []float64{1, 1.5, 2.25, 3.125, 4}}
 
-	// TotalReturn()
-	totalReturn := test.TotalReturn()
+// 	// TotalReturn()
+// 	totalReturn := test.TotalReturn()
 
-	// assert
-	if math.Abs(totalReturn-3.0) > 10e-6 {
-		t.Errorf("total return != 3.0: %f", totalReturn)
-	}
-}
+// 	// assert
+// 	if math.Abs(totalReturn-3.0) > 10e-6 {
+// 		t.Errorf("total return != 3.0: %f", totalReturn)
+// 	}
+// }
 
 func Test_geometricMean(t *testing.T) {
 	// mock
