@@ -11,20 +11,20 @@ algorithmic trading framework for medium-frequency (>=1min) strategies
 ## to-do
 
 1. create backtest machinery.
-    - a Backtester subpackage with `Backtest(client *Client, runner Runner)`
-    - OrderStore with an internal ledger
-2. write key unit tests.
-    - [x] FrameStore
-    - [x] BalanceStore
-    - [ ] OrderStore
-    - [x] Client
-    - [x] Scheduler
-3. optimize. backtests over 1hr interval for 1yr are slow -- why?
-4. plug-ins
-5. change driver interface.
+    - other functions like `backtest.TotalReturn()` etc.
+    - accept multiple evaluator functions?
+2. explore optimizations. 30s backtest for simple 1hr strategy over 1yr -- why?
+    - is it that `algo.Closes` uses `algo.MapFrames`? that's a lot of closures to create and then garbage-collect.
+    - is it that non-Machines like ZScore are fetching and processing much of the same data every time?
+    - is it that `HistoricalDriver` is inefficient and slow?
+3. change driver interface.
     - replace `driver.FetchFramesSince` with `driver.FetchNFrames`
-    - remove `client.GetFramesSince`
-6. clean up and complete documentation.
+    - remove `frames.GetSince`
+    - since you now have `now` when checking the cache, you can check whether the latest Frame is older than now-interval, in which case the cache is stale and you need to re-fetch anyway. this will make it more robust
+4. complete documentation.
+5. create OrderStore.
+    - internal `ledger`
+6. create plug-ins (concise, reusable signals).
 
 ## example
 
@@ -57,7 +57,7 @@ func main() {
 	scheduler := chrys.NewScheduler()
 	scheduler.Add(time.Minute, func(now time.Time) error {
 		// print portfolio value
-		value, err := client.TotalValue([]string{"USD", "BTC"}, now)
+		value, err := client.Value([]string{"USD", "BTC"}, now)
 		if err == nil {
 			fmt.Printf("Portfolio value: $%.2f\n", value)
 		}
@@ -90,7 +90,7 @@ func main() {
 
 ### Frame
 
-A single OHLC bar.
+A single OHLC frame.
 
 - **Fields:**
   - `Time time.Time`

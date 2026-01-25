@@ -1,14 +1,46 @@
 package chrys
 
-import "time"
+import (
+	"math"
+	"time"
+)
 
-type BacktestReport struct {
-	Start         time.Time
-	End           time.Time
-	StartValue    float64
-	EndValue      float64
-	TotalReturn   float64
-	AverageReturn float64
+type Backtest struct {
+	Start   time.Time
+	End     time.Time
+	Step    time.Duration
+	Values  []float64
+	Returns []float64
+}
+
+// func (test *Backtest) annualize(x float64) float64 {
+
+// }
+
+func (test *Backtest) TotalReturn() float64 {
+	return test.Values[len(test.Values)-1]/test.Values[0] - 1
+}
+
+func geometricMean(xs []float64) float64 {
+	if len(xs) == 0 {
+		return 0
+	}
+
+	product := 1.
+	for _, x := range xs {
+		product *= x
+	}
+
+	return math.Pow(product, 1/float64(len(xs)))
+}
+
+func (test *Backtest) AverageReturn() float64 {
+	onePlusReturns := make([]float64, len(test.Returns))
+	for i, r := range test.Returns {
+		onePlusReturns[i] = 1 + r
+	}
+
+	return geometricMean(onePlusReturns) - 1
 }
 
 // // print metrics

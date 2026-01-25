@@ -89,13 +89,12 @@ func Test_SetIsLive(t *testing.T) {
 	}
 }
 
-func Test_TotalValue(t *testing.T) {
+func Test_Value(t *testing.T) {
 	// create Client
 	client := NewClient(MockAPI{})
 
-	// TotalValue()
-	assets := []string{"USD", "ETH", "BTC"}
-	value, err := client.TotalValue(assets, time.Now())
+	// Value()
+	value, err := client.Value([]string{"USD", "ETH", "BTC"}, time.Now())
 	if err != nil {
 		t.Errorf("err: %v", err)
 	}
@@ -107,7 +106,7 @@ func Test_TotalValue(t *testing.T) {
 
 }
 
-func Test_TotalValueAliases(t *testing.T) {
+func Test_ValueAliases(t *testing.T) {
 	// create Client
 	client := NewClient(MockAPI{})
 
@@ -117,9 +116,8 @@ func Test_TotalValueAliases(t *testing.T) {
 		Alias("ZETH", "ETH").
 		Alias("ZUSD", "USD")
 
-	// TotalValue()
-	assets := []string{"USD", "ETH", "BTC"}
-	value, err := client.TotalValue(assets, time.Now())
+	// Value()
+	value, err := client.Value([]string{"USD", "ETH", "BTC"}, time.Now())
 	if err != nil {
 		t.Errorf("err: %v", err)
 	}

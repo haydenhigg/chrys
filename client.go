@@ -54,10 +54,7 @@ func (client *Client) SetIsLive(isLive bool) *Client {
 }
 
 // methods
-func (client *Client) TotalValue(
-	assets []string,
-	t time.Time,
-) (float64, error) {
+func (client *Client) Value(assets []string, t time.Time) (float64, error) {
 	// check for assets
 	if len(assets) == 0 {
 		return 0, nil
