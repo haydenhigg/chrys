@@ -62,6 +62,18 @@ func (test *Backtest) Sharpe(annualRiskFreeReturn float64) float64 {
 	return sharpe * math.Sqrt(YEAR/float64(test.Step))
 }
 
-// func (test *Backtest) MaxDrawdown() float64 {
+func (test *Backtest) MaxDrawdown() float64 {
+	peak := test.Values[0]
+	maxDrawdown := 0.
 
-// }
+	var drawdown float64
+	for _, value := range test.Values {
+		if value > peak {
+			peak = value
+		} else if drawdown = value/peak - 1; drawdown < maxDrawdown {
+			maxDrawdown = drawdown
+		}
+	}
+
+	return maxDrawdown
+}
