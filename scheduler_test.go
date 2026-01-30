@@ -1,26 +1,9 @@
 package chrys
 
 import (
-	"math"
 	"testing"
 	"time"
 )
-
-func assertSlicesEqual(a, b []float64, t *testing.T) {
-	for i, va := range a {
-		if i >= len(b) {
-			t.Errorf("b[%d] does not exist", i)
-		} else if vb := b[i]; math.Abs(va-vb) > 1e-6 {
-			t.Errorf("a[%d] != b[%d]: %v != %v", i, i, va, vb)
-		}
-	}
-
-	for i := range b {
-		if i >= len(b) {
-			t.Errorf("a[%d] does not exist", i)
-		}
-	}
-}
 
 func Test_Add(t *testing.T) {
 	// create Scheduler
@@ -76,37 +59,26 @@ func Test_Run(t *testing.T) {
 	}
 }
 
-func Test_RunBacktest(t *testing.T) {
+func Test_RunBetween(t *testing.T) {
 	// create Scheduler
 	scheduler := NewScheduler()
 
-	// mock evaluator
-	i := 0
-	x := 1.1111111111111111
-	firstTime, lastTime := time.Time{}, time.Time{}
-	evaluator := func(now time.Time) (float64, error) {
-		if i == 0 {
+	// mock
+	var firstTime, lastTime time.Time
+	scheduler.Add(time.Hour, func(now time.Time) error {
+		if firstTime.IsZero() {
 			firstTime = now
 		}
 
 		lastTime = now
 
-		// -10% once, then +10% four times, then repeat
-		if i%5 == 0 {
-			x *= 0.9
-		} else {
-			x *= 1.1
-		}
+		return nil
+	})
 
-		i++
-
-		return x, nil
-	}
-
-	// RunBacktest()
+	// RunBetween()
 	start, _ := time.Parse(time.RFC822, "30 Jun 24 12:23 EST")
-	end, _ := time.Parse(time.RFC822, "30 Jun 25 8:49 EST")
-	test, err := scheduler.RunBacktest(start, end, time.Hour, evaluator)
+	end, _ := time.Parse(time.RFC822, "29 Jun 25 8:49 EST")
+	err := scheduler.RunBetween(start, end, time.Hour)
 	if err != nil {
 		t.Errorf("err != nil: %v", err)
 	}
@@ -117,16 +89,8 @@ func Test_RunBacktest(t *testing.T) {
 		t.Errorf("first time != %v: %v", expectedFirstTime, firstTime)
 	}
 
-	expectedLastTime, _ := time.Parse(time.RFC822, "30 Jun 25 7:00 EST")
+	expectedLastTime, _ := time.Parse(time.RFC822, "29 Jun 25 7:00 EST")
 	if !lastTime.Equal(expectedLastTime) {
 		t.Errorf("last time != %v: %v", expectedLastTime, lastTime)
 	}
-
-	assertSlicesEqual(test.Values[:6], []float64{
-		1., 1.1, 1.21, 1.331, 1.4641, 1.31769,
-	}, t)
-
-	assertSlicesEqual(test.Returns[:5], []float64{
-		.1, .1, .1, .1, -.1,
-	}, t)
 }
