@@ -1,7 +1,6 @@
 package chrys
 
 import (
-	// "fmt"
 	"math"
 	"testing"
 	"time"
@@ -200,10 +199,10 @@ func Test_Sortino(t *testing.T) {
 
 	// Update()
 	backtest.Update(100)
-	backtest.Update(120) // +0.2
-	backtest.Update(105) // -0.125
-	backtest.Update(110) // +0.04761904762
-	backtest.Update(101) // -0.08181818182
+	backtest.Update(120)
+	backtest.Update(105)
+	backtest.Update(110)
+	backtest.Update(101)
 
 	// assert
 	if !almostEqual(backtest.Sortino(0.01), 2.6011659) {
@@ -217,10 +216,10 @@ func Test_Omega(t *testing.T) {
 
 	// Update()
 	backtest.Update(100)
-	backtest.Update(120) // +0.2
-	backtest.Update(105) // -0.125
-	backtest.Update(110) // +0.04761904762
-	backtest.Update(101) // -0.08181818182
+	backtest.Update(120)
+	backtest.Update(105)
+	backtest.Update(110)
+	backtest.Update(101)
 
 	// assert
 	if !almostEqual(backtest.Omega(0.01), 1.1966969) {
