@@ -4,7 +4,6 @@ import (
 	"github.com/haydenhigg/chrys/algo"
 	"math"
 	"time"
-	"fmt"
 )
 
 type Backtest struct {
@@ -92,8 +91,6 @@ func (backtest *Backtest) Return() float64 {
 	if backtest.N <= 1 {
 		return 0
 	}
-
-	fmt.Println(backtest.LastValue, backtest.FirstValue)
 
 	growthFactor := backtest.LastValue / backtest.FirstValue
 	annualizationPower := YEAR / (float64(backtest.N-1) * backtest.step)
