@@ -124,37 +124,37 @@ func (backtest *Backtest) Sharpe(riskFreeReturn float64) float64 {
 	return sharpe * annualizationCoef
 }
 
-func (backtest *Backtest) Omega(minimumReturn float64) float64 {
-	periodicMinimumReturn := minimumReturn / (YEAR / backtest.step)
+func (backtest *Backtest) Sortino(minReturn float64) float64 {
+	periodsPerYear := YEAR / backtest.step
+	periodicMinReturn := minReturn / periodsPerYear
+
+	downside := make([]float64, len(backtest.Returns))
+	for i, r := range backtest.Returns {
+		downside[i] = math.Pow(min(0, r-periodicMinReturn), 2)
+	}
+
+	downsideVol := math.Sqrt(algo.Mean(downside))
+	if downsideVol == 0 {
+		return 0
+	}
+
+	sortino := (backtest.meanReturn - periodicMinReturn) / downsideVol
+	annualizationCoef := math.Sqrt(periodsPerYear)
+
+	return sortino * annualizationCoef
+}
+
+func (backtest *Backtest) Omega(minReturn float64) float64 {
+	periodicMinReturn := minReturn / (YEAR / backtest.step)
 
 	var sumGain, sumLoss float64
 	for _, r := range backtest.Returns {
-		if r > periodicMinimumReturn {
-			sumGain += r - periodicMinimumReturn
-		} else if r < periodicMinimumReturn {
-			sumLoss += periodicMinimumReturn - r
+		if r > periodicMinReturn {
+			sumGain += r - periodicMinReturn
+		} else if r < periodicMinReturn {
+			sumLoss += periodicMinReturn - r
 		}
 	}
 
 	return sumGain / sumLoss
 }
-
-// func (test *Backtest) Sortino(annualRiskFreeReturn float64) float64 {
-// 	periodicRiskFreeReturn := annualRiskFreeReturn / (YEAR / float64(test.Step))
-
-// 	downside := make([]float64, len(test.Returns))
-// 	for i, ret := range test.Returns {
-// 		if ret < periodicRiskFreeReturn {
-// 			downside[i] = ret - periodicRiskFreeReturn
-// 		} else {
-// 			downside[i] = 0
-// 		}
-// 	}
-
-// 	meanReturn := algo.Mean(test.Returns)
-// 	downsideVolatility := algo.StandardDeviation(downside, algo.Mean(downside))
-
-// 	sortino := (meanReturn - periodicRiskFreeReturn) / downsideVolatility
-
-// 	return sortino * math.Sqrt(YEAR/float64(test.Step))
-// }

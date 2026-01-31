@@ -194,19 +194,36 @@ func Test_Sharpe(t *testing.T) {
 	}
 }
 
+func Test_Sortino(t *testing.T) {
+	// create Backtest
+	backtest := NewBacktest(24 * time.Hour)
+
+	// Update()
+	backtest.Update(100)
+	backtest.Update(120) // +0.2
+	backtest.Update(105) // -0.125
+	backtest.Update(110) // +0.04761904762
+	backtest.Update(101) // -0.08181818182
+
+	// assert
+	if !almostEqual(backtest.Sortino(0.01), 2.6011659) {
+		t.Errorf("Sortino() != 2.6011659: %f", backtest.Sortino(0.01))
+	}
+}
+
 func Test_Omega(t *testing.T) {
 	// create Backtest
 	backtest := NewBacktest(24 * time.Hour)
 
 	// Update()
 	backtest.Update(100)
-	backtest.Update(120)
-	backtest.Update(105)
-	backtest.Update(110)
-	backtest.Update(101)
+	backtest.Update(120) // +0.2
+	backtest.Update(105) // -0.125
+	backtest.Update(110) // +0.04761904762
+	backtest.Update(101) // -0.08181818182
 
 	// assert
 	if !almostEqual(backtest.Omega(0.01), 1.1966969) {
-		t.Errorf("GainLoss() != 1.1966969: %f", backtest.Omega(0.01))
+		t.Errorf("Omega() != 1.1966969: %f", backtest.Omega(0.01))
 	}
 }
