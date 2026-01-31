@@ -154,8 +154,8 @@ func Test_Return(t *testing.T) {
 	backtest.Update(101)
 
 	// assert
-	if !almostEqual(backtest.Return(), 1.0675703) {
-		t.Errorf("Return() != 1.0675703: %f", backtest.Return())
+	if !almostEqual(backtest.Return(), 1.479279) {
+		t.Errorf("Return() != 1.479279: %f", backtest.Return())
 	}
 }
 

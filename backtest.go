@@ -93,7 +93,7 @@ func (backtest *Backtest) Return() float64 {
 	}
 
 	growthFactor := backtest.LastValue / backtest.FirstValue
-	annualizationPower := YEAR / (float64(backtest.N - 1) * backtest.step)
+	annualizationPower := YEAR / (float64(backtest.N-1) * backtest.step)
 
 	return math.Pow(growthFactor, annualizationPower) - 1
 }
@@ -116,7 +116,7 @@ func (backtest *Backtest) Sharpe(minReturn float64) float64 {
 	}
 
 	periodsPerYear := YEAR / backtest.step
-	periodicMinReturn := math.Pow(1 + minReturn, 1 / periodsPerYear) - 1
+	periodicMinReturn := math.Pow(1+minReturn, 1/periodsPerYear) - 1
 
 	sharpe := (backtest.meanReturn - periodicMinReturn) / vol
 	annualizationCoef := math.Sqrt(periodsPerYear)
@@ -126,7 +126,7 @@ func (backtest *Backtest) Sharpe(minReturn float64) float64 {
 
 func (backtest *Backtest) Sortino(minReturn float64) float64 {
 	periodsPerYear := YEAR / backtest.step
-	periodicMinReturn := math.Pow(1 + minReturn, 1 / periodsPerYear) - 1
+	periodicMinReturn := math.Pow(1+minReturn, 1/periodsPerYear) - 1
 
 	downside := make([]float64, len(backtest.Returns))
 	for i, r := range backtest.Returns {
@@ -145,7 +145,7 @@ func (backtest *Backtest) Sortino(minReturn float64) float64 {
 }
 
 func (backtest *Backtest) Omega(minReturn float64) float64 {
-	periodicMinReturn := math.Pow(1 + minReturn, backtest.step / YEAR) - 1
+	periodicMinReturn := math.Pow(1+minReturn, backtest.step/YEAR) - 1
 
 	var sumGain, sumLoss float64
 	for _, r := range backtest.Returns {
