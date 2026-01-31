@@ -7,140 +7,143 @@ import (
 )
 
 type Backtest struct {
-	Step    time.Duration
-	Values  [][]float64
-	Returns [][]float64
+	Step       time.Duration
+	N          int
+	FirstValue float64
+	LastValue  float64
+	Returns    []float64
+
+	// input step as float64 for easier manipulation
+	step float64
+
+	// O(1) max drawdown calculation
+	peakValue   float64
+	maxDrawdown float64
+
+	// O(1) arithmetic mean return calculation
+	meanReturn float64
 }
 
+// initializer
 func NewBacktest(step time.Duration) *Backtest {
-	return &Backtest{
-		Step:    step,
-		Values:  [][]float64{},
-		Returns: [][]float64{},
-	}
+	return (&Backtest{Returns: []float64{}}).SetStep(step)
 }
 
-func (backtest *Backtest) Record(values ...float64) *Backtest {
-	backtest.Values = append(backtest.Values, values)
-
-	if len(backtest.Values) > 1 {
-		oldValues := backtest.Values[len(backtest.Values)-2]
-
-		m := min(len(oldValues), len(values))
-		returns := make([]float64, m)
-
-		for i := range m {
-			returns[i] = values[i]/oldValues[i] - 1
-		}
-
-		backtest.Returns = append(backtest.Returns, returns)
+// setters
+func (backtest *Backtest) SetStep(step time.Duration) *Backtest {
+	// having a zero step will cause problems for metrics
+	if int64(step) > 0 {
+		backtest.Step = step
+	} else {
+		backtest.Step = time.Duration(1)
 	}
+
+	backtest.step = float64(backtest.Step)
 
 	return backtest
 }
 
+// Update
+func (backtest *Backtest) update(value float64) {
+	if backtest.N == 0 {
+		backtest.FirstValue = value
+	} else {
+		// append return
+		r := value/backtest.LastValue - 1
+		backtest.Returns = append(backtest.Returns, r)
+
+		// update meanReturn
+		n := float64(backtest.N)
+		backtest.meanReturn = (backtest.meanReturn*(n-1) + r) / n
+	}
+
+	backtest.N++
+	backtest.LastValue = value
+}
+
+func (backtest *Backtest) updateDrawdown(value float64) {
+	if value > backtest.peakValue {
+		backtest.peakValue = value
+		return
+	}
+
+	drawdown := value/backtest.peakValue - 1
+	if drawdown < backtest.maxDrawdown {
+		backtest.maxDrawdown = drawdown
+	}
+}
+
+func (backtest *Backtest) Update(value float64) *Backtest {
+	backtest.update(value)
+	backtest.updateDrawdown(value)
+
+	return backtest
+}
+
+// metrics
 const YEAR float64 = 3.1536e+16
 
-func (backtest *Backtest) Return() []float64 {
-	n := len(backtest.Values)
-	if n <= 1 {
-		return []float64{}
-	}
-
-	duration := float64(n) * float64(backtest.Step)
-	annualizationPower := YEAR / duration
-
-	m := len(backtest.Values[0])
-	returns := make([]float64, m)
-	for j := range m {
-		returns[j] = math.Pow(
-			backtest.Values[n-1][j]/backtest.Values[0][j],
-			annualizationPower,
-		) - 1
-	}
-
-	return returns
+func (backtest *Backtest) MaxDrawdown() float64 {
+	return backtest.maxDrawdown
 }
 
-// func (backtest *Backtest) MaxDrawdown() []float64 {
-// 	peak := test.Values[0]
-// 	maxDrawdown := 0.
-
-// 	var drawdown float64
-// 	for _, value := range test.Values {
-// 		if value > peak {
-// 			peak = value
-// 		} else if drawdown = value/peak - 1; drawdown < maxDrawdown {
-// 			maxDrawdown = drawdown
-// 		}
-// 	}
-
-// 	return maxDrawdown
-// }
-
-func (backtest *Backtest) returnsColumn(j int) []float64 {
-	n := len(backtest.Returns)
-	series := make([]float64, n)
-	for i, returnsRow := range backtest.Returns {
-		if j >= len(returnsRow) {
-			break
-		}
-
-		series[i] = returnsRow[j]
+func (backtest *Backtest) Return() float64 {
+	if backtest.FirstValue == 0 {
+		return 0
 	}
 
-	return series
+	growthFactor := backtest.LastValue / backtest.FirstValue
+	annualizationPower := YEAR / (float64(backtest.N) * backtest.step)
+
+	return math.Pow(growthFactor, annualizationPower) - 1
 }
 
-func (backtest *Backtest) Volatility() []float64 {
-	n := len(backtest.Returns)
-	if n <= 1 {
-		return []float64{}
+func (backtest *Backtest) Volatility() float64 {
+	if len(backtest.Returns) <= 1 {
+		return 0
 	}
 
-	m := len(backtest.Values[0])
-	vols := make([]float64, m)
+	vol := algo.StandardDeviation(backtest.Returns, backtest.meanReturn)
+	annualizationCoef := math.Sqrt(YEAR / backtest.step)
 
-	annualization := math.Sqrt(YEAR / float64(backtest.Step))
-
-	for j := range m {
-		series := backtest.returnsColumn(j)
-
-		mean := algo.Mean(series)
-		vols[j] = algo.StandardDeviation(series, mean) * annualization
-	}
-
-	return vols
+	return vol * annualizationCoef
 }
 
-func (backtest *Backtest) SharpeRatio(riskFreeReturn float64) []float64 {
-	n := len(backtest.Returns)
-	if n <= 1 {
-		return []float64{}
+func (backtest *Backtest) SharpeRatio(riskFreeReturn float64) float64 {
+	vol := algo.StandardDeviation(backtest.Returns, backtest.meanReturn)
+	if vol == 0 {
+		return 0
 	}
 
-	m := len(backtest.Values[0])
-	sharpes := make([]float64, m)
-
-	periodsPerYear := YEAR / float64(backtest.Step)
+	periodsPerYear := YEAR / backtest.step
 	periodicRiskFreeReturn := riskFreeReturn / periodsPerYear
-	annualization := math.Sqrt(periodsPerYear)
 
-	for j := range m {
-		series := backtest.returnsColumn(j)
+	sharpe := (backtest.meanReturn - periodicRiskFreeReturn) / vol
+	annualizationCoef := math.Sqrt(periodsPerYear)
 
-		mean := algo.Mean(series)
-		vol := algo.StandardDeviation(series, mean)
+	return sharpe * annualizationCoef
+}
 
-		if vol == 0 {
-			sharpes[j] = 0
-			continue
+func (backtest *Backtest) GainLoss() float64 {
+	var (
+		sumGain, sumLoss float64
+		nGain, nLoss     int
+	)
+
+	for _, r := range backtest.Returns {
+		if r > 0 {
+			sumGain += r
+			nGain++
+		} else if r < 0 {
+			sumLoss -= r
+			nLoss++
 		}
-
-		sharpes[j] = ((mean - periodicRiskFreeReturn) / vol) * annualization
 	}
 
-	return sharpes
+	meanGain := sumGain / float64(nGain)
+	meanLoss := sumLoss / float64(nLoss)
+
+	return (meanGain - meanLoss) / (meanGain + meanLoss)
 }
 
 // func (test *Backtest) Sortino(annualRiskFreeReturn float64) float64 {
@@ -161,16 +164,4 @@ func (backtest *Backtest) SharpeRatio(riskFreeReturn float64) []float64 {
 // 	sortino := (meanReturn - periodicRiskFreeReturn) / downsideVolatility
 
 // 	return sortino * math.Sqrt(YEAR/float64(test.Step))
-// }
-
-// func (test *Backtest) Skew() float64 {
-// 	meanReturn := algo.Mean(test.Returns)
-// 	volatility := algo.StandardDeviation(test.Returns, meanReturn)
-
-// 	skew := 0.
-// 	for _, ret := range test.Returns {
-// 		skew += math.Pow((ret-meanReturn)/volatility, 3)
-// 	}
-
-// 	return skew / float64(len(test.Returns))
 // }
