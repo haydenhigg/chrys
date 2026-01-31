@@ -1,10 +1,10 @@
 package chrys
 
 import (
+	"fmt"
 	"github.com/haydenhigg/chrys/algo"
 	"math"
 	"time"
-	"fmt"
 )
 
 type Backtest struct {
