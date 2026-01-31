@@ -171,14 +171,14 @@ func Test_Volatility(t *testing.T) {
 	backtest.Update(101)
 
 	// assert
-	if !almostEqual(backtest.Volatility(), 2.7941769) {
-		t.Errorf("Volatility() != 2.7941769: %f", backtest.Volatility())
+	if !almostEqual(backtest.Volatility(), 0.146254) {
+		t.Errorf("Volatility() != 0.146254: %f", backtest.Volatility())
 	}
 }
 
 func Test_Sharpe(t *testing.T) {
 	// create Backtest
-	backtest := NewBacktest(24 * time.Hour)
+	backtest := NewBacktest(time.Hour)
 
 	// Update()
 	backtest.Update(100)
@@ -188,8 +188,8 @@ func Test_Sharpe(t *testing.T) {
 	backtest.Update(101)
 
 	// assert
-	if !almostEqual(backtest.Sharpe(.01), 1.328881) {
-		t.Errorf("Sharpe(0.01) != 1.328881: %f", backtest.Sharpe(.01))
+	if !almostEqual(backtest.Sharpe(.01), 0.069735) {
+		t.Errorf("Sharpe(0.01) != 0.069735: %f", backtest.Sharpe(.01))
 	}
 }
 
@@ -205,8 +205,8 @@ func Test_Sortino(t *testing.T) {
 	backtest.Update(101)
 
 	// assert
-	if !almostEqual(backtest.Sortino(0.01), 2.601204) {
-		t.Errorf("Sortino(0.01) != 2.601204: %f", backtest.Sortino(0.01))
+	if !almostEqual(backtest.Sortino(0.01), 0.136153) {
+		t.Errorf("Sortino(0.01) != 0.136153: %f", backtest.Sortino(0.01))
 	}
 }
 

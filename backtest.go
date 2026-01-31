@@ -104,9 +104,9 @@ func (backtest *Backtest) Volatility() float64 {
 	}
 
 	vol := algo.StandardDeviation(backtest.Returns, backtest.meanReturn)
-	annualizationCoef := math.Sqrt(YEAR / backtest.step)
+	// annualizationCoef := math.Sqrt(YEAR / backtest.step)
 
-	return vol * annualizationCoef
+	return vol // * annualizationCoef
 }
 
 func (backtest *Backtest) Sharpe(minReturn float64) float64 {
@@ -119,9 +119,9 @@ func (backtest *Backtest) Sharpe(minReturn float64) float64 {
 	periodicMinReturn := math.Pow(1+minReturn, 1/periodsPerYear) - 1
 
 	sharpe := (backtest.meanReturn - periodicMinReturn) / vol
-	annualizationCoef := math.Sqrt(periodsPerYear)
+	// annualizationCoef := math.Sqrt(periodsPerYear)
 
-	return sharpe * annualizationCoef
+	return sharpe // * annualizationCoef
 }
 
 func (backtest *Backtest) Sortino(minReturn float64) float64 {
@@ -139,9 +139,9 @@ func (backtest *Backtest) Sortino(minReturn float64) float64 {
 	}
 
 	sortino := (backtest.meanReturn - periodicMinReturn) / downsideVol
-	annualizationCoef := math.Sqrt(periodsPerYear)
+	// annualizationCoef := math.Sqrt(periodsPerYear)
 
-	return sortino * annualizationCoef
+	return sortino // * annualizationCoef
 }
 
 func (backtest *Backtest) Omega(minReturn float64) float64 {
