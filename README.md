@@ -12,9 +12,10 @@ algorithmic trading framework for medium-frequency strategies
 
 1. create backtest machinery.
     - annualize Volatility, Sharpe, Sortino properly using the Hurst exponent
-    - monte carlo sub-period resampling
+    - parallelized monte carlo sub-period resampling
 2. create optimizer.
-    - cyclic coordinate descent across all optimizable parameters
+    - random sampling
+    - TPE
 3. implement k-fold backtesting. more important with an auto-optimizer.
 4. complete documentation.
 5. add more algos.
