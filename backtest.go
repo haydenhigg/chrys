@@ -109,7 +109,7 @@ func (backtest *Backtest) Volatility() float64 {
 	return vol * annualizationCoef
 }
 
-func (backtest *Backtest) SharpeRatio(riskFreeReturn float64) float64 {
+func (backtest *Backtest) Sharpe(riskFreeReturn float64) float64 {
 	vol := algo.StandardDeviation(backtest.Returns, backtest.meanReturn)
 	if vol == 0 {
 		return 0

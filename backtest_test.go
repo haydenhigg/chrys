@@ -4,126 +4,209 @@ import (
 	// "fmt"
 	"math"
 	"testing"
-	// "time"
+	"time"
 )
 
 // helpers
-func assertMatricesEqual(a, b [][]float64, t *testing.T) {
-	for i := range a {
-		if i >= len(b) {
-			t.Errorf("b[%d] does not exist", i)
-		} else {
-			for j, va := range a[i] {
-				if j >= len(b[i]) {
-					t.Errorf("b[%d][%d] does not exist", i, j)
-				} else if vb := b[i][j]; math.Abs(va-vb) > 1e-6 {
-					t.Errorf(
-						"a[%d][%d] != b[%d][%d]: %v != %v",
-						i, j, i, j, va, vb,
-					)
-				}
-			}
-		}
-	}
-
-	for i := range b {
-		if i >= len(a) {
-			t.Errorf("a[%d] does not exist", i)
-		}
-	}
+func almostEqual(a, b float64) bool {
+	return math.Abs(a-b) <= 1e-6
 }
 
 func assertSlicesEqual(a, b []float64, t *testing.T) {
 	for i, va := range a {
 		if i >= len(b) {
 			t.Errorf("b[%d] does not exist", i)
-		} else if vb := b[i]; math.Abs(va-vb) > 1e-6 {
+		} else if vb := b[i]; !almostEqual(va, vb) {
 			t.Errorf("a[%d] != b[%d]: %v != %v", i, i, va, vb)
 		}
 	}
 }
 
-// // tests
-// func Test_Record(t *testing.T) {
-// 	// create Backtest
-// 	backtest := NewBacktest(time.Hour)
+// tests
+// tests -> setters
+func Test_SetStep(t *testing.T) {
+	backtest := &Backtest{}
+	backtest.SetStep(time.Minute * 1337)
 
-// 	// Record()
-// 	backtest.Record(10, 100)
-// 	backtest.Record(11, 110)
-// 	backtest.Record(12, 121)
-// 	backtest.Record(11.4, 115)
-// 	backtest.Record(11.97, 121.9)
+	if backtest.Step != time.Minute*1337 {
+		t.Errorf("Step != 1337min: %v", backtest.Step)
+	}
+}
 
-// 	// assert
-// 	assertMatricesEqual(backtest.Values, [][]float64{
-// 		{10, 100},
-// 		{11, 110},
-// 		{12, 121},
-// 		{11.4, 115},
-// 		{11.97, 121.9},
-// 	}, t)
+func Test_SetStepZero(t *testing.T) {
+	backtest := &Backtest{}
+	backtest.SetStep(time.Time{}.Sub(time.Time{}))
 
-// 	assertMatricesEqual(backtest.Returns, [][]float64{
-// 		{.1, .1},
-// 		{.0909091, .1},
-// 		{-.05, -.04958677685},
-// 		{.05, .06},
-// 	}, t)
-// }
+	if backtest.Step != time.Nanosecond {
+		t.Errorf("Step != 1: %v", backtest.Step)
+	}
+}
 
-// func Test_Return(t *testing.T) {
-// 	// create Backtest
-// 	backtest := NewBacktest(time.Hour * 24)
+// tests -> Update
+func Test_UpdateFirst(t *testing.T) {
+	// create Backtest
+	backtest := NewBacktest(time.Hour)
 
-// 	// Record()
-// 	backtest.Record(10, 50)
-// 	backtest.Record(9, 45)
-// 	backtest.Record(10.5, 52.5)
-// 	backtest.Record(11, 55)
-// 	backtest.Record(10.2, 51.1)
+	// Update()
+	backtest.Update(10)
 
-// 	// Return()
-// 	returns := backtest.Return()
+	// assert
+	if backtest.N != 1 {
+		t.Errorf("N != 1: %d", backtest.N)
+	}
+	if backtest.FirstValue != 10 {
+		t.Errorf("FirstValue != 10: %f", backtest.FirstValue)
+	}
+	if backtest.LastValue != 10 {
+		t.Errorf("LastValue != 10: %f", backtest.LastValue)
+	}
+	assertSlicesEqual(backtest.Returns, []float64{}, t)
+	if backtest.peakValue != 10 {
+		t.Errorf("peakValue != 10: %f", backtest.peakValue)
+	}
+	if backtest.maxDrawdown != 0 {
+		t.Errorf("maxDrawdown != 0: %f", backtest.maxDrawdown)
+	}
+	if backtest.meanReturn != 0 {
+		t.Errorf("meanReturn != 0: %f", backtest.meanReturn)
+	}
+}
 
-// 	// assert
-// 	assertSlicesEqual(returns, []float64{3.2443632, 3.8968341}, t)
-// }
+func Test_UpdateSubsequent(t *testing.T) {
+	// create Backtest
+	backtest := NewBacktest(time.Hour)
 
-// func Test_Volatility(t *testing.T) {
-// 	// create Backtest
-// 	backtest := NewBacktest(time.Hour * 24)
+	// Update()
+	backtest.Update(10)
+	backtest.Update(13)
 
-// 	// Record()
-// 	backtest.Record(10, 100)
-// 	backtest.Record(11, 110)
-// 	backtest.Record(12, 121)
-// 	backtest.Record(11.4, 115)
-// 	backtest.Record(11.97, 121.9)
+	// assert
+	if backtest.N != 2 {
+		t.Errorf("N != 2: %d", backtest.N)
+	}
+	if backtest.FirstValue != 10 {
+		t.Errorf("FirstValue != 10: %f", backtest.FirstValue)
+	}
+	if backtest.LastValue != 13 {
+		t.Errorf("LastValue != 13: %f", backtest.LastValue)
+	}
+	assertSlicesEqual(backtest.Returns, []float64{.3}, t)
+	if backtest.peakValue != 13 {
+		t.Errorf("peakValue != 13: %f", backtest.peakValue)
+	}
+	if backtest.maxDrawdown != 0 {
+		t.Errorf("maxDrawdown != 0: %f", backtest.maxDrawdown)
+	}
+	if !almostEqual(backtest.meanReturn, 0.3) {
+		t.Errorf("meanReturn != 0.3: %f", backtest.meanReturn)
+	}
 
-// 	// Volatility()
-// 	vols := backtest.Volatility()
+	// Update() again
+	backtest.Update(11)
 
-// 	// assert
-// 	assertSlicesEqual(vols, []float64{1.3122253, 1.350494}, t)
-// }
+	// assert
+	if backtest.N != 3 {
+		t.Errorf("N != 3: %d", backtest.N)
+	}
+	if backtest.FirstValue != 10 {
+		t.Errorf("FirstValue != 10: %f", backtest.FirstValue)
+	}
+	if backtest.LastValue != 11 {
+		t.Errorf("LastValue != 11: %f", backtest.LastValue)
+	}
+	assertSlicesEqual(backtest.Returns, []float64{.3, -.1538462}, t)
+	if backtest.peakValue != 13 {
+		t.Errorf("peakValue != 13: %f", backtest.peakValue)
+	}
+	if !almostEqual(backtest.maxDrawdown, -.1538462) {
+		t.Errorf("maxDrawdown != -.1538462: %f", backtest.maxDrawdown)
+	}
+	if !almostEqual(backtest.meanReturn, .0730769) {
+		t.Errorf("meanReturn != 0.0730769: %f", backtest.meanReturn)
+	}
+}
 
-// func Test_SharpeRatio(t *testing.T) {
-// 	// create Backtest
-// 	backtest := NewBacktest(time.Hour * 24)
+// tests -> metrics
+func Test_MaxDrawdown(t *testing.T) {
+	// create Backtest
+	backtest := NewBacktest(time.Hour)
 
-// 	// Record()
-// 	backtest.Record(10, 100)
-// 	backtest.Record(11, 110)
-// 	backtest.Record(12, 121)
-// 	backtest.Record(11.4, 115)
-// 	backtest.Record(11.97, 121.9)
+	// Update()
+	backtest.Update(100)
+	backtest.Update(120)
+	backtest.Update(105)
+	backtest.Update(110)
 
-// 	fmt.Println(backtest.returnsColumn(1))
+	// assert
+	if !almostEqual(backtest.MaxDrawdown(), -.125) {
+		t.Errorf("MaxDrawdown() != -.125: %f", backtest.MaxDrawdown())
+	}
+}
 
-// 	// SharpeRatio()
-// 	sharpes := backtest.SharpeRatio(0.04)
+func Test_Return(t *testing.T) {
+	// create Backtest
+	backtest := NewBacktest(24 * time.Hour)
 
-// 	// assert
-// 	assertSlicesEqual(sharpes, []float64{13.2450234, 14.1875538}, t)
-// }
+	// Update()
+	backtest.Update(100)
+	backtest.Update(120)
+	backtest.Update(105)
+	backtest.Update(110)
+	backtest.Update(101)
+
+	// assert
+	if !almostEqual(backtest.Return(), 1.0675703) {
+		t.Errorf("Return() != 1.0675703: %f", backtest.Return())
+	}
+}
+
+func Test_Volatility(t *testing.T) {
+	// create Backtest
+	backtest := NewBacktest(24 * time.Hour)
+
+	// Update()
+	backtest.Update(100)
+	backtest.Update(120)
+	backtest.Update(105)
+	backtest.Update(110)
+	backtest.Update(101)
+
+	// assert
+	if !almostEqual(backtest.Volatility(), 2.7941769) {
+		t.Errorf("Volatility() != 2.7941769: %f", backtest.Volatility())
+	}
+}
+
+func Test_Sharpe(t *testing.T) {
+	// create Backtest
+	backtest := NewBacktest(24 * time.Hour)
+
+	// Update()
+	backtest.Update(100)
+	backtest.Update(120)
+	backtest.Update(105)
+	backtest.Update(110)
+	backtest.Update(101)
+
+	// assert
+	if !almostEqual(backtest.Sharpe(.01), 1.3288633) {
+		t.Errorf("Sharpe(0.01) != 1.3288633: %f", backtest.Sharpe(.01))
+	}
+}
+
+func Test_GainLoss(t *testing.T) {
+	// create Backtest
+	backtest := NewBacktest(24 * time.Hour)
+
+	// Update()
+	backtest.Update(100)
+	backtest.Update(120)
+	backtest.Update(105)
+	backtest.Update(110)
+	backtest.Update(101)
+
+	// assert
+	if !almostEqual(backtest.GainLoss(), .0897833) {
+		t.Errorf("GainLoss() != .0897833: %f", backtest.GainLoss())
+	}
+}
