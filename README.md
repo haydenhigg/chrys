@@ -4,13 +4,14 @@ algorithmic trading framework for medium-frequency strategies
 
 ## principles
 
-1. **Reliable**: It's robust enough to handle serious sums of money.
+1. **Reliable**: It's robust enough to trust with serious sums of money.
 2. **Simple**: Setting up an effective strategy is concise and intuitive.
 3. **Flexible**: All functionality can be modified or composed.
 
 ## to-do
 
 1. create backtest machinery.
+    - annualize Volatility, Sharpe, Sortino properly using the Hurst exponent
     - monte carlo sub-period resampling
 2. create optimizer.
     - cyclic coordinate descent across all optimizable parameters
