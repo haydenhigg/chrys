@@ -4,6 +4,7 @@ import (
 	"github.com/haydenhigg/chrys/algo"
 	"math"
 	"time"
+	"fmt"
 )
 
 type Backtest struct {
@@ -76,6 +77,8 @@ func (backtest *Backtest) updateDrawdown(value float64) {
 func (backtest *Backtest) Update(value float64) *Backtest {
 	backtest.update(value)
 	backtest.updateDrawdown(value)
+
+	fmt.Println(value)
 
 	return backtest
 }
