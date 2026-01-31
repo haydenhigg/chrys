@@ -30,7 +30,6 @@ func (d *HistoricalDriver) FetchFramesSince(
 	interval time.Duration,
 	since time.Time,
 ) ([]*frame.Frame, error) {
-	fmt.Println("FetchFramesSince -", since)
 	// split pair into assets
 	assets := strings.SplitN(pair, "/", 2)
 	base, quote := assets[0], assets[1]
