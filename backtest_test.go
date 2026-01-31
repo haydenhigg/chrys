@@ -188,8 +188,8 @@ func Test_Sharpe(t *testing.T) {
 	backtest.Update(101)
 
 	// assert
-	if !almostEqual(backtest.Sharpe(.01), 1.3288633) {
-		t.Errorf("Sharpe(0.01) != 1.3288633: %f", backtest.Sharpe(.01))
+	if !almostEqual(backtest.Sharpe(.01), 1.328881) {
+		t.Errorf("Sharpe(0.01) != 1.328881: %f", backtest.Sharpe(.01))
 	}
 }
 
@@ -205,8 +205,8 @@ func Test_Sortino(t *testing.T) {
 	backtest.Update(101)
 
 	// assert
-	if !almostEqual(backtest.Sortino(0.01), 2.6011659) {
-		t.Errorf("Sortino() != 2.6011659: %f", backtest.Sortino(0.01))
+	if !almostEqual(backtest.Sortino(0.01), 2.601204) {
+		t.Errorf("Sortino(0.01) != 2.601204: %f", backtest.Sortino(0.01))
 	}
 }
 
@@ -222,7 +222,7 @@ func Test_Omega(t *testing.T) {
 	backtest.Update(101)
 
 	// assert
-	if !almostEqual(backtest.Omega(0.01), 1.1966969) {
-		t.Errorf("Omega() != 1.1966969: %f", backtest.Omega(0.01))
+	if !almostEqual(backtest.Omega(0.01), 1.196700) {
+		t.Errorf("Omega(0.01) != 1.196700: %f", backtest.Omega(0.01))
 	}
 }

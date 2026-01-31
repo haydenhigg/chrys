@@ -109,16 +109,16 @@ func (backtest *Backtest) Volatility() float64 {
 	return vol * annualizationCoef
 }
 
-func (backtest *Backtest) Sharpe(riskFreeReturn float64) float64 {
+func (backtest *Backtest) Sharpe(minReturn float64) float64 {
 	vol := algo.StandardDeviation(backtest.Returns, backtest.meanReturn)
 	if vol == 0 {
 		return 0
 	}
 
 	periodsPerYear := YEAR / backtest.step
-	periodicRiskFreeReturn := riskFreeReturn / periodsPerYear
+	periodicMinReturn := math.Pow(1 + minReturn, 1 / periodsPerYear) - 1
 
-	sharpe := (backtest.meanReturn - periodicRiskFreeReturn) / vol
+	sharpe := (backtest.meanReturn - periodicMinReturn) / vol
 	annualizationCoef := math.Sqrt(periodsPerYear)
 
 	return sharpe * annualizationCoef
@@ -126,7 +126,7 @@ func (backtest *Backtest) Sharpe(riskFreeReturn float64) float64 {
 
 func (backtest *Backtest) Sortino(minReturn float64) float64 {
 	periodsPerYear := YEAR / backtest.step
-	periodicMinReturn := minReturn / periodsPerYear
+	periodicMinReturn := math.Pow(1 + minReturn, 1 / periodsPerYear) - 1
 
 	downside := make([]float64, len(backtest.Returns))
 	for i, r := range backtest.Returns {
@@ -145,7 +145,7 @@ func (backtest *Backtest) Sortino(minReturn float64) float64 {
 }
 
 func (backtest *Backtest) Omega(minReturn float64) float64 {
-	periodicMinReturn := minReturn / (YEAR / backtest.step)
+	periodicMinReturn := math.Pow(1 + minReturn, backtest.step / YEAR) - 1
 
 	var sumGain, sumLoss float64
 	for _, r := range backtest.Returns {
