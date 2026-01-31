@@ -7,15 +7,15 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"slices"
+	// "slices"
 	"strconv"
 	"strings"
 	"time"
 )
 
 type HistoricalDriver struct {
-	DataRoot string
-	NameFmt  string // the fmt string for the CSV files with the frames
+	DataRoot  string
+	NameFmt   string // the fmt string for the CSV files with the frames
 }
 
 func NewHistorical(dataRoot, nameFmt string) *HistoricalDriver {
@@ -30,6 +30,7 @@ func (d *HistoricalDriver) FetchFramesSince(
 	interval time.Duration,
 	since time.Time,
 ) ([]*frame.Frame, error) {
+	fmt.Println("FetchFramesSince -", since)
 	// split pair into assets
 	assets := strings.SplitN(pair, "/", 2)
 	base, quote := assets[0], assets[1]
@@ -77,9 +78,9 @@ func (d *HistoricalDriver) FetchFramesSince(
 		}
 	}
 
-	slices.SortFunc(frames, func(a, b *frame.Frame) int {
-		return a.Time.Compare(b.Time)
-	})
+	// slices.SortFunc(frames, func(a, b *frame.Frame) int {
+	// 	return a.Time.Compare(b.Time)
+	// })
 
 	return frames, nil
 }
