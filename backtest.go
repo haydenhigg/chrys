@@ -88,12 +88,12 @@ func (backtest *Backtest) MaxDrawdown() float64 {
 }
 
 func (backtest *Backtest) Return() float64 {
-	if backtest.FirstValue == 0 {
+	if backtest.N <= 1 {
 		return 0
 	}
 
 	growthFactor := backtest.LastValue / backtest.FirstValue
-	annualizationPower := YEAR / (float64(backtest.N) * backtest.step)
+	annualizationPower := YEAR / (float64(backtest.N - 1) * backtest.step)
 
 	return math.Pow(growthFactor, annualizationPower) - 1
 }
