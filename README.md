@@ -1,6 +1,6 @@
 # chrys
 
-algorithmic trading framework for medium-frequency (>=1min) strategies
+algorithmic trading framework for medium-frequency strategies
 
 ## principles
 
@@ -11,20 +11,24 @@ algorithmic trading framework for medium-frequency (>=1min) strategies
 ## to-do
 
 1. create backtest machinery.
-    - other functions like `backtest.TotalReturn()` etc.
-    - accept multiple evaluator functions?
-2. explore optimizations. 30s backtest for simple 1hr strategy over 1yr -- why?
+    - monte carlo sub-period resampling
+2. create optimizer.
+    - cyclic coordinate descent across all optimizable parameters
+3. implement k-fold backtesting. more important with an auto-optimizer.
+4. explore optimizations. 30s backtest for simple 1hr strategy over 1yr -- why?
     - is it that `algo.Closes` uses `algo.MapFrames`? that's a lot of closures to create and then garbage-collect.
     - is it that non-Machines like ZScore are fetching and processing much of the same data every time?
     - is it that `HistoricalDriver` is inefficient and slow?
-3. change driver interface.
+5. change driver interface.
     - replace `driver.FetchFramesSince` with `driver.FetchNFrames`
     - remove `frames.GetSince`
     - since you now have `now` when checking the cache, you can check whether the latest Frame is older than now-interval, in which case the cache is stale and you need to re-fetch anyway. this will make it more robust
-4. complete documentation.
-5. create OrderStore.
+6. complete documentation.
+7. create OrderStore.
     - internal `ledger`
-6. create plug-ins (concise, reusable signals).
+8. create plug-ins (concise, reusable signals).
+9. add more algos.
+    - RSI
 
 ## example
 
