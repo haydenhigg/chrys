@@ -80,8 +80,7 @@ func (store *FrameStore) getCachedSince(
 	}
 
 	// chop off older frames
-	index := searchFrames(frames, t)
-	if index > -1 {
+	if index := searchFrames(frames, t); index > -1 {
 		return frames[index:], true
 	}
 
@@ -136,11 +135,8 @@ func (store *FrameStore) getCachedPriceAt(
 
 		for interval, frames := range intervalFrames {
 			priorFrameTime := frameTime.Add(-interval)
-
-			for _, frame := range frames {
-				if frame.Time.Equal(priorFrameTime) {
-					return frame.Close, true
-				}
+			if index := searchFrames(frames, priorFrameTime); index > -1 {
+				return frames[index].Close, true
 			}
 		}
 	}
