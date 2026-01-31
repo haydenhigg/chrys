@@ -194,7 +194,7 @@ func Test_Sharpe(t *testing.T) {
 	}
 }
 
-func Test_GainLoss(t *testing.T) {
+func Test_Omega(t *testing.T) {
 	// create Backtest
 	backtest := NewBacktest(24 * time.Hour)
 
@@ -206,7 +206,7 @@ func Test_GainLoss(t *testing.T) {
 	backtest.Update(101)
 
 	// assert
-	if !almostEqual(backtest.GainLoss(), .0897833) {
-		t.Errorf("GainLoss() != .0897833: %f", backtest.GainLoss())
+	if !almostEqual(backtest.Omega(0.01), 1.1966969) {
+		t.Errorf("GainLoss() != 1.1966969: %f", backtest.Omega(0.01))
 	}
 }

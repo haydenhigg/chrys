@@ -124,26 +124,19 @@ func (backtest *Backtest) Sharpe(riskFreeReturn float64) float64 {
 	return sharpe * annualizationCoef
 }
 
-func (backtest *Backtest) GainLoss() float64 {
-	var (
-		sumGain, sumLoss float64
-		nGain, nLoss     int
-	)
+func (backtest *Backtest) Omega(minimumReturn float64) float64 {
+	periodicMinimumReturn := minimumReturn / (YEAR / backtest.step)
 
+	var sumGain, sumLoss float64
 	for _, r := range backtest.Returns {
-		if r > 0 {
-			sumGain += r
-			nGain++
-		} else if r < 0 {
-			sumLoss -= r
-			nLoss++
+		if r > periodicMinimumReturn {
+			sumGain += r - periodicMinimumReturn
+		} else if r < periodicMinimumReturn {
+			sumLoss += periodicMinimumReturn - r
 		}
 	}
 
-	meanGain := sumGain / float64(nGain)
-	meanLoss := sumLoss / float64(nLoss)
-
-	return (meanGain - meanLoss) / (meanGain + meanLoss)
+	return sumGain / sumLoss
 }
 
 // func (test *Backtest) Sortino(annualRiskFreeReturn float64) float64 {
