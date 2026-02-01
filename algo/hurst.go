@@ -12,7 +12,7 @@ func Hurst(prices []float64) float64 {
 	xs := []float64{}
 	ys := []float64{}
 
-	for lag := 2; lag <= max(n/2, 128); lag *= 2 {
+	for lag := 2; lag <= min(n/2, 128); lag *= 2 {
 		m := n - lag
 		diffs := make([]float64, m)
 		for i := range m {
