@@ -212,6 +212,23 @@ func Test_Omega(t *testing.T) {
 	}
 }
 
+func Test_UlcerIndex(t *testing.T) {
+	// create Backtest
+	backtest := NewBacktest(24 * time.Hour)
+
+	// Update()
+	backtest.Update(100)
+	backtest.Update(120)
+	backtest.Update(105)
+	backtest.Update(110)
+	backtest.Update(101)
+
+	// assert
+	if !almostEqual(backtest.UlcerIndex(), 0.0976103) {
+		t.Errorf("UlcerIndex() != 0.0976103: %f", backtest.UlcerIndex())
+	}
+}
+
 func Test_Martin(t *testing.T) {
 	// create Backtest
 	backtest := NewBacktest(24 * time.Hour)
@@ -225,6 +242,6 @@ func Test_Martin(t *testing.T) {
 
 	// assert
 	if !almostEqual(backtest.Martin(.01), 15.0524914) {
-		t.Errorf("Martin() != 15.0524914: %f", backtest.Martin(.01))
+		t.Errorf("Martin(.01) != 15.0524914: %f", backtest.Martin(.01))
 	}
 }

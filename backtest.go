@@ -168,7 +168,7 @@ func (backtest *Backtest) Omega(minReturn float64) float64 {
 	return sumGain / sumLoss
 }
 
-func (backtest *Backtest) Martin(minReturn float64) float64 {
+func (backtest *Backtest) UlcerIndex() float64 {
 	var peak, sum float64
 	for _, v := range backtest.Values {
 		if v > peak {
@@ -178,7 +178,9 @@ func (backtest *Backtest) Martin(minReturn float64) float64 {
 		}
 	}
 
-	ulcerIndex := math.Sqrt(sum / float64(backtest.N))
+	return math.Sqrt(sum / float64(backtest.N))
+}
 
-	return (backtest.Return() - minReturn) / ulcerIndex
+func (backtest *Backtest) Martin(minReturn float64) float64 {
+	return (backtest.Return() - minReturn) / backtest.UlcerIndex()
 }
