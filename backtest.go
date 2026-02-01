@@ -180,11 +180,5 @@ func (backtest *Backtest) Martin(minReturn float64) float64 {
 
 	ulcerIndex := math.Sqrt(sum / float64(backtest.N))
 
-	periodsPerYear := YEAR / backtest.step
-	periodicMinReturn := math.Pow(1+minReturn, 1/periodsPerYear) - 1
-
-	martin := (backtest.meanReturn - periodicMinReturn) / ulcerIndex
-	annualizationCoef := math.Sqrt(periodsPerYear)
-
-	return martin * annualizationCoef
+	return (backtest.Return() - minReturn) / ulcerIndex
 }

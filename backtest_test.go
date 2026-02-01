@@ -224,7 +224,7 @@ func Test_Martin(t *testing.T) {
 	backtest.Update(101)
 
 	// assert
-	if !almostEqual(backtest.Martin(.01), 1.9911214) {
-		t.Errorf("Ulcer() != 1.9911214: %f", backtest.Martin(.01))
+	if !almostEqual(backtest.Martin(.01), 15.0524914) {
+		t.Errorf("Martin() != 15.0524914: %f", backtest.Martin(.01))
 	}
 }
