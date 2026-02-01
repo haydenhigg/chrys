@@ -4,6 +4,7 @@ import (
 	"github.com/haydenhigg/chrys/algo"
 	"math"
 	"time"
+	"fmt"
 )
 
 type Backtest struct {
@@ -123,6 +124,8 @@ func (backtest *Backtest) Sharpe(minReturn float64) float64 {
 
 	sharpe := (backtest.meanReturn - periodicMinReturn) / vol
 	annualizationCoef := math.Pow(periodsPerYear, algo.Hurst(backtest.Returns))
+
+	fmt.Println(algo.Hurst(backtest.Returns))
 
 	return sharpe * annualizationCoef
 }
