@@ -123,9 +123,18 @@ func (backtest *Backtest) Sharpe(minReturn float64) float64 {
 	periodicMinReturn := math.Pow(1+minReturn, 1/periodsPerYear) - 1
 
 	sharpe := (backtest.meanReturn - periodicMinReturn) / vol
-	annualizationCoef := math.Pow(periodsPerYear, algo.Hurst(backtest.Returns))
 
 	fmt.Println(algo.Hurst(backtest.Returns))
+
+	prices := make([]float64, backtest.N)
+	prices[0] = 1
+	for i, r := range backtest.Returns {
+		prices[i+1] = prices[i] * (1 + r)
+	}
+
+	fmt.Println(algo.Hurst(prices))
+
+	annualizationCoef := math.Pow(periodsPerYear, algo.Hurst(prices))
 
 	return sharpe * annualizationCoef
 }
