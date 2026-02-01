@@ -53,12 +53,7 @@ func Test_UpdateFirst(t *testing.T) {
 	if backtest.N != 1 {
 		t.Errorf("N != 1: %d", backtest.N)
 	}
-	if backtest.FirstValue != 10 {
-		t.Errorf("FirstValue != 10: %f", backtest.FirstValue)
-	}
-	if backtest.LastValue != 10 {
-		t.Errorf("LastValue != 10: %f", backtest.LastValue)
-	}
+	assertSlicesEqual(backtest.Values, []float64{10}, t)
 	assertSlicesEqual(backtest.Returns, []float64{}, t)
 	if backtest.peakValue != 10 {
 		t.Errorf("peakValue != 10: %f", backtest.peakValue)
@@ -83,12 +78,7 @@ func Test_UpdateSubsequent(t *testing.T) {
 	if backtest.N != 2 {
 		t.Errorf("N != 2: %d", backtest.N)
 	}
-	if backtest.FirstValue != 10 {
-		t.Errorf("FirstValue != 10: %f", backtest.FirstValue)
-	}
-	if backtest.LastValue != 13 {
-		t.Errorf("LastValue != 13: %f", backtest.LastValue)
-	}
+	assertSlicesEqual(backtest.Values, []float64{10, 13}, t)
 	assertSlicesEqual(backtest.Returns, []float64{.3}, t)
 	if backtest.peakValue != 13 {
 		t.Errorf("peakValue != 13: %f", backtest.peakValue)
@@ -107,12 +97,7 @@ func Test_UpdateSubsequent(t *testing.T) {
 	if backtest.N != 3 {
 		t.Errorf("N != 3: %d", backtest.N)
 	}
-	if backtest.FirstValue != 10 {
-		t.Errorf("FirstValue != 10: %f", backtest.FirstValue)
-	}
-	if backtest.LastValue != 11 {
-		t.Errorf("LastValue != 11: %f", backtest.LastValue)
-	}
+	assertSlicesEqual(backtest.Values, []float64{10, 13, 11}, t)
 	assertSlicesEqual(backtest.Returns, []float64{.3, -.1538462}, t)
 	if backtest.peakValue != 13 {
 		t.Errorf("peakValue != 13: %f", backtest.peakValue)
@@ -171,8 +156,8 @@ func Test_Volatility(t *testing.T) {
 	backtest.Update(101)
 
 	// assert
-	if !almostEqual(backtest.Volatility(), 0.146254) {
-		t.Errorf("Volatility() != 0.146254: %f", backtest.Volatility())
+	if !almostEqual(backtest.Volatility(), 2.794177) {
+		t.Errorf("Volatility() != 2.794177: %f", backtest.Volatility())
 	}
 }
 
@@ -188,8 +173,8 @@ func Test_Sharpe(t *testing.T) {
 	backtest.Update(101)
 
 	// assert
-	if !almostEqual(backtest.Sharpe(.01), 0.069735) {
-		t.Errorf("Sharpe(0.01) != 0.069735: %f", backtest.Sharpe(.01))
+	if !almostEqual(backtest.Sharpe(.01), 6.526880) {
+		t.Errorf("Sharpe(0.01) != 6.526880: %f", backtest.Sharpe(.01))
 	}
 }
 
@@ -205,8 +190,8 @@ func Test_Sortino(t *testing.T) {
 	backtest.Update(101)
 
 	// assert
-	if !almostEqual(backtest.Sortino(0.01), 0.136153) {
-		t.Errorf("Sortino(0.01) != 0.136153: %f", backtest.Sortino(0.01))
+	if !almostEqual(backtest.Sortino(0.01), 2.601204) {
+		t.Errorf("Sortino(0.01) != 2.601204: %f", backtest.Sortino(0.01))
 	}
 }
 
