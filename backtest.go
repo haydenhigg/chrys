@@ -98,15 +98,15 @@ func (backtest *Backtest) Return() float64 {
 	return math.Pow(growthFactor, annualizationPower) - 1
 }
 
-func (backtest *Backtest) reconstitutePrices() []float64 {
-	prices := make([]float64, backtest.N)
-	prices[0] = 1
-	for i, r := range backtest.Returns {
-		prices[i+1] = prices[i] * (1 + r)
-	}
+// func (backtest *Backtest) reconstitutePrices() []float64 {
+// 	prices := make([]float64, backtest.N)
+// 	prices[0] = 1
+// 	for i, r := range backtest.Returns {
+// 		prices[i+1] = prices[i] * (1 + r)
+// 	}
 
-	return prices
-}
+// 	return prices
+// }
 
 func (backtest *Backtest) Volatility() float64 {
 	if len(backtest.Returns) <= 1 {
@@ -114,7 +114,7 @@ func (backtest *Backtest) Volatility() float64 {
 	}
 
 	vol := algo.StandardDeviation(backtest.Returns, backtest.meanReturn)
-	annualizationCoef := math.Pow(YEAR/backtest.step, algo.Hurst(backtest.reconstitutePrices()))
+	annualizationCoef := math.Sqrt(YEAR/backtest.step)
 
 	return vol * annualizationCoef
 }
@@ -129,8 +129,7 @@ func (backtest *Backtest) Sharpe(minReturn float64) float64 {
 	periodicMinReturn := math.Pow(1+minReturn, 1/periodsPerYear) - 1
 
 	sharpe := (backtest.meanReturn - periodicMinReturn) / vol
-
-	annualizationCoef := math.Pow(periodsPerYear, algo.Hurst(backtest.reconstitutePrices()))
+	annualizationCoef := math.Sqrt(periodsPerYear)
 
 	return sharpe * annualizationCoef
 }
@@ -150,7 +149,7 @@ func (backtest *Backtest) Sortino(minReturn float64) float64 {
 	}
 
 	sortino := (backtest.meanReturn - periodicMinReturn) / downsideVol
-	annualizationCoef := math.Pow(periodsPerYear, algo.Hurst(backtest.reconstitutePrices()))
+	annualizationCoef := math.Sqrt(periodsPerYear)
 
 	return sortino * annualizationCoef
 }
