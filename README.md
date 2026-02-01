@@ -11,7 +11,6 @@ algorithmic trading framework for medium-frequency strategies
 ## to-do
 
 1. create backtest machinery.
-    - annualize Volatility, Sharpe, Sortino properly using the Hurst exponent
     - parallelized monte carlo sub-period resampling
 2. create optimizer.
     - random sampling
@@ -19,6 +18,7 @@ algorithmic trading framework for medium-frequency strategies
 3. implement k-fold backtesting. more important with an auto-optimizer.
 4. complete documentation.
 5. add more algos.
+    - infer best (highest R^2, lowest std-err) Hurst lags
     - RSI
     - MFI
 7. create OrderStore.

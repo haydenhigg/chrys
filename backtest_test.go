@@ -163,7 +163,7 @@ func Test_Volatility(t *testing.T) {
 
 func Test_Sharpe(t *testing.T) {
 	// create Backtest
-	backtest := NewBacktest(time.Hour)
+	backtest := NewBacktest(24 * time.Hour)
 
 	// Update()
 	backtest.Update(100)
@@ -173,8 +173,8 @@ func Test_Sharpe(t *testing.T) {
 	backtest.Update(101)
 
 	// assert
-	if !almostEqual(backtest.Sharpe(.01), 6.526880) {
-		t.Errorf("Sharpe(0.01) != 6.526880: %f", backtest.Sharpe(.01))
+	if !almostEqual(backtest.Sharpe(.01), 1.328881) {
+		t.Errorf("Sharpe(0.01) != 1.328881: %f", backtest.Sharpe(.01))
 	}
 }
 
@@ -190,8 +190,8 @@ func Test_Sortino(t *testing.T) {
 	backtest.Update(101)
 
 	// assert
-	if !almostEqual(backtest.Sortino(0.01), 2.601204) {
-		t.Errorf("Sortino(0.01) != 2.601204: %f", backtest.Sortino(0.01))
+	if !almostEqual(backtest.Sortino(.01), 2.601204) {
+		t.Errorf("Sortino(0.01) != 2.601204: %f", backtest.Sortino(.01))
 	}
 }
 
@@ -207,7 +207,24 @@ func Test_Omega(t *testing.T) {
 	backtest.Update(101)
 
 	// assert
-	if !almostEqual(backtest.Omega(0.01), 1.196700) {
-		t.Errorf("Omega(0.01) != 1.196700: %f", backtest.Omega(0.01))
+	if !almostEqual(backtest.Omega(.01), 1.196700) {
+		t.Errorf("Omega(0.01) != 1.196700: %f", backtest.Omega(.01))
+	}
+}
+
+func Test_Martin(t *testing.T) {
+	// create Backtest
+	backtest := NewBacktest(24 * time.Hour)
+
+	// Update()
+	backtest.Update(100)
+	backtest.Update(120)
+	backtest.Update(105)
+	backtest.Update(110)
+	backtest.Update(101)
+
+	// assert
+	if !almostEqual(backtest.Martin(.01), 1.9911214) {
+		t.Errorf("Ulcer() != 1.9911214: %f", backtest.Martin(.01))
 	}
 }

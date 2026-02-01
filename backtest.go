@@ -109,10 +109,11 @@ func (backtest *Backtest) Volatility() float64 {
 	}
 
 	vol := algo.StandardDeviation(backtest.Returns, backtest.meanReturn)
-	annualizationCoef := math.Pow(
-		YEAR/backtest.step,
-		algo.Hurst(backtest.Values),
-	)
+	annualizationCoef := math.Sqrt(YEAR / backtest.step)
+	// Sharpe and Sortino are also annualized this way. In theory, this is not
+	// a robust way to annualize unless returns are i.i.d., which is likely
+	// untrue. However, in practice, this tends to produce stable results
+	// across time scales more reliably than an estimated Hurst exponent.
 
 	return vol * annualizationCoef
 }
@@ -127,7 +128,7 @@ func (backtest *Backtest) Sharpe(minReturn float64) float64 {
 	periodicMinReturn := math.Pow(1+minReturn, 1/periodsPerYear) - 1
 
 	sharpe := (backtest.meanReturn - periodicMinReturn) / vol
-	annualizationCoef := math.Pow(periodsPerYear, algo.Hurst(backtest.Values))
+	annualizationCoef := math.Sqrt(periodsPerYear)
 
 	return sharpe * annualizationCoef
 }
@@ -147,7 +148,7 @@ func (backtest *Backtest) Sortino(minReturn float64) float64 {
 	}
 
 	sortino := (backtest.meanReturn - periodicMinReturn) / downsideVol
-	annualizationCoef := math.Pow(periodsPerYear, algo.Hurst(backtest.Values))
+	annualizationCoef := math.Sqrt(periodsPerYear)
 
 	return sortino * annualizationCoef
 }
@@ -165,4 +166,25 @@ func (backtest *Backtest) Omega(minReturn float64) float64 {
 	}
 
 	return sumGain / sumLoss
+}
+
+func (backtest *Backtest) Martin(minReturn float64) float64 {
+	var peak, sum float64
+	for _, v := range backtest.Values {
+		if v > peak {
+			peak = v
+		} else {
+			sum += math.Pow((peak-v)/peak, 2)
+		}
+	}
+
+	ulcerIndex := math.Sqrt(sum / float64(backtest.N))
+
+	periodsPerYear := YEAR / backtest.step
+	periodicMinReturn := math.Pow(1+minReturn, 1/periodsPerYear) - 1
+
+	martin := (backtest.meanReturn - periodicMinReturn) / ulcerIndex
+	annualizationCoef := math.Sqrt(periodsPerYear)
+
+	return martin * annualizationCoef
 }
