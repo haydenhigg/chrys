@@ -4,7 +4,6 @@ import (
 	"github.com/haydenhigg/chrys/algo"
 	"math"
 	"time"
-	"fmt"
 )
 
 type Backtest struct {
@@ -99,16 +98,23 @@ func (backtest *Backtest) Return() float64 {
 	return math.Pow(growthFactor, annualizationPower) - 1
 }
 
+func (backtest *Backtest) reconstitutePrices() []float64 {
+	prices := make([]float64, backtest.N)
+	prices[0] = 1
+	for i, r := range backtest.Returns {
+		prices[i+1] = prices[i] * (1 + r)
+	}
+
+	return prices
+}
+
 func (backtest *Backtest) Volatility() float64 {
 	if len(backtest.Returns) <= 1 {
 		return 0
 	}
 
 	vol := algo.StandardDeviation(backtest.Returns, backtest.meanReturn)
-	annualizationCoef := math.Pow(
-		YEAR/backtest.step,
-		algo.Hurst(backtest.Returns),
-	)
+	annualizationCoef := math.Pow(YEAR/backtest.step, algo.Hurst(backtest.reconstitutePrices()))
 
 	return vol * annualizationCoef
 }
@@ -124,17 +130,7 @@ func (backtest *Backtest) Sharpe(minReturn float64) float64 {
 
 	sharpe := (backtest.meanReturn - periodicMinReturn) / vol
 
-	fmt.Println(algo.Hurst(backtest.Returns))
-
-	prices := make([]float64, backtest.N)
-	prices[0] = 1
-	for i, r := range backtest.Returns {
-		prices[i+1] = prices[i] * (1 + r)
-	}
-
-	fmt.Println(algo.Hurst(prices))
-
-	annualizationCoef := math.Pow(periodsPerYear, algo.Hurst(prices))
+	annualizationCoef := math.Pow(periodsPerYear, algo.Hurst(backtest.reconstitutePrices()))
 
 	return sharpe * annualizationCoef
 }
@@ -154,7 +150,7 @@ func (backtest *Backtest) Sortino(minReturn float64) float64 {
 	}
 
 	sortino := (backtest.meanReturn - periodicMinReturn) / downsideVol
-	annualizationCoef := math.Pow(periodsPerYear, algo.Hurst(backtest.Returns))
+	annualizationCoef := math.Pow(periodsPerYear, algo.Hurst(backtest.reconstitutePrices()))
 
 	return sortino * annualizationCoef
 }
