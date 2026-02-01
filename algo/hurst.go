@@ -2,24 +2,21 @@ package algo
 
 import "math"
 
-// estimate the Hurst exponent from returns using Variance of Differences
-func Hurst(xs []float64) float64 {
-	n := len(xs)
-	if n < 4 {
+// estimate the Hurst exponent from prices using Variance-of-Differences
+func Hurst(prices []float64) float64 {
+	n := len(prices)
+	if n < 40 {
 		return 0.5
 	}
 
-	// too large increases noise; too small is insufficient for regression
-	maxLag := min(n/2, 50)
+	xs := []float64{}
+	ys := []float64{}
 
-	logLags := make([]float64, 0, maxLag)
-	logVariances := make([]float64, 0, maxLag)
-
-	for lag := 1; lag <= maxLag; lag++ {
+	for lag := 2; lag <= max(n / 10, 32); lag *= 2 {
 		m := n - lag
 		diffs := make([]float64, m)
 		for i := range m {
-			diffs[i] = xs[i+lag] - xs[i]
+			diffs[i] = prices[i+lag] - prices[i]
 		}
 
 		variance := Variance(diffs, Mean(diffs))
@@ -27,19 +24,19 @@ func Hurst(xs []float64) float64 {
 			continue
 		}
 
-		logLags = append(logLags, math.Log(float64(lag)))
-		logVariances = append(logVariances, math.Log(variance))
+		xs = append(xs, math.Log(float64(lag)))
+		ys = append(ys, math.Log(variance))
 	}
 
 	// OLS slope = cov(x,y)/var(x)
-	meanLogLag := Mean(logLags)
-	meanLogVariance := Mean(logVariances)
+	meanLogLag := Mean(xs)
+	meanLogVariance := Mean(ys)
 
 	var num, den float64
-	for i := range logLags {
-		dx := logLags[i] - meanLogLag
+	for i := range xs {
+		dx := xs[i] - meanLogLag
 
-		num += dx * (logVariances[i] - meanLogVariance)
+		num += dx * (ys[i] - meanLogVariance)
 		den += dx * dx
 	}
 
