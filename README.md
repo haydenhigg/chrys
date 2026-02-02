@@ -8,27 +8,6 @@ algorithmic trading framework for medium-frequency strategies
 2. **Simple**: Setting up an effective strategy is concise and intuitive.
 3. **Flexible**: All functionality can be modified or composed.
 
-## to-do
-
-1. create backtest machinery.
-    - parallelized monte carlo sub-period resampling
-2. create optimizer.
-    - random sampling
-    - TPE
-3. implement k-fold backtesting. more important with an auto-optimizer.
-4. complete documentation.
-5. add more algos.
-    - infer best (highest R^2, lowest std-err) Hurst lags
-    - RSI
-    - MFI
-7. create OrderStore.
-    - internal `ledger`
-7. create plug-ins (concise, reusable signals).
-8. simplify driver interface.
-    - replace `driver.FetchFramesSince` with `driver.FetchNFrames`
-    - remove `frames.GetSince`
-    - since you now have `now` when checking the cache, you can check whether the latest Frame is older than now-interval, in which case the cache is stale and you need to re-fetch anyway. this will make it more robust
-
 ## example
 
 This trades on **BOLL(20, 2)** signals for **1h BTC/USD** using a **10%** fractional trade amount.
