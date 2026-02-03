@@ -324,7 +324,7 @@ func Test_GetPriceAtExactTimeUncached(t *testing.T) {
 		t.Errorf("price != expectedPrice: %f != %f", price, expectedPrice)
 	}
 
-	assertFrameTimesEqual(store.cache["BTC/USD"][time.Minute], []*frame.Frame{
+	assertFrameTimesEqual(store.Cache["BTC/USD"][time.Minute], []*frame.Frame{
 		{Time: now.Add(-time.Minute)},
 	}, t)
 }
@@ -356,7 +356,7 @@ func Test_GetPriceAtExactTimeCached(t *testing.T) {
 		t.Errorf("price != expectedPrice: %f != %f", price, expectedPrice)
 	}
 
-	assertFrameTimesEqual(store.cache["BTC/USD"][30*time.Minute], []*frame.Frame{
+	assertFrameTimesEqual(store.Cache["BTC/USD"][30*time.Minute], []*frame.Frame{
 		{Time: now.Add(-5 * 30 * time.Minute)},
 		{Time: now.Add(-4 * 30 * time.Minute)},
 		{Time: now.Add(-3 * 30 * time.Minute)},
@@ -397,7 +397,7 @@ func Test_GetPriceAtExactTimeCachedMiss(t *testing.T) {
 	}
 
 	assertFrameTimesEqual(
-		store.cache["BTC/USD"][time.Minute][:1],
+		store.Cache["BTC/USD"][time.Minute][:1],
 		[]*frame.Frame{
 			{Time: now.Add(-time.Minute)},
 		},
@@ -427,7 +427,7 @@ func Test_GetPriceAtInexactTimeUncached(t *testing.T) {
 		t.Errorf("price != expectedPrice: %f != %f", price, expectedPrice)
 	}
 
-	assertFrameTimesEqual(store.cache["BTC/USD"][time.Minute], []*frame.Frame{
+	assertFrameTimesEqual(store.Cache["BTC/USD"][time.Minute], []*frame.Frame{
 		{Time: now.Truncate(time.Minute).Add(-time.Minute)},
 	}, t)
 }
@@ -460,7 +460,7 @@ func Test_GetPriceAtInexactTimeCached(t *testing.T) {
 	}
 
 	truncatedNow := now.Truncate(time.Minute)
-	assertFrameTimesEqual(store.cache["BTC/USD"][30*time.Minute], []*frame.Frame{
+	assertFrameTimesEqual(store.Cache["BTC/USD"][30*time.Minute], []*frame.Frame{
 		{Time: truncatedNow.Add(-5 * 30 * time.Minute)},
 		{Time: truncatedNow.Add(-4 * 30 * time.Minute)},
 		{Time: truncatedNow.Add(-3 * 30 * time.Minute)},
@@ -503,7 +503,7 @@ func Test_GetPriceAtInexactTimeCachedMiss(t *testing.T) {
 	}
 
 	assertFrameTimesEqual(
-		store.cache["BTC/USD"][time.Minute][:1],
+		store.Cache["BTC/USD"][time.Minute][:1],
 		[]*frame.Frame{
 			{Time: now.Truncate(time.Minute).Add(-time.Minute)},
 		},
@@ -539,8 +539,8 @@ func Test_SetInitial(t *testing.T) {
 		{Time: now.Add(-time.Hour), Close: 5.},
 	}
 
-	assertFrameTimesEqual(store.cache["BTC/USD"][time.Hour], expectedFrames, t)
-	assertFrameClosesEqual(store.cache["BTC/USD"][time.Hour], expectedFrames, t)
+	assertFrameTimesEqual(store.Cache["BTC/USD"][time.Hour], expectedFrames, t)
+	assertFrameClosesEqual(store.Cache["BTC/USD"][time.Hour], expectedFrames, t)
 }
 
 func Test_SetMerge(t *testing.T) {
@@ -575,6 +575,6 @@ func Test_SetMerge(t *testing.T) {
 		{Time: now.Add(-time.Hour), Close: 2.},
 	}
 
-	assertFrameTimesEqual(store.cache["BTC/USD"][time.Hour], expectedFrames, t)
-	assertFrameClosesEqual(store.cache["BTC/USD"][time.Hour], expectedFrames, t)
+	assertFrameTimesEqual(store.Cache["BTC/USD"][time.Hour], expectedFrames, t)
+	assertFrameClosesEqual(store.Cache["BTC/USD"][time.Hour], expectedFrames, t)
 }

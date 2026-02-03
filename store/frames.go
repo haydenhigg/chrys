@@ -18,13 +18,13 @@ type FrameCache = map[string]PartialFrameCache
 
 type FrameStore struct {
 	api   FrameAPI
-	cache map[string]PartialFrameCache
+	Cache map[string]PartialFrameCache
 }
 
 func NewFrames(api FrameAPI) *FrameStore {
 	return &FrameStore{
 		api:   api,
-		cache: FrameCache{},
+		Cache: FrameCache{},
 	}
 }
 
@@ -69,12 +69,12 @@ func (store *FrameStore) getCachedSince(
 	t time.Time,
 ) ([]*frame.Frame, bool) {
 	// check if pair is in cache
-	if _, ok := store.cache[pair]; !ok {
+	if _, ok := store.Cache[pair]; !ok {
 		return nil, false
 	}
 
 	// check if interval is in pair's partial cache
-	frames, ok := store.cache[pair][interval]
+	frames, ok := store.Cache[pair][interval]
 	if !ok || len(frames) == 0 {
 		return nil, false
 	}
@@ -130,7 +130,7 @@ func (store *FrameStore) getCachedPriceAt(
 	t time.Time,
 ) (float64, bool) {
 	// check all cached intervals to find a Close price for the given time
-	if intervalFrames, ok := store.cache[pair]; ok {
+	if intervalFrames, ok := store.Cache[pair]; ok {
 		frameTime := t.Truncate(time.Minute)
 
 		for interval, frames := range intervalFrames {
@@ -191,20 +191,20 @@ func (store *FrameStore) Set(
 	frames []*frame.Frame,
 ) *FrameStore {
 	// check if pair is in cache
-	if _, ok := store.cache[pair]; !ok {
-		store.cache[pair] = PartialFrameCache{interval: frames}
+	if _, ok := store.Cache[pair]; !ok {
+		store.Cache[pair] = PartialFrameCache{interval: frames}
 		return store
 	}
 
 	// check if interval is in pair's partial cache {
-	oldFrames, ok := store.cache[pair][interval]
+	oldFrames, ok := store.Cache[pair][interval]
 	if !ok {
-		store.cache[pair][interval] = frames
+		store.Cache[pair][interval] = frames
 		return store
 	}
 
 	// merge frames
-	store.cache[pair][interval] = mergeFrames(frames, oldFrames)
+	store.Cache[pair][interval] = mergeFrames(frames, oldFrames)
 
 	return store
 }

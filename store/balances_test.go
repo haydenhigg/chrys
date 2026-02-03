@@ -129,7 +129,7 @@ func Test_Set_balances(t *testing.T) {
 	store.Set(expectedBalances)
 
 	// assert
-	assertBalancesEqual(store.balances, expectedBalances, t)
+	assertBalancesEqual(store.Balances, expectedBalances, t)
 }
 
 func Test_SetAddSubtract(t *testing.T) {
@@ -150,7 +150,7 @@ func Test_SetAddSubtract(t *testing.T) {
 	})
 
 	// assert
-	assertBalancesEqual(store.balances, map[string]float64{
+	assertBalancesEqual(store.Balances, map[string]float64{
 		"USD": 89.76,
 		"BTC": 0.001337,
 		"ETH": 0.02674,
@@ -171,7 +171,7 @@ func Test_SetWithAlias(t *testing.T) {
 	})
 
 	// assert
-	assertBalancesEqual(store.balances, map[string]float64{
+	assertBalancesEqual(store.Balances, map[string]float64{
 		"USD":  133.70,
 		"ZUSD": 133.70,
 		"BTC":  0.001337,
@@ -200,7 +200,7 @@ func Test_SetAddSubtractWithAlias(t *testing.T) {
 	})
 
 	// assert
-	assertBalancesEqual(store.balances, map[string]float64{
+	assertBalancesEqual(store.Balances, map[string]float64{
 		"USD":  165.83,
 		"ZUSD": 165.83,
 		"BTC":  0.001,

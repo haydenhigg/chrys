@@ -6,22 +6,22 @@ type BalanceAPI interface {
 
 type BalanceStore struct {
 	api      BalanceAPI
-	balances map[string]float64
-	aliases  map[string]string
+	Balances map[string]float64
+	Aliases  map[string]string
 }
 
 func NewBalances(api BalanceAPI) *BalanceStore {
 	return &BalanceStore{
 		api:      api,
-		balances: map[string]float64{},
-		aliases:  map[string]string{},
+		Balances: map[string]float64{},
+		Aliases:  map[string]string{},
 	}
 }
 
 func (store *BalanceStore) Get() (map[string]float64, error) {
 	// check if balances is not empty
-	if len(store.balances) > 0 {
-		return store.balances, nil
+	if len(store.Balances) > 0 {
+		return store.Balances, nil
 	}
 
 	// retrieve from data source
@@ -33,20 +33,17 @@ func (store *BalanceStore) Get() (map[string]float64, error) {
 	// cache retrieved data
 	store.Set(balances)
 
-	return store.balances, nil
+	return store.Balances, nil
 }
-
-// func (store *BalanceStore) Get(assets []string) (map[string]float64, error) {
-// }
 
 func (store *BalanceStore) Set(balances map[string]float64) *BalanceStore {
 	// update all balances additively
 	for asset, balance := range balances {
-		store.balances[asset] += balance
+		store.Balances[asset] += balance
 
 		// update alias balances
-		if alias, ok := store.aliases[asset]; ok {
-			store.balances[alias] += balance
+		if alias, ok := store.Aliases[asset]; ok {
+			store.Balances[alias] += balance
 		}
 	}
 
@@ -55,15 +52,15 @@ func (store *BalanceStore) Set(balances map[string]float64) *BalanceStore {
 
 func (store *BalanceStore) Alias(asset, assetAlias string) *BalanceStore {
 	if asset != assetAlias {
-		store.aliases[asset] = assetAlias // alias
-		store.aliases[assetAlias] = asset // inverted alias
+		store.Aliases[asset] = assetAlias // alias
+		store.Aliases[assetAlias] = asset // inverted alias
 	}
 
 	return store
 }
 
 func (store *BalanceStore) Aliased(asset string) (string, bool) {
-	if alias, ok := store.aliases[asset]; ok {
+	if alias, ok := store.Aliases[asset]; ok {
 		return alias, true
 	} else {
 		return asset, false
