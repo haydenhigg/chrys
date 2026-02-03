@@ -47,20 +47,25 @@ func (opt *Optimizer) Derivative(f func([]float64) float64) []float64 {
 
 // OAT local perturbations, very much like a second derivative but not quite
 func (opt *Optimizer) LocalSensitivity(f func([]float64) float64) []float64 {
-	h := 1e-3
+	epsilons := make([]float64, len(opt.inputs))
+	for i, x := range opt.inputs {
+		epsilons[i] = x * 1e-3
+	}
 
 	baseline := f(opt.X())
 	sensitivities := make([]float64, len(opt.inputs))
 	for i := range opt.inputs {
 		x := opt.X()
-		dx := 2 * h
+		dx := 2 * epsilons[i]
 
-		x[i] += h
+		x[i] += epsilons[i]
 		plus := f(x) - baseline
 
 		x[i] -= dx
 		minus := f(x) - baseline
 
+		// (|f(x + h) - f(x)| + |f(x - h) - f(x)|) / 2h
+		// ((f(x + h) - f(x)) + (f(x - h) - f(x))) / h^2
 		sensitivities[i] = (math.Abs(plus) + math.Abs(minus)) / math.Abs(dx)
 	}
 
