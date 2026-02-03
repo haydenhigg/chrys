@@ -23,7 +23,7 @@ func (opt *Optimizer) X(deltas ...float64) []float64 {
 	return x
 }
 
-// one-at-a-time partial derivatives using the finite difference method
+// OAT partial derivatives using the finite difference method
 func (opt *Optimizer) Derivative(f func([]float64) float64) []float64 {
 	h := 1e-5
 
@@ -45,22 +45,23 @@ func (opt *Optimizer) Derivative(f func([]float64) float64) []float64 {
 	return derivatives
 }
 
-// local perturbations
+// OAT local perturbations, very much like a second derivative but not quite
 func (opt *Optimizer) LocalSensitivity(f func([]float64) float64) []float64 {
-	x := opt.X()
-	baseline := f(x)
+	h := 1e-3
 
+	baseline := f(opt.X())
 	sensitivities := make([]float64, len(opt.inputs))
 	for i := range opt.inputs {
-		deltas := make([]float64, len(opt.inputs))
+		x := opt.X()
+		dx := 2 * h
 
-		deltas[i] += 0.01 * x[i]
-		plus := f(opt.X(deltas...)) - baseline
+		x[i] += h
+		plus := f(x) - baseline
 
-		deltas[i] -= 0.02 * x[i]
-		minus := f(opt.X(deltas...)) - baseline
+		x[i] -= dx
+		minus := f(x) - baseline
 
-		sensitivities[i] = (math.Abs(plus) + math.Abs(minus)) / 2
+		sensitivities[i] = (math.Abs(plus) + math.Abs(minus)) / math.Abs(dx)
 	}
 
 	return sensitivities
