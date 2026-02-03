@@ -1,9 +1,6 @@
 package chrys
 
-import (
-	"errors"
-	"math"
-)
+import "math"
 
 // a single-objective optimizing object
 type Optimizer struct {
@@ -14,24 +11,24 @@ func NewOptimizer(inputs []float64) *Optimizer {
 	return &Optimizer{inputs: inputs}
 }
 
-// Copy
-func (opt *Optimizer) X() []float64 {
+// Copy and Perturb
+func (opt *Optimizer) X(deltas ...float64) []float64 {
 	x := make([]float64, len(opt.inputs))
 	copy(x, opt.inputs)
+
+	for i := range min(len(x), len(deltas)) {
+		x[i] += deltas[i]
+	}
+
 	return x
 }
 
 // one-at-a-time partial derivatives using the finite difference method
-func (opt *Optimizer) Derivative(
-	f func([]float64) float64,
-	hs []float64,
-) ([]float64, error) {
-	if len(hs) != len(opt.inputs) {
-		return []float64{}, errors.New("x and h have different magnitudes")
-	}
+func (opt *Optimizer) Derivative(f func([]float64) float64) []float64 {
+	h := 1e-5
 
-	derivatives := make([]float64, len(hs))
-	for i, h := range hs {
+	derivatives := make([]float64, len(opt.inputs))
+	for i := range opt.inputs {
 		x := opt.X()
 		dx := 2 * h
 
@@ -45,32 +42,26 @@ func (opt *Optimizer) Derivative(
 		derivatives[i] = (forward - backward) / math.Abs(dx)
 	}
 
-	return derivatives, nil
+	return derivatives
 }
 
-func (opt *Optimizer) SecondDerivative(
-	f func([]float64) float64,
-	hs []float64,
-) ([]float64, error) {
-	if len(hs) != len(opt.inputs) {
-		return []float64{}, errors.New("x and h have different magnitudes")
+// local perturbations
+func (opt *Optimizer) LocalSensitivity(f func([]float64) float64) []float64 {
+	x := opt.X()
+	baseline := f(x)
+
+	sensitivities := make([]float64, len(opt.inputs))
+	for i := range opt.inputs {
+		deltas := make([]float64, len(opt.inputs))
+
+		deltas[i] += 0.01 * x[i]
+		plus := f(opt.X(deltas...)) - baseline
+
+		deltas[i] -= 0.02 * x[i]
+		minus := f(opt.X(deltas...)) - baseline
+
+		sensitivities[i] = (math.Abs(plus) + math.Abs(minus)) / 2
 	}
 
-	derivatives := make([]float64, len(hs))
-	for i, h := range hs {
-		x := opt.X()
-
-		stationary := f(x)
-
-		x[i] += h
-		forward := f(x)
-
-		x[i] -= 2 * h
-		backward := f(x)
-
-		// (f(x + h) - 2f(x) + f(x - h)) / h^2
-		derivatives[i] = (forward - 2*stationary + backward) / math.Pow(h, 2)
-	}
-
-	return derivatives, nil
+	return sensitivities
 }

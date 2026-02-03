@@ -5,6 +5,52 @@ import (
 	"testing"
 )
 
+// tests -> X
+func Test_X(t *testing.T) {
+	// create Optimizer
+	opt := NewOptimizer([]float64{4.1337, 3.37})
+
+	// X()
+	x := opt.X()
+
+	// assert
+	assertSlicesEqual(x, []float64{4.1337, 3.37}, t)
+}
+
+func Test_XPerturbed(t *testing.T) {
+	// create Optimizer
+	opt := NewOptimizer([]float64{4.1337, 3.37})
+
+	// X()
+	x := opt.X(-.1337, .63)
+
+	// assert
+	assertSlicesEqual(x, []float64{4, 4}, t)
+}
+
+func Test_XPerturbedTooFew(t *testing.T) {
+	// create Optimizer
+	opt := NewOptimizer([]float64{4.1337, 3.37})
+
+	// X()
+	x := opt.X(-.1337)
+
+	// assert
+	assertSlicesEqual(x, []float64{4, 3.37}, t)
+}
+
+func Test_XPerturbedTooMany(t *testing.T) {
+	// create Optimizer
+	opt := NewOptimizer([]float64{4.1337, 3.37})
+
+	// X()
+	x := opt.X(-.1337, .63, 2.5)
+
+	// assert
+	assertSlicesEqual(x, []float64{4, 4}, t)
+}
+
+// tests -> Derivative
 func Test_Derivative(t *testing.T) {
 	// mock objective
 	f := func(x []float64) float64 {
@@ -15,10 +61,7 @@ func Test_Derivative(t *testing.T) {
 	opt := NewOptimizer([]float64{4, 3})
 
 	// Derivative()
-	fPrime, err := opt.Derivative(f, []float64{1e-5, 1e-5})
-	if err != nil {
-		t.Errorf("err != nil: %v", err)
-	}
+	fPrime := opt.Derivative(f)
 
 	// assert
 	// f(a, b) = a^2 + b
@@ -26,7 +69,8 @@ func Test_Derivative(t *testing.T) {
 	assertSlicesEqual(fPrime, []float64{8, 1}, t)
 }
 
-func Test_SecondDerivative(t *testing.T) {
+// tests ->
+func Test_LocalSensitivity(t *testing.T) {
 	// mock objective
 	f := func(x []float64) float64 {
 		return math.Pow(x[0], 2) + x[1]
@@ -35,15 +79,9 @@ func Test_SecondDerivative(t *testing.T) {
 	// create Optimizer
 	opt := NewOptimizer([]float64{4, 3})
 
-	// SecondDerivative()
-	fPrimePrime, err := opt.SecondDerivative(f, []float64{1e-3, 1e-3})
-	if err != nil {
-		t.Errorf("err != nil: %v", err)
-	}
+	// Derivative()
+	sens := opt.LocalSensitivity(f)
 
 	// assert
-	// f(a, b) = a^2 + b
-	// f'(a) = 2a, f'(b) = 1
-	// f''(a) = 2, f''(b) = 0
-	assertSlicesEqual(fPrimePrime, []float64{2, 0}, t)
+	assertSlicesEqual(sens, []float64{.32, .03}, t)
 }
