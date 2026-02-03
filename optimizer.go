@@ -59,13 +59,12 @@ func (opt *Optimizer) LocalSensitivity(f func([]float64) float64) []float64 {
 		dx := 2 * epsilons[i]
 
 		x[i] += epsilons[i]
-		plus := f(x) - baseline
+		plus := f(x)/baseline - 1
 
 		x[i] -= dx
-		minus := f(x) - baseline
+		minus := f(x)/baseline - 1
 
 		// (|f(x + h) - f(x)| + |f(x - h) - f(x)|) / 2h
-		// ((f(x + h) - f(x)) + (f(x - h) - f(x))) / h^2
 		sensitivities[i] = (math.Abs(plus) + math.Abs(minus)) / math.Abs(dx)
 	}
 
