@@ -2,7 +2,7 @@ package chrys
 
 import (
 	"math"
-	// "math/rand"
+	"fmt"
 	"maps"
 )
 
@@ -69,7 +69,7 @@ func (opt *Optimizer) XPerturb(k string, h float64) Parameters {
 	domain := opt.Domain(k)
 
 	x := opt.X()
-	x[k] += max(h, domain.Resolution)
+	x[k] += math.Copysign(max(math.Abs(h), domain.Resolution), h)
 
 	// clamp to bounds
 	if x[k] > domain.Upper {
@@ -77,6 +77,8 @@ func (opt *Optimizer) XPerturb(k string, h float64) Parameters {
 	} else if x[k] < domain.Lower {
 		x[k] = domain.Lower
 	}
+
+	fmt.Println(x)
 
 	return x
 }
@@ -96,40 +98,35 @@ func (opt *Optimizer) Derivative() Parameters {
 	return derivatives
 }
 
-// OAT local perturbations, very much like a derivative but not quite
+// OAT local perturbations, similar to a derivative
+const epsilon float64 = .1
+
 func (opt *Optimizer) LocalSensitivity() Parameters {
-	// isLowerBoundInf := math.IsInf(lowerBound, 0)
-	// isUpperBoundInf := math.IsInf(upperBound, 0)
-
-	// h := resolution
-	// if isLowerBoundInf && isUpperBoundInf {
-
-	// } else if isLowerBoundInf {
-	// } else if isUpperBoundInf {
-	// } else {
-	// }
-
-	// math.IsInf(lowerBound, -1)
-	// math.IsInf(domain[0], 1)
-	// h := rand.Float64()
-
-	// // // //
-
-	// baseline := f(opt.X())
+	baseline := opt.F(opt.X())
 	sensitivities := make(Parameters, len(opt.x))
-	// for i := range opt.inputs {
-	// 	x := opt.X()
-	// 	dx := 2 * h
+	for k, v := range opt.x {
+		domain := opt.Domain(k)
 
-	// 	x[i] += h
-	// 	plus := f(x) - baseline
+		delta := epsilon
+		if math.IsInf(domain.Upper, 0) && math.IsInf(domain.Lower, 0) {
+			delta *= v
+		} else if math.IsInf(domain.Upper, 0) {
+			delta *= v - domain.Lower
+		} else if math.IsInf(domain.Lower, 0) {
+			delta *= domain.Upper - v
+		} else {
+			delta *= domain.Upper - domain.Lower
+		}
 
-	// 	x[i] -= dx
-	// 	minus := f(x) - baseline
+		fmt.Println(opt.F(opt.XPerturb(k, delta)) / baseline - 1)
+		fmt.Println(opt.F(opt.XPerturb(k, -delta)) / baseline - 1)
 
-	// 	// (|f(x + h) - f(x)| + |f(x - h) - f(x)|) / 2h
-	// 	sensitivities[i] = (math.Abs(plus) + math.Abs(minus)) / math.Abs(dx)
-	// }
+		plus := math.Abs(opt.F(opt.XPerturb(k, delta)) / baseline - 1)
+		minus := math.Abs(opt.F(opt.XPerturb(k, -delta)) / baseline -1)
+
+		// percentage-wise, how much of a change in f(x) results from wiggling?
+		sensitivities[k] = (plus + minus) / (2 * epsilon)
+	}
 
 	return sensitivities
 }

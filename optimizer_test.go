@@ -3,7 +3,6 @@ package chrys
 import (
 	"math"
 	"testing"
-	"fmt"
 )
 
 // helpers
@@ -154,23 +153,32 @@ func Test_XPerturbOutsideBounds(t *testing.T) {
 	assertParametersEqual(x, Parameters{"a": 4.1337, "b": 3.338}, t)
 }
 
+func Test_XPerturbUnderResolution(t *testing.T) {
+	// create Optimizer
+	opt := NewOptimizer(func(x Parameters) float64 { return 0 })
+
+	opt.SetX("a", 4.1337)
+	opt.CreateX("b", 3.337, 0, math.Inf(1), 1e-3)
+
+	// XPerturb()
+	x := opt.XPerturb("b", 1e-4)
+
+	// assert
+	assertParametersEqual(x, Parameters{"a": 4.1337, "b": 3.338}, t)
+}
+
 // tests -> Derivative
 func Test_Derivative(t *testing.T) {
-	// mock objective
-	f := func(x Parameters) float64 {
-		return math.Pow(x["a"], 2) + x["b"]
-	}
-
 	// create Optimizer
-	opt := NewOptimizer(f)
+	opt := NewOptimizer(func(x Parameters) float64 {
+		return math.Pow(x["a"], 2) + x["b"]
+	})
 
 	opt.SetX("a", 4)
 	opt.SetX("b", 3)
 
 	// Derivative()
 	derivative := opt.Derivative()
-
-	fmt.Println(derivative)
 
 	// assert
 	// f(a, b) = a^2 + b
@@ -179,18 +187,21 @@ func Test_Derivative(t *testing.T) {
 }
 
 // tests -> LocalSensitivity
-// func Test_LocalSensitivity(t *testing.T) {
-// 	// mock objective
-// 	f := func(x []float64) float64 {
-// 		return math.Pow(x[0], 2) + x[1]
-// 	}
+func Test_LocalSensitivity(t *testing.T) {
+	// create Optimizer
+	opt := NewOptimizer(func(x Parameters) float64 {
+		return math.Pow(x["a"], 2) + x["b"]
+	})
 
-// 	// create Optimizer
-// 	opt := NewOptimizer([]float64{4, 3})
+	opt.SetX("a", 4)
+	opt.SetX("b", 3)
 
-// 	// Derivative()
-// 	sens := opt.LocalSensitivity(f)
+	// LocalSensitivity()
+	sensitivities := opt.LocalSensitivity()
 
-// 	// assert
-// 	assertSlicesEqual(sens, []float64{.32, .03}, t)
-// }
+	// assert
+	assertParametersEqual(sensitivities, Parameters{
+		"a": 1.6842105,
+		"b": 0.1578947,
+	}, t)
+}
