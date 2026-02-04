@@ -8,11 +8,13 @@ import (
 )
 
 type Input = map[string]float64
+type Constraints = map[string][]Constraint
 type ObjectiveFunc = func(Input) float64
 
 type Optimizer struct {
 	F ObjectiveFunc
 	x Input
+	constraints Constraints
 }
 
 // initializer
@@ -20,13 +22,36 @@ func New(objective ObjectiveFunc) *Optimizer {
 	return &Optimizer{
 		F: objective,
 		x: Input{},
+		constraints: Constraints{},
 	}
 }
 
-// X setters
+// constraints
+func (opt *Optimizer) Constrain(
+	k string,
+	newConstraints ...Constraint,
+) *Optimizer {
+	if constraints, ok := opt.constraints[k]; !ok {
+		opt.constraints[k] = newConstraints
+	} else {
+		opt.constraints[k] = append(constraints, newConstraints...)
+	}
+
+	return opt
+}
+
+func (opt *Optimizer) withConstraints(k string, v float64) float64 {
+	if constraints, ok := opt.constraints[k]; !ok {
+		return applyConstraints(v, constraints)
+	}
+
+	return v
+}
+
+// X setter
 func (opt *Optimizer) SetX(x Input) *Optimizer {
 	for k, v := range x {
-		opt.x[k] = v
+		opt.x[k] = opt.withConstraints(k, v)
 	}
 
 	return opt
@@ -43,7 +68,7 @@ func (opt *Optimizer) X() Input {
 // sensitivity analysis
 func (opt *Optimizer) xPlus(k string, h float64) Input {
 	x := opt.X()
-	x[k] += h
+	x[k] = opt.withConstraints(k, x[k] + h)
 
 	return x
 }
@@ -117,6 +142,7 @@ func (opt *Optimizer) SmoothedSecondDerivative(stepSize float64, n int) Input {
 // optimization
 func (opt *Optimizer) GradientDescent(learningRate float64, maxEpochs int) Input {
 	for _ = range maxEpochs {
+		// fmt.Println(i)
 		shouldStop := true
 		for k, partialGradient := range opt.Derivative(0) {
 			if partialGradient == 0 {
