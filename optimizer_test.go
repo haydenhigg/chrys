@@ -2,6 +2,7 @@ package chrys
 
 import (
 	"math"
+	"math/rand"
 	"testing"
 )
 
@@ -23,13 +24,13 @@ func assertParametersEqual(a, b Parameters, t *testing.T) {
 }
 
 func assertDomainsEqual(a, b *Domain, t *testing.T) {
-	if math.Abs(a.Lower - b.Lower) > 1e-6 {
+	if math.Abs(a.Lower-b.Lower) > 1e-6 {
 		t.Errorf(`a.Lower != b.Lower: %f != %f`, a.Lower, b.Lower)
 	}
-	if math.Abs(a.Upper - b.Upper) > 1e-6 {
+	if math.Abs(a.Upper-b.Upper) > 1e-6 {
 		t.Errorf(`a.Upper != b.Upper: %f != %f`, a.Upper, b.Upper)
 	}
-	if math.Abs(a.Resolution - b.Resolution) > 1e-6 {
+	if math.Abs(a.Resolution-b.Resolution) > 1e-6 {
 		t.Errorf(
 			`a.Resolution != b.Resolution: %f != %f`,
 			a.Resolution, b.Resolution,
@@ -124,44 +125,44 @@ func Test_DomainDefault(t *testing.T) {
 	assertDomainsEqual(domain, &Domain{math.Inf(-1), math.Inf(1), 1e-8}, t)
 }
 
-// tests -> XPerturb
-func Test_XPerturb(t *testing.T) {
+// tests -> perturb
+func Test_perturb(t *testing.T) {
 	// create Optimizer
 	opt := NewOptimizer(func(x Parameters) float64 { return 0 })
 
 	opt.SetX("a", 4.1337)
 	opt.CreateX("b", 3.337, 0, math.Inf(1), 1e-3)
 
-	// XPerturb()
-	x := opt.XPerturb("b", 2e-3)
+	// perturb()
+	x := opt.perturb(opt.X(), "b", 2e-3)
 
 	// assert
 	assertParametersEqual(x, Parameters{"a": 4.1337, "b": 3.339}, t)
 }
 
-func Test_XPerturbOutsideBounds(t *testing.T) {
+func Test_perturbOutsideBounds(t *testing.T) {
 	// create Optimizer
 	opt := NewOptimizer(func(x Parameters) float64 { return 0 })
 
 	opt.SetX("a", 4.1337)
 	opt.CreateX("b", 3.337, 0, 3.338, 1e-3)
 
-	// XPerturb()
-	x := opt.XPerturb("b", 2e-3)
+	// perturb()
+	x := opt.perturb(opt.X(), "b", 2e-3)
 
 	// assert
 	assertParametersEqual(x, Parameters{"a": 4.1337, "b": 3.338}, t)
 }
 
-func Test_XPerturbUnderResolution(t *testing.T) {
+func Test_perturbUnderResolution(t *testing.T) {
 	// create Optimizer
 	opt := NewOptimizer(func(x Parameters) float64 { return 0 })
 
 	opt.SetX("a", 4.1337)
 	opt.CreateX("b", 3.337, 0, math.Inf(1), 1e-3)
 
-	// XPerturb()
-	x := opt.XPerturb("b", 1e-4)
+	// perturb()
+	x := opt.perturb(opt.X(), "b", 1e-4)
 
 	// assert
 	assertParametersEqual(x, Parameters{"a": 4.1337, "b": 3.338}, t)
@@ -186,22 +187,59 @@ func Test_Derivative(t *testing.T) {
 	assertParametersEqual(derivative, Parameters{"a": 8, "b": 1}, t)
 }
 
-// tests -> LocalSensitivity
-func Test_LocalSensitivity(t *testing.T) {
+// test -> SecondDerivative
+func Test_SecondDerivative(t *testing.T) {
 	// create Optimizer
 	opt := NewOptimizer(func(x Parameters) float64 {
-		return math.Pow(x["a"], 2) + x["b"]
+		return math.Pow(x["a"], 2) - 3*x["a"] + math.Sin(x["b"])
 	})
 
 	opt.SetX("a", 4)
 	opt.SetX("b", 3)
 
-	// LocalSensitivity()
-	sensitivities := opt.LocalSensitivity()
+	// SecondDerivative()
+	sensitivity := opt.SecondDerivative()
 
 	// assert
-	assertParametersEqual(sensitivities, Parameters{
-		"a": 1.6842105,
-		"b": 0.1578947,
-	}, t)
+	// f(a, b) = a^2 - 3a + sin(b)
+	// f'(a) = 2a - 3, f'(b) = cos(b)
+	// f''(a) = 2, f''(b) = -sin(b)
+	assertParametersEqual(sensitivity, Parameters{"a": 2, "b": -0.14112000806}, t)
+}
+
+// test -> SmoothedSecondDerivative
+func Test_SmoothedSecondDerivative(t *testing.T) {
+	// create Optimizer
+	opt := NewOptimizer(func(x Parameters) float64 {
+		return math.Pow(x["a"], 3) - 3*x["a"] + math.Pow(x["b"], 2) + rand.Float64()*1e-7
+	})
+
+	opt.SetX("a", 4)
+	opt.SetX("b", 3)
+
+	// SecondDerivative()
+	sensitivity := opt.SmoothedSecondDerivative()
+
+	// assert
+	// f(a, b) = a^3 - 3a + x^2
+	// f'(a) = 3a^2 - 3, f'(b) = 2x
+	// f''(a) = 6a, f''(b) = 2
+	assertParametersEqual(sensitivity, Parameters{"a": 24, "b": 2}, t)
+}
+
+// tests -> GradientDescent
+func Test_GradientDescent(t *testing.T) {
+	// create Optimizer
+	opt := NewOptimizer(func(x Parameters) float64 {
+		return math.Pow(x["a"], 2) - 3*x["a"] + math.Sin(x["b"])
+	})
+
+	opt.SetX("a", 2)
+	opt.SetX("b", 4)
+
+	// GradientDescent()
+	optimized := opt.GradientDescent(.1, 1000)
+
+	// assert
+	assertParametersEqual(optimized, Parameters{"a": 1.5, "b": 4.7123890}, t)
 }

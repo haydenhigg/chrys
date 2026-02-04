@@ -2,7 +2,8 @@ package chrys
 
 import (
 	"math"
-	"fmt"
+	// "fmt"
+	"github.com/haydenhigg/chrys/algo"
 	"maps"
 )
 
@@ -18,15 +19,15 @@ type Domain struct {
 type Optimizer struct {
 	F ObjectiveFunc
 
-	x map[string]float64
+	x       map[string]float64
 	xDomain map[string]*Domain
 }
 
 // initializer
 func NewOptimizer(objective ObjectiveFunc) *Optimizer {
 	return &Optimizer{
-		F: objective,
-		x: map[string]float64{},
+		F:       objective,
+		x:       map[string]float64{},
 		xDomain: map[string]*Domain{},
 	}
 }
@@ -61,14 +62,14 @@ func (opt *Optimizer) Domain(k string) *Domain {
 	if domain, ok := opt.xDomain[k]; ok {
 		return domain
 	} else {
-		return &Domain{math.Inf(-1), math.Inf(1), 1e-8}
+		return &Domain{math.Inf(-1), math.Inf(1), 1e-7}
 	}
 }
 
-func (opt *Optimizer) XPerturb(k string, h float64) Parameters {
+// sensitivity analysis
+func (opt *Optimizer) perturb(x Parameters, k string, h float64) Parameters {
 	domain := opt.Domain(k)
 
-	x := opt.X()
 	x[k] += math.Copysign(max(math.Abs(h), domain.Resolution), h)
 
 	// clamp to bounds
@@ -78,55 +79,89 @@ func (opt *Optimizer) XPerturb(k string, h float64) Parameters {
 		x[k] = domain.Lower
 	}
 
-	fmt.Println(x)
-
 	return x
 }
 
 // OAT partial derivatives using the finite difference method
 func (opt *Optimizer) Derivative() Parameters {
 	derivatives := make(Parameters, len(opt.x))
-	for k := range opt.x {
-		h := opt.Domain(k).Resolution
-		forward := opt.F(opt.XPerturb(k, h))
-		backward := opt.F(opt.XPerturb(k, -h))
 
-		// (f(x + h) - f(x - h)) / 2h
-		derivatives[k] = (forward - backward) / math.Abs(2 * h)
+	for k := range opt.x {
+		h := max(opt.Domain(k).Resolution, 1e-7)
+		forward := opt.F(opt.perturb(opt.X(), k, h))
+		backward := opt.F(opt.perturb(opt.X(), k, -h))
+
+		// (f(x + h) - f(x - h)) / |2h|
+		derivatives[k] = (forward - backward) / math.Abs(2*h)
 	}
 
 	return derivatives
 }
 
-// OAT local perturbations, similar to a derivative
-const epsilon float64 = .1
-
-func (opt *Optimizer) LocalSensitivity() Parameters {
+// OAT partial second derivatives using the finite difference method
+func (opt *Optimizer) SecondDerivative() Parameters {
 	baseline := opt.F(opt.X())
-	sensitivities := make(Parameters, len(opt.x))
-	for k, v := range opt.x {
-		domain := opt.Domain(k)
+	derivatives := make(Parameters, len(opt.x))
 
-		delta := epsilon
-		if math.IsInf(domain.Upper, 0) && math.IsInf(domain.Lower, 0) {
-			delta *= v
-		} else if math.IsInf(domain.Upper, 0) {
-			delta *= v - domain.Lower
-		} else if math.IsInf(domain.Lower, 0) {
-			delta *= domain.Upper - v
-		} else {
-			delta *= domain.Upper - domain.Lower
-		}
+	for k := range opt.x {
+		h := max(opt.Domain(k).Resolution, 1e-4)
+		forward := opt.F(opt.perturb(opt.X(), k, h))
+		backward := opt.F(opt.perturb(opt.X(), k, -h))
 
-		fmt.Println(opt.F(opt.XPerturb(k, delta)) / baseline - 1)
-		fmt.Println(opt.F(opt.XPerturb(k, -delta)) / baseline - 1)
-
-		plus := math.Abs(opt.F(opt.XPerturb(k, delta)) / baseline - 1)
-		minus := math.Abs(opt.F(opt.XPerturb(k, -delta)) / baseline -1)
-
-		// percentage-wise, how much of a change in f(x) results from wiggling?
-		sensitivities[k] = (plus + minus) / (2 * epsilon)
+		// (f(x + h) - 2f(x) + f(x - h)) / h^2
+		derivatives[k] = (forward - 2*baseline + backward) / math.Pow(h, 2)
 	}
 
-	return sensitivities
+	return derivatives
+}
+
+// OAT partial second derivatives using the finite difference method, averaged over multiple scales
+func (opt *Optimizer) SmoothedSecondDerivative() Parameters {
+	// baseline :=
+	derivatives := make(map[string][]float64, len(opt.x))
+
+	for k := range opt.x {
+		n := 10
+		derivatives[k] = make([]float64, n)
+
+		for i := range n {
+			h := math.Pow(2, float64(i))
+			forward := opt.F(opt.perturb(opt.X(), k, h)) - opt.F(opt.X())
+			backward := opt.F(opt.perturb(opt.X(), k, -h)) - opt.F(opt.X())
+
+			// (f(x + h) - 2f(x) + f(x - h)) / h^2
+			derivatives[k][i] = (forward + backward) / math.Pow(h, 2)
+		}
+	}
+
+	smoothedDerivatives := make(Parameters, len(opt.x))
+
+	for k, vs := range derivatives {
+		smoothedDerivatives[k] = algo.Mean(vs)
+	}
+
+	return smoothedDerivatives
+}
+
+// optimization
+func (opt *Optimizer) GradientDescent(learningRate float64, maxEpochs int) Parameters {
+	for _ = range maxEpochs {
+		shouldStop := true
+		for k, partialGradient := range opt.Derivative() {
+			if partialGradient == 0 {
+				continue
+			}
+
+			// descend down the gradient
+			opt.perturb(opt.x, k, -partialGradient*learningRate)
+			shouldStop = false
+		}
+
+		// stop early if gradient == 0
+		if shouldStop {
+			break
+		}
+	}
+
+	return opt.X()
 }
