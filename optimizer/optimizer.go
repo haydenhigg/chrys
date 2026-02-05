@@ -2,7 +2,6 @@ package optimizer
 
 import (
 	"math"
-	// "fmt"
 	"github.com/haydenhigg/chrys/algo"
 	"maps"
 )
@@ -142,16 +141,17 @@ func (opt *Optimizer) SmoothedSecondDerivative(stepSize float64, n int) Input {
 // optimization
 func (opt *Optimizer) GradientDescent(learningRate float64, maxEpochs int) Input {
 	for _ = range maxEpochs {
-		// fmt.Println(i)
 		shouldStop := true
 		for k, partialGradient := range opt.Derivative(0) {
 			if partialGradient == 0 {
 				continue
 			}
 
-			// descend down the gradient
-			opt.x[k] -= partialGradient * learningRate
 			shouldStop = false
+
+			// descend down the gradient
+			delta := partialGradient * learningRate
+			opt.x[k] = opt.withConstraints(k, opt.x[k] - delta)
 		}
 
 		// stop early if gradient == 0
