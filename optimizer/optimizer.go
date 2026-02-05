@@ -59,28 +59,3 @@ func (opt *Optimizer) X() Input {
 
 	return x
 }
-
-// optimization
-func (opt *Optimizer) GradientDescent(learningRate float64, maxEpochs int) Input {
-	for _ = range maxEpochs {
-		shouldStop := true
-		for k, partialGradient := range opt.Derivative(0) {
-			if partialGradient == 0 {
-				continue
-			}
-
-			shouldStop = false
-
-			// descend down the gradient
-			delta := partialGradient * learningRate
-			opt.x[k] = opt.withConstraints(k, opt.x[k]-delta)
-		}
-
-		// stop early if gradient == 0
-		if shouldStop {
-			break
-		}
-	}
-
-	return opt.X()
-}
