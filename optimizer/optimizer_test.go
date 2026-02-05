@@ -49,8 +49,8 @@ func Test_withConstraints(t *testing.T) {
 	v := opt.withConstraints("abc", 1.5)
 
 	// assert
-	if v != 1.5 {
-		t.Errorf("v != 1.5: %f", v)
+	if v != 1 {
+		t.Errorf("v != 1: %f", v)
 	}
 }
 
@@ -109,6 +109,20 @@ func Test_xPlus(t *testing.T) {
 
 	// assert
 	assertParametersEqual(x, Input{"a": 4.1337, "b": 3.339}, t)
+}
+
+func Test_xPlusConstrained(t *testing.T) {
+	// create Optimizer
+	opt := New(func(x Input) float64 { return 0 })
+
+	opt.SetX(Input{"a": 4.1337, "b": 3.337})
+	opt.Constrain("b", Max(3.338))
+
+	// perturb()
+	x := opt.xPlus("b", 2e-3)
+
+	// assert
+	assertParametersEqual(x, Input{"a": 4.1337, "b": 3.338}, t)
 }
 
 // tests -> derivatives

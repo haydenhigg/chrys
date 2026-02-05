@@ -40,7 +40,7 @@ func (opt *Optimizer) Constrain(
 }
 
 func (opt *Optimizer) withConstraints(k string, v float64) float64 {
-	if constraints, ok := opt.constraints[k]; !ok {
+	if constraints, ok := opt.constraints[k]; ok {
 		return applyConstraints(v, constraints)
 	}
 
