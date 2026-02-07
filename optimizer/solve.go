@@ -5,7 +5,7 @@ import "math/rand"
 func (opt *Optimizer) RandomSearch(
 	changeRate float64,
 	maxEpochs int,
-) Input {
+) *Optimizer {
 	baseline := opt.F(opt.X())
 
 	for _ = range maxEpochs {
@@ -28,13 +28,13 @@ func (opt *Optimizer) RandomSearch(
 		}
 	}
 
-	return opt.X()
+	return opt
 }
 
 func (opt *Optimizer) GradientDescent(
 	learningRate float64,
 	maxEpochs int,
-) Input {
+) *Optimizer {
 	for _ = range maxEpochs {
 		shouldStop := true
 		for k, partialGradient := range opt.Derivative(0) {
@@ -55,5 +55,5 @@ func (opt *Optimizer) GradientDescent(
 		}
 	}
 
-	return opt.X()
+	return opt
 }

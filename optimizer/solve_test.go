@@ -15,7 +15,7 @@ func Test_GradientDescent(t *testing.T) {
 	opt.SetX(Input{"a": 4, "b": 3})
 
 	// GradientDescent()
-	optimized := opt.GradientDescent(.1, 1000)
+	optimized := opt.GradientDescent(.1, 1000).X()
 
 	// assert
 	assertParametersEqual(optimized, Input{"a": 1.5, "b": 4.7123890}, t)
