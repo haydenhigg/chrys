@@ -12,9 +12,9 @@ func (opt *Optimizer) RandomSearch(
 		x := opt.X()
 		for k := range x {
 			if rand.Float64() < .5 {
-				coef := changeRate
+				coef := rand.Float64() * changeRate
 				if rand.Float64() < .5 {
-					coef = -changeRate
+					coef *= -1
 				}
 
 				x[k] = opt.withConstraints(k, x[k]*(1+coef))
