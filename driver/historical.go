@@ -2,6 +2,7 @@ package driver
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"github.com/haydenhigg/chrys/frame"
 	"io"
@@ -80,6 +81,10 @@ func (d *HistoricalDriver) FetchFramesSince(
 	slices.SortFunc(frames, func(a, b *frame.Frame) int {
 		return a.Time.Compare(b.Time)
 	})
+
+	if since.Add(interval).Before(frames[0].Time) {
+		return frames, errors.New("insufficient historical frames")
+	}
 
 	return frames, nil
 }
