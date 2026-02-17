@@ -57,7 +57,25 @@ func (api MockAPI) MarketOrder(side, pair string, quantity float64) error {
 	return nil
 }
 
+// helpers
+func assertBalancesEqual(a, b map[string]float64, t *testing.T) {
+	for k, va := range a {
+		if vb, ok := b[k]; !ok {
+			t.Errorf(`b["%s"] does not exist`, k)
+		} else if math.Abs(va-vb) > 1e-6 {
+			t.Errorf(`a["%s"] != b["%s"]: %v != %v`, k, k, va, vb)
+		}
+	}
+
+	for k := range b {
+		if _, ok := a[k]; !ok {
+			t.Errorf(`a["%s"] does not exist`, k)
+		}
+	}
+}
+
 // tests
+// tests -> SetFee
 func Test_SetFee(t *testing.T) {
 	// create Client
 	client := NewClient(nil)
@@ -67,7 +85,7 @@ func Test_SetFee(t *testing.T) {
 
 	// assert
 	if client.Fee != 0.01337 {
-		t.Errorf("client.Fee != 0.01337: %f", client.Fee)
+		t.Errorf("Fee != 0.01337: %f", client.Fee)
 	}
 }
 
@@ -77,7 +95,7 @@ func Test_SetIsLive(t *testing.T) {
 
 	// assert default
 	if client.IsLive {
-		t.Errorf("client.Fee != false: %v", client.IsLive)
+		t.Errorf("IsLive != false: %v", client.IsLive)
 	}
 
 	// SetIsLive()
@@ -85,10 +103,11 @@ func Test_SetIsLive(t *testing.T) {
 
 	// assert
 	if !client.IsLive {
-		t.Errorf("client.Fee != true: %v", client.IsLive)
+		t.Errorf("IsLive != true: %v", client.IsLive)
 	}
 }
 
+// tests -> Value
 func Test_Value(t *testing.T) {
 	// create Client
 	client := NewClient(MockAPI{})
@@ -100,10 +119,9 @@ func Test_Value(t *testing.T) {
 	}
 
 	// assert
-	if math.Abs(value-291.12299265) > 1e-6 {
-		t.Errorf("value != 291.12299265: %f", value)
+	if math.Abs(value-291.1229927) > 1e-6 {
+		t.Errorf("value != 291.1229927: %f", value)
 	}
-
 }
 
 func Test_ValueAliases(t *testing.T) {
@@ -123,7 +141,124 @@ func Test_ValueAliases(t *testing.T) {
 	}
 
 	// assert
-	if math.Abs(value-291.12299265) > 1e-6 {
-		t.Errorf("value != 291.12299265: %f", value)
+	if math.Abs(value-291.1229927) > 1e-6 {
+		t.Errorf("value != 291.1229927: %f", value)
 	}
+}
+
+// tests -> Order
+func Test_OrderBuy(t *testing.T) {
+	// create Client
+	client := NewClient(MockAPI{})
+
+	// Order()
+	err := client.Order(BUY, "BTC/USD", 0.2, time.Now())
+	if err != nil {
+		t.Errorf("err: %v", err)
+	}
+
+	// assert
+	balances, _ := client.Balances.Get()
+	assertBalancesEqual(balances, map[string]float64{
+		"USD": 110.0873633,
+		"BTC": 0.0016041,
+		"ETH": 0.01337,
+	}, t)
+}
+
+func Test_OrderSell(t *testing.T) {
+	// create Client
+	client := NewClient(MockAPI{})
+
+	// Order()
+	err := client.Order(SELL, "BTC/USD", 0.5, time.Now())
+	if err != nil {
+		t.Errorf("err: %v", err)
+	}
+
+	// assert
+	balances, _ := client.Balances.Get()
+	assertBalancesEqual(balances, map[string]float64{
+		"USD": 192.7315917,
+		"BTC": 0.0006685,
+		"ETH": 0.01337,
+	}, t)
+}
+
+func Test_OrderBuyFee(t *testing.T) {
+	// create Client
+	client := NewClient(MockAPI{})
+	client.SetFee(0.05)
+
+	// Order()
+	err := client.Order(BUY, "BTC/USD", 0.2, time.Now())
+	if err != nil {
+		t.Errorf("err: %v", err)
+	}
+
+	// assert
+	balances, _ := client.Balances.Get()
+	assertBalancesEqual(balances, map[string]float64{
+		"USD": 110.0873633,
+		"BTC": 0.0015910,
+		"ETH": 0.01337,
+	}, t)
+}
+
+func Test_OrderSellFee(t *testing.T) {
+	// create Client
+	client := NewClient(MockAPI{})
+	client.SetFee(0.01)
+
+	// Order()
+	err := client.Order(SELL, "BTC/USD", 0.5, time.Now())
+	if err != nil {
+		t.Errorf("err: %v", err)
+	}
+
+	// assert
+	balances, _ := client.Balances.Get()
+	assertBalancesEqual(balances, map[string]float64{
+		"USD": 192.1412758,
+		"BTC": 0.0006685,
+		"ETH": 0.01337,
+	}, t)
+}
+
+func Test_OrderOverBuy(t *testing.T) {
+	// create Client
+	client := NewClient(MockAPI{})
+
+	// Order()
+	err := client.Order(BUY, "BTC/USD", 1.5, time.Now())
+	if err != nil {
+		t.Errorf("err: %v", err)
+	}
+
+	// assert
+	balances, _ := client.Balances.Get()
+	assertBalancesEqual(balances, map[string]float64{
+		"USD": 0,
+		"BTC": 0.0028511,
+		"ETH": 0.01337,
+	}, t)
+}
+
+func Test_OrderOverSell(t *testing.T) {
+	// create Client
+	client := NewClient(MockAPI{})
+
+	// Order()
+	err := client.Order(SELL, "BTC/USD", 1.5, time.Now())
+	if err != nil {
+		t.Errorf("err: %v", err)
+	}
+
+	// assert
+	balances, _ := client.Balances.Get()
+	assertBalancesEqual(balances, map[string]float64{
+		"USD": 251.7631834,
+		"BTC": 0,
+		"ETH": 0.01337,
+	}, t)
 }
