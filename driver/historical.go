@@ -78,13 +78,13 @@ func (d *HistoricalDriver) FetchFramesSince(
 		}
 	}
 
+	if len(frames) == 0 || since.Add(interval).Before(frames[0].Time) {
+		return frames, errors.New("insufficient historical frames")
+	}
+
 	slices.SortFunc(frames, func(a, b *frame.Frame) int {
 		return a.Time.Compare(b.Time)
 	})
-
-	if since.Add(interval).Before(frames[0].Time) {
-		return frames, errors.New("insufficient historical frames")
-	}
 
 	return frames, nil
 }
