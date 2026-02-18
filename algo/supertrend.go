@@ -5,8 +5,8 @@ import domain "github.com/haydenhigg/chrys/frame"
 type Supertrend struct {
 	ATR       *ATR
 	Mult      float64
-	LastUpper float64
 	LastLower float64
+	LastUpper float64
 	LastClose float64
 	Value     float64
 }
@@ -54,6 +54,10 @@ func (supertrend *Supertrend) ApplyFrame(frame *domain.Frame) Machine {
 			supertrend.Apply(lower)
 		}
 	}
+
+	supertrend.LastLower = lower
+	supertrend.LastUpper = upper
+	supertrend.LastClose = frame.Close
 
 	return supertrend
 }
