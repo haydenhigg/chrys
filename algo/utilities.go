@@ -58,3 +58,7 @@ func Lows(frames []*domain.Frame) []float64 {
 func Closes(frames []*domain.Frame) []float64 {
 	return MapFrames(frames, func(f *domain.Frame) float64 { return f.Close })
 }
+
+func Volumes(frames []*domain.Frame) []float64 {
+	return MapFrames(frames, func(f *domain.Frame) float64 { return f.Volume })
+}
