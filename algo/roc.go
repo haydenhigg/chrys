@@ -3,17 +3,24 @@ package algo
 import domain "github.com/haydenhigg/chrys/frame"
 
 type ROC struct {
+	IsInitial bool
 	LastPrice float64
 	Value     float64
 }
 
 func NewROC() *ROC {
-	return &ROC{}
+	return &ROC{IsInitial: true}
 }
 
 func (roc *ROC) Apply(x float64) Machine {
-	roc.Value = x/roc.LastPrice - 1
+	if !roc.IsInitial {
+		roc.Value = x/roc.LastPrice - 1
+	} else {
+		roc.IsInitial = false
+	}
+
 	roc.LastPrice = x
+
 	return roc
 }
 
