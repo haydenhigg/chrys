@@ -245,3 +245,20 @@ func Test_Martin(t *testing.T) {
 		t.Errorf("Martin(0.01) != 15.0524914: %f", backtest.Martin(.01))
 	}
 }
+
+func Test_Skew(t *testing.T) {
+	// create Backtest
+	backtest := NewBacktest(24 * time.Hour)
+
+	// Update()
+	backtest.Update(100)
+	backtest.Update(120)
+	backtest.Update(105)
+	backtest.Update(110)
+	backtest.Update(101)
+
+	// assert
+	if !almostEqual(backtest.Skew(), .2908226) {
+		t.Errorf("Skew() != 0.2908226: %f", backtest.Skew())
+	}
+}

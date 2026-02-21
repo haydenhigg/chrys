@@ -184,3 +184,22 @@ func (backtest *Backtest) UlcerIndex() float64 {
 func (backtest *Backtest) Martin(minReturn float64) float64 {
 	return (backtest.Return() - minReturn) / backtest.UlcerIndex()
 }
+
+func (backtest *Backtest) Skew() float64 {
+	if len(backtest.Returns) <= 1 {
+		return 0
+	}
+
+	vol := algo.StandardDeviation(backtest.Returns, backtest.meanReturn)
+	if vol == 0 {
+		return 0
+	}
+
+	m3 := 0.
+	for _, r := range backtest.Returns {
+		z := (r - backtest.meanReturn) / vol
+		m3 += z * z * z
+	}
+
+	return m3 / float64(len(backtest.Returns))
+}
