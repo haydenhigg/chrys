@@ -17,6 +17,8 @@ type ADX struct {
 func NewADX(period int) *ADX {
 	return &ADX{
 		ATR:     NewATR(period),
+		PosDM:   NewWMA(period),
+		NegDM:   NewWMA(period),
 		Average: NewMA(period),
 	}
 }
