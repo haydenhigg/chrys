@@ -1,23 +1,23 @@
 package chrys
 
-import (
-	"slices"
-	// "github.com/haydenhigg/chrys/algo"
-)
+import "slices"
 
 type RankerRow struct {
 	Key     string
 	Factors []float64
 }
 
-type Ranker []*RankerRow
-
-func (ranker Ranker) Append(key string, factors ...float64) Ranker {
-	ranker = append(ranker, &RankerRow{key, factors})
-	return ranker
+func NewRankerRow(key string, factors ...float64) *RankerRow {
+	return &RankerRow{key, factors}
 }
 
-func (ranker Ranker) Normalize() Ranker {
+type Ranker []*RankerRow
+
+func NewRanker(capacity int) Ranker {
+	return make(Ranker, 0, capacity)
+}
+
+func (ranker Ranker) Rank() Ranker {
 	minNumFactors := 0
 	for _, row := range ranker {
 		numFactors := len(row.Factors)
@@ -42,9 +42,9 @@ func (ranker Ranker) Normalize() Ranker {
 			if factor > maxes[j] || !isInitialized {
 				maxes[j] = factor
 			}
-
-			isInitialized = true
 		}
+
+		isInitialized = true
 	}
 
 	for i, row := range ranker {
@@ -61,9 +61,9 @@ func (ranker Ranker) Normalize() Ranker {
 		}
 
 		if aScore < bScore {
-			return -1
-		} else if aScore > bScore {
 			return 1
+		} else if aScore > bScore {
+			return -1
 		} else {
 			return 0
 		}
@@ -77,5 +77,5 @@ func (ranker Ranker) Top(quantile float64) Ranker {
 }
 
 func (ranker Ranker) Bottom(quantile float64) Ranker {
-	return ranker[len(ranker)-int(quantile*float64(len(ranker)))-1:]
+	return ranker[len(ranker)-int(quantile*float64(len(ranker))):]
 }
