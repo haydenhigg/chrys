@@ -9,7 +9,7 @@ type ADX struct {
 	ATR      *ATR
 	PosDM    *WMA
 	NegDM    *WMA
-	Average  *MA
+	Average  *WMA
 	LastLow  float64
 	LastHigh float64
 }
@@ -19,7 +19,7 @@ func NewADX(period int) *ADX {
 		ATR:     NewATR(period),
 		PosDM:   NewWMA(period),
 		NegDM:   NewWMA(period),
-		Average: NewMA(period),
+		Average: NewWMA(period),
 	}
 }
 
