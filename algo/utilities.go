@@ -30,6 +30,23 @@ func StandardDeviation(xs []float64, mean float64) float64 {
 	return math.Sqrt(Variance(xs, mean))
 }
 
+func Covariance(xs, ys []float64, xMean, yMean float64) float64 {
+	sum := 0.
+
+	for i, x := range xs {
+		sum += (x - xMean) * (ys[i] - yMean)
+	}
+
+	return sum / float64(len(xs)-1)
+}
+
+func Correlation(xs, ys []float64, xMean, yMean float64) float64 {
+	numerator := Covariance(xs, ys, xMean, yMean)
+	denominator := StandardDeviation(xs, xMean) * StandardDeviation(ys, yMean)
+
+	return numerator / denominator
+}
+
 // frame utilities
 func MapFrames(
 	frames []*domain.Frame,
