@@ -113,7 +113,7 @@ func Test_Value(t *testing.T) {
 	client := NewClient(MockAPI{})
 
 	// Value()
-	value, err := client.Value([]string{"USD", "ETH", "BTC"}, time.Now())
+	value, err := client.Value("USD", []string{"USD", "ETH", "BTC"}, time.Now())
 	if err != nil {
 		t.Errorf("err: %v", err)
 	}
@@ -135,7 +135,7 @@ func Test_ValueAliases(t *testing.T) {
 		Alias("ZUSD", "USD")
 
 	// Value()
-	value, err := client.Value([]string{"USD", "ETH", "BTC"}, time.Now())
+	value, err := client.Value("USD", []string{"USD", "ETH", "BTC"}, time.Now())
 	if err != nil {
 		t.Errorf("err: %v", err)
 	}
@@ -147,12 +147,13 @@ func Test_ValueAliases(t *testing.T) {
 }
 
 // tests -> Order
+// tests -> Order -> Order
 func Test_OrderBuy(t *testing.T) {
 	// create Client
 	client := NewClient(MockAPI{})
 
-	// Order()
-	err := client.Order(BUY, "BTC/USD", 0.2, time.Now())
+	// OrderPct()
+	err := client.Order(BUY, "BTC/USD", 0.0002674, time.Now())
 	if err != nil {
 		t.Errorf("err: %v", err)
 	}
@@ -170,8 +171,8 @@ func Test_OrderSell(t *testing.T) {
 	// create Client
 	client := NewClient(MockAPI{})
 
-	// Order()
-	err := client.Order(SELL, "BTC/USD", 0.5, time.Now())
+	// OrderPct()
+	err := client.Order(SELL, "BTC/USD", 0.0006685, time.Now())
 	if err != nil {
 		t.Errorf("err: %v", err)
 	}
@@ -190,8 +191,8 @@ func Test_OrderBuyFee(t *testing.T) {
 	client := NewClient(MockAPI{})
 	client.SetFee(0.05)
 
-	// Order()
-	err := client.Order(BUY, "BTC/USD", 0.2, time.Now())
+	// OrderPct()
+	err := client.Order(BUY, "BTC/USD", 0.0002674, time.Now())
 	if err != nil {
 		t.Errorf("err: %v", err)
 	}
@@ -210,8 +211,8 @@ func Test_OrderSellFee(t *testing.T) {
 	client := NewClient(MockAPI{})
 	client.SetFee(0.01)
 
-	// Order()
-	err := client.Order(SELL, "BTC/USD", 0.5, time.Now())
+	// OrderPct()
+	err := client.Order(SELL, "BTC/USD", 0.0006685, time.Now())
 	if err != nil {
 		t.Errorf("err: %v", err)
 	}
@@ -229,8 +230,8 @@ func Test_OrderOverBuy(t *testing.T) {
 	// create Client
 	client := NewClient(MockAPI{})
 
-	// Order()
-	err := client.Order(BUY, "BTC/USD", 1.5, time.Now())
+	// OrderPct()
+	err := client.Order(BUY, "BTC/USD", 0.0016, time.Now())
 	if err != nil {
 		t.Errorf("err: %v", err)
 	}
@@ -248,8 +249,8 @@ func Test_OrderOverSell(t *testing.T) {
 	// create Client
 	client := NewClient(MockAPI{})
 
-	// Order()
-	err := client.Order(SELL, "BTC/USD", 1.5, time.Now())
+	// OrderPct()
+	err := client.Order(SELL, "BTC/USD", 0.002, time.Now())
 	if err != nil {
 		t.Errorf("err: %v", err)
 	}
@@ -260,5 +261,182 @@ func Test_OrderOverSell(t *testing.T) {
 		"USD": 251.7631834,
 		"BTC": 0,
 		"ETH": 0.01337,
+	}, t)
+}
+
+// tests -> Order -> OrderPct
+func Test_OrderPctBuy(t *testing.T) {
+	// create Client
+	client := NewClient(MockAPI{})
+
+	// OrderPct()
+	err := client.OrderPct(BUY, "BTC/USD", 0.2, time.Now())
+	if err != nil {
+		t.Errorf("err: %v", err)
+	}
+
+	// assert
+	balances, _ := client.Balances.Get()
+	assertBalancesEqual(balances, map[string]float64{
+		"USD": 110.0873633,
+		"BTC": 0.0016041,
+		"ETH": 0.01337,
+	}, t)
+}
+
+func Test_OrderPctSell(t *testing.T) {
+	// create Client
+	client := NewClient(MockAPI{})
+
+	// OrderPct()
+	err := client.OrderPct(SELL, "BTC/USD", 0.5, time.Now())
+	if err != nil {
+		t.Errorf("err: %v", err)
+	}
+
+	// assert
+	balances, _ := client.Balances.Get()
+	assertBalancesEqual(balances, map[string]float64{
+		"USD": 192.7315917,
+		"BTC": 0.0006685,
+		"ETH": 0.01337,
+	}, t)
+}
+
+func Test_OrderPctBuyFee(t *testing.T) {
+	// create Client
+	client := NewClient(MockAPI{})
+	client.SetFee(0.05)
+
+	// OrderPct()
+	err := client.OrderPct(BUY, "BTC/USD", 0.2, time.Now())
+	if err != nil {
+		t.Errorf("err: %v", err)
+	}
+
+	// assert
+	balances, _ := client.Balances.Get()
+	assertBalancesEqual(balances, map[string]float64{
+		"USD": 110.0873633,
+		"BTC": 0.0015910,
+		"ETH": 0.01337,
+	}, t)
+}
+
+func Test_OrderPctSellFee(t *testing.T) {
+	// create Client
+	client := NewClient(MockAPI{})
+	client.SetFee(0.01)
+
+	// OrderPct()
+	err := client.OrderPct(SELL, "BTC/USD", 0.5, time.Now())
+	if err != nil {
+		t.Errorf("err: %v", err)
+	}
+
+	// assert
+	balances, _ := client.Balances.Get()
+	assertBalancesEqual(balances, map[string]float64{
+		"USD": 192.1412758,
+		"BTC": 0.0006685,
+		"ETH": 0.01337,
+	}, t)
+}
+
+func Test_OrderPctOverBuy(t *testing.T) {
+	// create Client
+	client := NewClient(MockAPI{})
+
+	// OrderPct()
+	err := client.OrderPct(BUY, "BTC/USD", 1.5, time.Now())
+	if err != nil {
+		t.Errorf("err: %v", err)
+	}
+
+	// assert
+	balances, _ := client.Balances.Get()
+	assertBalancesEqual(balances, map[string]float64{
+		"USD": 0,
+		"BTC": 0.0028511,
+		"ETH": 0.01337,
+	}, t)
+}
+
+func Test_OrderPctOverSell(t *testing.T) {
+	// create Client
+	client := NewClient(MockAPI{})
+
+	// OrderPct()
+	err := client.OrderPct(SELL, "BTC/USD", 1.5, time.Now())
+	if err != nil {
+		t.Errorf("err: %v", err)
+	}
+
+	// assert
+	balances, _ := client.Balances.Get()
+	assertBalancesEqual(balances, map[string]float64{
+		"USD": 251.7631834,
+		"BTC": 0,
+		"ETH": 0.01337,
+	}, t)
+}
+
+// tests -> Order -> Reweight
+func Test_scale(t *testing.T) {
+	// scale()
+	normalized := scale(map[string]float64{
+		"USD": 13,
+		"BTC": 33,
+		"ETH": 37,
+	})
+
+	// assert
+	assertBalancesEqual(normalized, map[string]float64{
+		"USD": 0.1566265,
+		"BTC": 0.3975904,
+		"ETH": 0.4457831,
+	}, t)
+}
+
+func Test_scaleNegative(t *testing.T) {
+	// scale()
+	normalized := scale(map[string]float64{
+		"USD": 13,
+		"BTC": 33,
+		"ETH": -37,
+	})
+
+	// assert
+	assertBalancesEqual(normalized, map[string]float64{
+		"USD": 0.2826087,
+		"BTC": 0.7173913,
+		"ETH": 0,
+	}, t)
+}
+
+func Test_Reweight(t *testing.T) {
+	// create Client
+	client := NewClient(MockAPI{})
+
+	// OrderPct()
+	err := client.Reweight(
+		"USD",
+		map[string]float64{
+			"BTC": 0.8,
+			"USD": 0.2,
+			"ETH": 0,
+		},
+		time.Now(),
+	)
+	if err != nil {
+		t.Errorf("err: %v", err)
+	}
+
+	// assert
+	balances, _ := client.Balances.Get()
+	assertBalancesEqual(balances, map[string]float64{
+		"BTC": 0.002637445,
+		"USD": 58.2245985,
+		"ETH": 0,
 	}, t)
 }
