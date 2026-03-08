@@ -2,7 +2,7 @@ package chrys
 
 import "testing"
 
-func Test_Rank(t *testing.T) {
+func Test_Score(t *testing.T) {
 	// create Ranker
 	ranker := Ranker{
 		NewRankerRow("BTC", 1, 10, 3), // => [0.6, 0.666_, 0.0] => 1.266_
@@ -11,33 +11,43 @@ func Test_Rank(t *testing.T) {
 		NewRankerRow("BCH", 0, 11, 5), // => [0.4, 1.0, 1.0] => 2.4
 	}
 
-	// Rank()
-	ranker.Rank()
+	// Score()
+	scores := ranker.Score()
 
 	// assert
 	for i, row := range ranker {
 		var (
 			expectedKey     string
 			expectedFactors []float64
+			expectedScore   float64
 		)
 
 		switch i {
 		case 0:
 			expectedKey = "BCH"
 			expectedFactors = []float64{0.4, 1, 1}
+			expectedScore = 0.8
 		case 1:
 			expectedKey = "ETH"
 			expectedFactors = []float64{1.0, 0, 0.5}
+			expectedScore = 0.5
 		case 2:
 			expectedKey = "BTC"
 			expectedFactors = []float64{0.6, 0.6666667, 0}
+			expectedScore = 0.422222
 		case 3:
 			expectedKey = "SOL"
 			expectedFactors = []float64{0, 0.3333333, 0.5}
+			expectedScore = 0.277778
 		}
 
 		if row.Key != expectedKey {
 			t.Errorf("ranker[%d].Key != %s: %s", i, row.Key, expectedKey)
+		}
+
+		rowScore := scores[row.Key]
+		if !almostEqual(rowScore, expectedScore) {
+			t.Errorf("scores[%s] != %f: %f", row.Key, expectedScore, rowScore)
 		}
 
 		assertSlicesEqual(row.Factors, expectedFactors, t)

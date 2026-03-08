@@ -1,6 +1,9 @@
 package chrys
 
-import "slices"
+import (
+	"github.com/haydenhigg/chrys/algo"
+	"slices"
+)
 
 type RankerRow struct {
 	Key     string
@@ -17,7 +20,7 @@ func NewRanker(capacity int) Ranker {
 	return make(Ranker, 0, capacity)
 }
 
-func (ranker Ranker) Rank() Ranker {
+func (ranker Ranker) Score() map[string]float64 {
 	minNumFactors := 0
 	for _, row := range ranker {
 		numFactors := len(row.Factors)
@@ -26,8 +29,13 @@ func (ranker Ranker) Rank() Ranker {
 		}
 	}
 
+	scores := make(map[string]float64, len(ranker))
+	for _, row := range ranker {
+		scores[row.Key] = 0
+	}
+
 	if minNumFactors == 0 {
-		return ranker
+		return scores
 	}
 
 	mins := make([]float64, minNumFactors)
@@ -51,25 +59,21 @@ func (ranker Ranker) Rank() Ranker {
 		for j, factor := range row.Factors {
 			ranker[i].Factors[j] = (factor - mins[j]) / (maxes[j] - mins[j])
 		}
+
+		scores[row.Key] = algo.Mean(ranker[i].Factors)
 	}
 
 	slices.SortFunc(ranker, func(a, b *RankerRow) int {
-		aScore, bScore := 0., 0.
-		for i, aFactor := range a.Factors {
-			aScore += aFactor
-			bScore += b.Factors[i]
-		}
-
-		if aScore < bScore {
-			return 1
-		} else if aScore > bScore {
+		if scores[a.Key] > scores[b.Key] {
 			return -1
+		} else if scores[a.Key] < scores[b.Key] {
+			return 1
 		} else {
 			return 0
 		}
 	})
 
-	return ranker
+	return scores
 }
 
 func (ranker Ranker) Top(quantile float64) Ranker {
