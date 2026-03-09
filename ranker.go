@@ -20,44 +20,43 @@ func NewRanker(capacity int) Ranker {
 	return make(Ranker, 0, capacity)
 }
 
-func (ranker Ranker) Score() map[string]float64 {
-	minNumFactors := 0
+func (ranker Ranker) transposeFactors() [][]float64 {
+	factors := [][]float64{}
+
 	for _, row := range ranker {
-		numFactors := len(row.Factors)
-		if numFactors > minNumFactors {
-			minNumFactors = numFactors
+		for j, factor := range row.Factors {
+			if j >= len(factors) {
+				factors = append(factors, []float64{factor})
+			} else {
+				factors[j] = append(factors[j], factor)
+			}
 		}
+	}
+
+	return factors
+}
+
+func (ranker Ranker) Score() map[string]float64 {
+	factors := ranker.transposeFactors()
+	if len(factors) == 0 {
+		return nil
+	}
+
+	means := make([]float64, len(factors))
+	stddevs := make([]float64, len(factors))
+	for j, factorValues := range factors {
+		means[j] = algo.Mean(factorValues)
+		stddevs[j] = algo.StandardDeviation(factorValues, means[j])
 	}
 
 	scores := make(map[string]float64, len(ranker))
-	for _, row := range ranker {
-		scores[row.Key] = 0
-	}
-
-	if minNumFactors == 0 {
-		return scores
-	}
-
-	mins := make([]float64, minNumFactors)
-	maxes := make([]float64, minNumFactors)
-	isInitialized := false
-
-	for _, row := range ranker {
-		for j, factor := range row.Factors {
-			if factor < mins[j] || !isInitialized {
-				mins[j] = factor
-			}
-			if factor > maxes[j] || !isInitialized {
-				maxes[j] = factor
-			}
-		}
-
-		isInitialized = true
-	}
-
 	for i, row := range ranker {
 		for j, factor := range row.Factors {
-			ranker[i].Factors[j] = (factor - mins[j]) / (maxes[j] - mins[j])
+			if stddevs[j] == 0 {
+				ranker[i].Factors[i] = 0
+			}
+
+			ranker[i].Factors[j] = (factor - means[j]) / stddevs[j]
 		}
 
 		scores[row.Key] = algo.Mean(ranker[i].Factors)

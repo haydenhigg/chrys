@@ -5,10 +5,10 @@ import "testing"
 func Test_Score(t *testing.T) {
 	// create Ranker
 	ranker := Ranker{
-		NewRankerRow("BTC", 1, 10, 3), // => [0.6, 0.666_, 0.0] => 1.266_
-		NewRankerRow("ETH", 3, 8, 4),  // => [1.0, 0.0, 0.5] => 1.5
-		NewRankerRow("SOL", -2, 9, 4), // => [0.0, 0.333_, 0.5] => 0.833_
-		NewRankerRow("BCH", 0, 11, 5), // => [0.4, 1.0, 1.0] => 2.4
+		NewRankerRow("BTC", 1, 10, 3), // => -0.199085
+		NewRankerRow("ETH", 3, 8, 4),  // => 0.013022
+		NewRankerRow("SOL", -2, 9, 4), // => -0.529420
+		NewRankerRow("BCH", 0, 11, 5), // => 0.715483
 	}
 
 	// Score()
@@ -23,22 +23,22 @@ func Test_Score(t *testing.T) {
 		)
 
 		switch i {
-		case 0:
-			expectedKey = "BCH"
-			expectedFactors = []float64{0.4, 1, 1}
-			expectedScore = 0.8
-		case 1:
-			expectedKey = "ETH"
-			expectedFactors = []float64{1.0, 0, 0.5}
-			expectedScore = 0.5
-		case 2:
-			expectedKey = "BTC"
-			expectedFactors = []float64{0.6, 0.6666667, 0}
-			expectedScore = 0.422222
 		case 3:
 			expectedKey = "SOL"
-			expectedFactors = []float64{0, 0.3333333, 0.5}
-			expectedScore = 0.277778
+			expectedFactors = []float64{-1.200961, -0.387298, 0}
+			expectedScore = -0.529420
+		case 2:
+			expectedKey = "BTC"
+			expectedFactors = []float64{0.2401922, 0.387298, -1.224745}
+			expectedScore = -0.199085
+		case 1:
+			expectedKey = "ETH"
+			expectedFactors = []float64{1.200961, -1.161895, 0}
+			expectedScore = 0.013022
+		case 0:
+			expectedKey = "BCH"
+			expectedFactors = []float64{-0.2401922, 1.161895, 1.224745}
+			expectedScore = 0.715483
 		}
 
 		if row.Key != expectedKey {
