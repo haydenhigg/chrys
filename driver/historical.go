@@ -77,7 +77,11 @@ func (d *HistoricalDriver) FetchFramesSince(
 		}
 	}
 
-	if !since.IsZero() && (len(frames) == 0 || since.Add(interval).Before(frames[0].Time)) {
+	if len(frames) == 0 {
+		return frames, fmt.Errorf("no frames")
+	}
+
+	if !since.IsZero() && since.Add(interval).Before(frames[0].Time) {
 		return frames, fmt.Errorf("no frames before %v", frames[0].Time)
 	}
 
