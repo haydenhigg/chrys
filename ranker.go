@@ -1,9 +1,9 @@
 package chrys
 
 import (
+	"fmt"
 	"github.com/haydenhigg/chrys/algo"
 	"slices"
-	"fmt"
 )
 
 type RankerRow struct {
@@ -43,6 +43,8 @@ func (ranker Ranker) Score() map[string]float64 {
 		return nil
 	}
 
+	fmt.Printf("%+v\n", factors)
+
 	means := make([]float64, len(factors))
 	stddevs := make([]float64, len(factors))
 	for j, factorValues := range factors {
@@ -56,9 +58,7 @@ func (ranker Ranker) Score() map[string]float64 {
 	scores := make(map[string]float64, len(ranker))
 	for i, row := range ranker {
 		for j, factor := range row.Factors {
-			if stddevs[j] == 0 {
-				ranker[i].Factors[i] = 0
-			} else {
+			if stddevs[j] > 1e-8 {
 				ranker[i].Factors[j] = (factor - means[j]) / stddevs[j]
 			}
 		}
