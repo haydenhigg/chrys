@@ -3,6 +3,7 @@ package chrys
 import (
 	"github.com/haydenhigg/chrys/algo"
 	"slices"
+	"fmt"
 )
 
 type RankerRow struct {
@@ -48,6 +49,9 @@ func (ranker Ranker) Score() map[string]float64 {
 		means[j] = algo.Mean(factorValues)
 		stddevs[j] = algo.StandardDeviation(factorValues, means[j])
 	}
+
+	fmt.Printf("%+v\n", means)
+	fmt.Printf("%+v\n", stddevs)
 
 	scores := make(map[string]float64, len(ranker))
 	for i, row := range ranker {
