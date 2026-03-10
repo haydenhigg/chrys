@@ -1,7 +1,6 @@
 package chrys
 
 import (
-	"fmt"
 	"github.com/haydenhigg/chrys/algo"
 	"slices"
 )
@@ -43,17 +42,12 @@ func (ranker Ranker) Score() map[string]float64 {
 		return nil
 	}
 
-	fmt.Printf("%+v\n", factors)
-
 	means := make([]float64, len(factors))
 	stddevs := make([]float64, len(factors))
 	for j, factorValues := range factors {
 		means[j] = algo.Mean(factorValues)
 		stddevs[j] = algo.StandardDeviation(factorValues, means[j])
 	}
-
-	fmt.Printf("%+v\n", means)
-	fmt.Printf("%+v\n", stddevs)
 
 	scores := make(map[string]float64, len(ranker))
 	for i, row := range ranker {
