@@ -54,9 +54,9 @@ func (ranker Ranker) Score() map[string]float64 {
 		for j, factor := range row.Factors {
 			if stddevs[j] == 0 {
 				ranker[i].Factors[i] = 0
+			} else {
+				ranker[i].Factors[j] = (factor - means[j]) / stddevs[j]
 			}
-
-			ranker[i].Factors[j] = (factor - means[j]) / stddevs[j]
 		}
 
 		scores[row.Key] = algo.Mean(ranker[i].Factors)
