@@ -60,6 +60,8 @@ func (ranker Ranker) Score() map[string]float64 {
 		for j, factor := range row.Factors {
 			if stddevs[j] > 1e-8 {
 				ranker[i].Factors[j] = (factor - means[j]) / stddevs[j]
+			} else {
+				ranker[i].Factors[j] = 0.
 			}
 		}
 
